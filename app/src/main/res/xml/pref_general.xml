@@ -1,0 +1,30 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <EditTextPreference
+        android:key="server_ip"
+        android:title="@string/pref_title_server_ip"
+        android:defaultValue="@string/pref_default_server_ip"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="number|numberDecimal"
+        android:digits="0123456789." />
+    
+    <EditTextPreference
+        android:key="server_login"
+        android:title="@string/pref_title_login"
+        android:defaultValue="@string/pref_default_login"
+        android:inputType="textVisiblePassword|textNoSuggestions"
+        android:maxLines="1"
+        android:selectAllOnFocus="true"
+        android:singleLine="true" />
+        
+    <EditTextPreference
+        android:key="server_password"
+        android:title="@string/pref_title_password"
+        android:defaultValue="@string/pref_default_password"
+        android:inputType="textPassword"
+        android:maxLines="1"
+        android:selectAllOnFocus="true"
+        android:singleLine="true" />
+
+</PreferenceScreen>
