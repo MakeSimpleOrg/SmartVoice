@@ -6,7 +6,7 @@ android {
 
     defaultConfig {
         applicationId "com.diamond.SmartVoice"
-        minSdkVersion 21
+        minSdkVersion 23
         targetSdkVersion 25
     }
 

@@ -1,30 +1,38 @@
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+<PreferenceScreen xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android" >
 
     <EditTextPreference
-        android:key="server_ip"
-        android:title="@string/pref_title_server_ip"
-        android:defaultValue="@string/pref_default_server_ip"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:inputType="number|numberDecimal"
-        android:digits="0123456789." />
-    
+        android:defaultValue=""
+        android:inputType="textUri"
+        android:key="server_ip"
+        android:title="Адрес сервера" />
     <EditTextPreference
+        android:defaultValue=""
+        android:inputType="textNoSuggestions|textVisiblePassword"
         android:key="server_login"
-        android:title="@string/pref_title_login"
-        android:defaultValue="@string/pref_default_login"
-        android:inputType="textVisiblePassword|textNoSuggestions"
         android:maxLines="1"
         android:selectAllOnFocus="true"
-        android:singleLine="true" />
-        
+        android:singleLine="true"
+        android:title="Логин" />
     <EditTextPreference
-        android:key="server_password"
-        android:title="@string/pref_title_password"
-        android:defaultValue="@string/pref_default_password"
+        android:defaultValue=""
         android:inputType="textPassword"
+        android:key="server_password"
         android:maxLines="1"
+        android:password="true"
         android:selectAllOnFocus="true"
-        android:singleLine="true" />
+        android:singleLine="true"
+        android:title="Пароль" />
+    <EditTextPreference
+        android:autoText="true"
+        android:defaultValue="Умный дом"
+        android:inputType="text"
+        android:maxLines="1"
+        android:key="keyphrase"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="Активационная фраза" />
 
 </PreferenceScreen>
