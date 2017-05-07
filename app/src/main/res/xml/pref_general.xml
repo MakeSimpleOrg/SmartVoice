@@ -34,5 +34,9 @@
         android:selectAllOnFocus="true"
         android:singleLine="true"
         android:title="Активационная фраза" />
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="offline_recognition"
+        android:title="Распознавание оффлайн" />
 
 </PreferenceScreen>

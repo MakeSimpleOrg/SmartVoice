@@ -35,8 +35,7 @@ public class GoogleRecognizer implements RecognitionListener {
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
         intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, context.getPackageName());
         intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, false);
-
-        intent.putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, true); //TODO сравнить качество онлайн и оффлайн
+        intent.putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, context.pref.getBoolean("offline_recognition", false));
     }
 
     public void startListening() {
