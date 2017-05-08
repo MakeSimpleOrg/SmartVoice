@@ -29,7 +29,7 @@ public class GoogleRecognizer implements RecognitionListener {
         recognizer.setRecognitionListener(this);
 
         intent = new Intent(RecognizerIntent.ACTION_VOICE_SEARCH_HANDS_FREE);
-        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_WEB_SEARCH);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, Locale.getDefault());
         intent.putExtra(RecognizerIntent.EXTRA_ONLY_RETURN_LANGUAGE_PREFERENCE, true);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
@@ -85,13 +85,13 @@ public class GoogleRecognizer implements RecognitionListener {
 
     @Override
     public void onEndOfSpeech() {
-        //Log.w(TAG, "onEndOfSpeech");
+        Log.w(TAG, "onEndOfSpeech");
         //buttonOff();
     }
 
     @Override
     public void onResults(Bundle results) {
-        //Log.w(TAG, "onResults");
+        Log.w(TAG, "onResults");
 
         recognizer.stopListening();
 
@@ -145,5 +145,13 @@ public class GoogleRecognizer implements RecognitionListener {
                 break;
         }
         return message;
+    }
+
+    public void destroy() {
+        if (recognizer != null) {
+            recognizer.cancel();
+            recognizer.destroy();
+            recognizer = null;
+        }
     }
 }

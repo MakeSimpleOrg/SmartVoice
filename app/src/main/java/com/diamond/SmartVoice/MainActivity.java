@@ -15,7 +15,6 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.speech.tts.TextToSpeech;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -46,6 +45,8 @@ public class MainActivity extends Activity {
     private boolean fibaroLoading = false;
     private boolean veraLoading = false;
     public boolean ttsLoading = false;
+    private boolean keyPhraseRecognizerLoading = false;
+    private boolean recognizerLoading = false;
 
     private View progressBar;
 
@@ -82,8 +83,10 @@ public class MainActivity extends Activity {
                     return false;
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
-                        keyPhraseRecognizer.stopListening();
-                        recognizer.startListening();
+                        if(keyPhraseRecognizer != null)
+                            keyPhraseRecognizer.stopListening();
+                        if(recognizer != null)
+                            recognizer.startListening();
                         buttonOn();
                         break;
                     case MotionEvent.ACTION_UP:
@@ -107,27 +110,36 @@ public class MainActivity extends Activity {
 
         progressBar.setVisibility(View.VISIBLE);
 
-        setupRecognizer();
+        Runnable load;
+        Thread thread;
 
-        Runnable load = new LoadData1();
-        Thread thread = new Thread(load);
-        thread.start();
+        if (pref.getBoolean("keyRecognizer", false)) {
+            load = new LoadData1();
+            thread = new Thread(load);
+            thread.start();
+        }
 
         load = new LoadData2();
         thread = new Thread(load);
         thread.start();
 
-        load = new LoadData3();
-        thread = new Thread(load);
-        thread.start();
+        if (pref.getBoolean("tts_enabled", false)) {
+            load = new LoadData3();
+            thread = new Thread(load);
+            thread.start();
+        }
 
-        load = new LoadData4();
-        thread = new Thread(load);
-        thread.start();
+        if (pref.getBoolean("fibaro_enabled", false)) {
+            load = new LoadData4();
+            thread = new Thread(load);
+            thread.start();
+        }
 
-        load = new LoadData5();
-        thread = new Thread(load);
-        thread.start();
+        if (pref.getBoolean("vera_enabled", false)) {
+            load = new LoadData5();
+            thread = new Thread(load);
+            thread.start();
+        }
 
         load = new LoadData6();
         thread = new Thread(load);
@@ -156,24 +168,21 @@ public class MainActivity extends Activity {
     class LoadData3 implements Runnable {
         @Override
         public void run() {
-            if (pref.getBoolean("tts_enabled", false))
-                setupTTS();
+            setupTTS();
         }
     }
 
     class LoadData4 implements Runnable {
         @Override
         public void run() {
-            if (pref.getBoolean("fibaro_enabled", false))
-                setupFibaro();
+            setupFibaro();
         }
     }
 
     class LoadData5 implements Runnable {
         @Override
         public void run() {
-            if (pref.getBoolean("vera_enabled", false))
-                setupVera();
+            setupVera();
         }
     }
 
@@ -197,7 +206,8 @@ public class MainActivity extends Activity {
                 }
             });
 
-            keyPhraseRecognizer.startListening();
+            if(keyPhraseRecognizer != null)
+                keyPhraseRecognizer.startListening();
 
             if (pref.getBoolean("tts_enabled", false))
                 MainActivity.this.runOnUiThread(new Runnable() {
@@ -210,7 +220,7 @@ public class MainActivity extends Activity {
     }
 
     private boolean isLoading() {
-        return ttsLoading || fibaroLoading || veraLoading || recognizer == null || keyPhraseRecognizer == null;
+        return ttsLoading || fibaroLoading || veraLoading || recognizerLoading || keyPhraseRecognizerLoading;
     }
 
     public void buttonOn() {
@@ -219,23 +229,28 @@ public class MainActivity extends Activity {
 
     public void buttonOff() {
         MicView.setBackgroundResource(R.drawable.background_big_mic);
-        keyPhraseRecognizer.startListening();
+        if(keyPhraseRecognizer != null)
+            keyPhraseRecognizer.startListening();
     }
 
     public void setupKeyphraseRecognizer() {
+        keyPhraseRecognizerLoading = true;
         if (keyPhraseRecognizer != null) {
             keyPhraseRecognizer.destroy();
             keyPhraseRecognizer = null;
         }
         keyPhraseRecognizer = new PocketSphinxRecognizer(this);
+        keyPhraseRecognizerLoading = false;
     }
 
     public void setupRecognizer() {
+        recognizerLoading = true;
         if (recognizer != null) {
             recognizer.stopListening();
             recognizer = null;
         }
         recognizer = new GoogleRecognizer(this);
+        recognizerLoading = false;
     }
 
     public void setupTTS() {
@@ -321,8 +336,10 @@ public class MainActivity extends Activity {
 
     public void OnKeyPhrase() {
         lastKeyPhrase = System.currentTimeMillis();
-        keyPhraseRecognizer.stopListening();
-        recognizer.startListening();
+        if(keyPhraseRecognizer != null)
+            keyPhraseRecognizer.stopListening();
+        if(recognizer != null)
+            recognizer.startListening();
         buttonOn();
     }
 
@@ -409,6 +426,8 @@ public class MainActivity extends Activity {
     protected void onDestroy() {
         if (keyPhraseRecognizer != null)
             keyPhraseRecognizer.destroy();
+        if(recognizer != null)
+            recognizer.destroy();
         if (textToSpeech != null)
             textToSpeech.shutdown();
         Log.w(TAG, "onDestroy");

@@ -19,6 +19,7 @@ public class SettingsActivity extends PreferenceActivity {
         bindPreferenceSummaryToValue(findPreference("fibaro_server_login"));
         bindPreferenceSummaryToValue(findPreference("vera_server_ip"));
         bindPreferenceSummaryToValue(findPreference("keyphrase"));
+        bindPreferenceSummaryToValue(findPreference("keywordThreshold"));
 
         findPreference("fibaro_enabled").setOnPreferenceChangeListener(sBindPreferenceChangeListener);
         findPreference("vera_enabled").setOnPreferenceChangeListener(sBindPreferenceChangeListener);
