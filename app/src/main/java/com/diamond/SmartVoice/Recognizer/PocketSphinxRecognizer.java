@@ -26,7 +26,7 @@ public class PocketSphinxRecognizer {
     public PocketSphinxRecognizer(MainActivity context) {
         this.mContext = context;
 
-        KEYPHRASE = context.pref.getString("keyphrase", "умный дом");
+        KEYPHRASE = context.keyphrase;
 
         try {
             Assets assets = new Assets(mContext);
@@ -38,7 +38,7 @@ public class PocketSphinxRecognizer {
             SpeechRecognizerSetup setup = defaultSetup();
             setup.setAcousticModel(new File(assetDir, "dict"));
             setup.setDictionary(dict);
-            setup.setKeywordThreshold(1e-30f);
+            setup.setKeywordThreshold(1e-15f);
             recognizer = setup.getRecognizer();
             recognizer.addListener(new PocketSphinxRecognitionListener());
             recognizer.addKeyphraseSearch(KEY_PHRASE_SEARCH, KEYPHRASE);

@@ -29,13 +29,13 @@ public class GoogleRecognizer implements RecognitionListener {
         recognizer.setRecognitionListener(this);
 
         intent = new Intent(RecognizerIntent.ACTION_VOICE_SEARCH_HANDS_FREE);
-        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_WEB_SEARCH);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, Locale.getDefault());
         intent.putExtra(RecognizerIntent.EXTRA_ONLY_RETURN_LANGUAGE_PREFERENCE, true);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
         intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, context.getPackageName());
         intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, false);
-        intent.putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, context.pref.getBoolean("offline_recognition", false));
+        intent.putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, context.offline_recognition);
     }
 
     public void startListening() {
@@ -53,7 +53,7 @@ public class GoogleRecognizer implements RecognitionListener {
 
     @Override
     public void onBufferReceived(byte[] buffer) {
-        Log.w(TAG, "onBufferReceived: " + Arrays.toString(buffer));
+        //Log.w(TAG, "onBufferReceived: " + Arrays.toString(buffer));
     }
 
     @Override
@@ -61,15 +61,8 @@ public class GoogleRecognizer implements RecognitionListener {
         String errorMessage = getErrorText(errorCode);
         if (errorCode != SpeechRecognizer.ERROR_CLIENT) {
             Log.w(TAG, "FAILED " + errorMessage);
-            //if(System.currentTimeMillis() - mContext.lastKeyPhrase < 5000)
-            //{
-                //recognizer.cancel();
-                //recognizer.startListening(intent);
-            //}
-            //else {
-                recognizer.stopListening();
-                mContext.buttonOff();
-            //}
+            recognizer.stopListening();
+            mContext.buttonOff();
         }
     }
 
@@ -86,19 +79,19 @@ public class GoogleRecognizer implements RecognitionListener {
 
     @Override
     public void onReadyForSpeech(Bundle arg0) {
-        Log.w(TAG, "onReadyForSpeech");
+        //Log.w(TAG, "onReadyForSpeech");
         mContext.buttonOn();
     }
 
     @Override
     public void onEndOfSpeech() {
-        Log.w(TAG, "onEndOfSpeech");
+        //Log.w(TAG, "onEndOfSpeech");
         //buttonOff();
     }
 
     @Override
     public void onResults(Bundle results) {
-        Log.w(TAG, "onResults");
+        //Log.w(TAG, "onResults");
 
         recognizer.stopListening();
 

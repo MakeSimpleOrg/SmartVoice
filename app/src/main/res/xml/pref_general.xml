@@ -1,30 +1,43 @@
 <PreferenceScreen xmlns:tools="http://schemas.android.com/tools"
     xmlns:android="http://schemas.android.com/apk/res/android" >
 
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="fibaro_enabled"
+        android:title="Fibaro" />
     <EditTextPreference
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:defaultValue=""
         android:inputType="textUri"
-        android:key="server_ip"
-        android:title="Адрес сервера" />
+        android:key="fibaro_server_ip"
+        android:title="Fibaro: Адрес сервера" />
     <EditTextPreference
         android:defaultValue=""
         android:inputType="textNoSuggestions|textVisiblePassword"
-        android:key="server_login"
+        android:key="fibaro_server_login"
         android:maxLines="1"
         android:selectAllOnFocus="true"
         android:singleLine="true"
-        android:title="Логин" />
+        android:title="Fibaro: Логин" />
     <EditTextPreference
         android:defaultValue=""
         android:inputType="textPassword"
-        android:key="server_password"
+        android:key="fibaro_server_password"
         android:maxLines="1"
         android:password="true"
         android:selectAllOnFocus="true"
         android:singleLine="true"
-        android:title="Пароль" />
+        android:title="Fibaro: Пароль" />
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="vera_enabled"
+        android:title="Vera" />
+    <EditTextPreference
+        android:key="vera_server_ip"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="Vera: Адрес сервера" />
     <EditTextPreference
         android:autoText="true"
         android:defaultValue="Умный дом"
@@ -38,5 +51,9 @@
         android:defaultValue="false"
         android:key="offline_recognition"
         android:title="Распознавание оффлайн" />
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="tts_enabled"
+        android:title="Озвучивание ответов" />
 
 </PreferenceScreen>

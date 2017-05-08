@@ -5,31 +5,28 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Arrays;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import com.diamond.SmartVoice.MainActivity;
 import com.google.gson.Gson;
 
 import android.util.Base64;
 import android.util.Log;
 
 public class FibaroConnector {
-    private String LOG_TAG = "FibaroConnector";
+    private static final String TAG = FibaroConnector.class.getSimpleName();
 
-    private final static Logger LOGGER = Logger.getLogger(FibaroConnector.class.getName());
     private final String fibaroHost;
     private final String fibaroAuth;
 
     public FibaroConnector(String fibaroHost, String fibaroUser, String fibaroPassword) {
-        LOGGER.setLevel(Level.WARNING);
         this.fibaroHost = fibaroHost;
         this.fibaroAuth = Base64.encodeToString((fibaroUser + ":" + fibaroPassword).getBytes(), Base64.DEFAULT);
     }
 
-    private boolean matches(String s1, String s2) {
+    private boolean matches(String s1, String s2, int accuracy) {
         if (s1.equalsIgnoreCase(s2))
             return true;
         String[] split1 = s1.split(" ");
@@ -39,110 +36,125 @@ public class FibaroConnector {
         String c1, c2;
         for(int i = 0; i < split1.length; i++)
         {
-            c1 = split1[i].substring(0, Math.min(4, split1[i].length()));
-            c2 = split2[i].substring(0, Math.min(4, split2[i].length()));
+            c1 = split1[i].substring(0, Math.min(accuracy, split1[i].length()));
+            c2 = split2[i].substring(0, Math.min(accuracy, split2[i].length()));
             if(!c1.equalsIgnoreCase(c2))
                 return false;
         }
-        Log.w(LOG_TAG, "matches: " + split1 + ", orig: " + s1 + ", " + s2);
+        Log.w(TAG, "совпадение: " + Arrays.toString(split1) + ", оригинал: " + s1 + ", " + s2 + ", точность: " + accuracy);
         return true;
     }
 
-    public Device[] getDevices(String str) {
-        Log.w(LOG_TAG, "getDevices: " + str);
-        int count = 0;
-        for (Device d : getDevices())
-            if (d.name.equalsIgnoreCase(str))
-                count++;
-        Device[] devices = new Device[count];
-        int i = 0;
-        for (Device d : getDevices())
-            if (d.name.equalsIgnoreCase(str)) {
-                Log.w(LOG_TAG, "device id: " + d.id + ", name: " + d.name + ", input name: " + str);
-                devices[i] = d;
-                i++;
-            }
-        return devices;
-    }
-
-    public Device[] getDevices(String[] strs) {
-        Log.w(LOG_TAG, "getDevices: " + Arrays.toString(strs));
-        int count = 0;
-        String str2;
-        Device[] devices = getDevices();
-        d1:
-        for (Device d : devices)
-            for (String str : strs) {
-                if (matches(d.name, str)) {
-                    count++;
-                    continue d1;
-                }
-                else if(matchesOnOff(d.name, str))
-                {
-                    count++;
-                    continue d1;
-                }
-            }
-        Device[] result = new Device[count];
-        int i = 0;
-        String name2[];
-        d2:
-        for (Device d : devices) {
-            //System.out.println("device id: " + d.id + ", type: " + d.type + ", name: " + d.name);
-            for (String str : strs)
-                if (matches(d.name, str)) {
-                    //System.out.println("device id: " + d.id + ", name: " + d.name + ", input name: " + str);
-                    result[i++] = d;
-                    continue d2;
-                }
-                else if(matchesOnOff(d.name, str))
-                {
-                    result[i++] = d;
-                    name2 = d.name.split(" ");
-                    if(str.contains("включи"))
-                        d.name = name2[0] + " включить " + name2[1] + (name2.length > 2 ? (" " + name2[2]) : "");
-                    else if(str.contains("выключи"))
-                        d.name = name2[0] + " выключить " + name2[1] + (name2.length > 2 ? (" " + name2[2]) : "");
-                    continue d2;
-                }
-        }
-        return result;
-    }
-
-    private boolean matchesOnOff(String name, String str)
+    private boolean matchesOnOff(String name, String str, int accuracy)
     {
+        str = str.replaceAll(" в ", " ");
         String[] s =  str.split(" ");
         if(s.length > 2 && name.split(" ").length > 1)
         {
-            String str2 = s[0] + " " + s[2] + (s.length > 3 ? (" " + s[3]) : "");
-            if(str.contains("включи") && matches(name, str2))
+            String str2 = s[2] + " " + s[1];
+            if(str.contains("включи") && matches(name, str2, accuracy))
                 return true;
-            if(str.contains("выключи") && matches(name, str2))
+            if(str.contains("выключи") && matches(name, str2, accuracy))
                 return true;
         }
         return false;
     }
 
-    public Scene[] getScenes(String[] strs) {
-        Log.w(LOG_TAG, "getScenes: " + Arrays.toString(strs));
+    private String replaceMistakes(String str)
+    {
+        str = str.toLowerCase();
+        str = str.replaceAll("цвет", "свет");
+        str = str.replaceAll("банный", "ванна");
+        str = str.replaceAll("лунный свет", "ванна свет");
+        return str.trim();
+    }
+
+    public Device[] findDevices(Device[] devices, String[] strs, int accuracy) {
+        int count = 0;
+        d1:
+        for (Device d : devices)
+            for (String str : strs) {
+                str = replaceMistakes(str);
+                if (matches(d.name, str, accuracy)) {
+                    count++;
+                    continue d1;
+                }
+                else if(matchesOnOff(d.name, str, accuracy))
+                {
+                    count++;
+                    continue d1;
+                }
+            }
+        if(count == 0)
+            return null;
+        Device[] result = new Device[count];
+        int i = 0;
+        String name2[];
+        d2:
+        for (Device d : devices) {
+            for (String str : strs) {
+                str = replaceMistakes(str);
+                if (matches(d.name, str, accuracy)) {
+                    result[i++] = d;
+                    continue d2;
+                } else if (matchesOnOff(d.name, str, accuracy)) {
+                    result[i++] = d;
+                    name2 = d.name.split(" ");
+                    if (str.contains("включи"))
+                        d.name = name2[0] + " включить " + name2[1] + (name2.length > 2 ? (" " + name2[2]) : "");
+                    else if (str.contains("выключи"))
+                        d.name = name2[0] + " выключить " + name2[1] + (name2.length > 2 ? (" " + name2[2]) : "");
+                    continue d2;
+                }
+            }
+        }
+        return result;
+    }
+
+    public Scene[] findScenes(String[] strs, int accuracy) {
         int count = 0;
         Scene[] scenes = getAllScenes();
         d1: for(Scene s : scenes)
-            for (String str : strs)
-                if(s.liliStartCommand != null && !s.liliStartCommand.isEmpty())
-                    if (matches(s.liliStartCommand, str)) {
+            for (String str : strs) {
+                str = str.toLowerCase().trim();
+                if (s.liliStartCommand != null && !s.liliStartCommand.isEmpty())
+                    if (matches(s.liliStartCommand, str, accuracy)) {
                         count++;
                         continue d1;
                     }
+            }
+        if(count == 0)
+            return null;
         Scene[] result = new Scene[count];
         int i = 0;
         d2: for(Scene s : scenes)
-            for (String str : strs)
-                if(s.liliStartCommand != null && !s.liliStartCommand.isEmpty())
-                    if (matches(s.liliStartCommand, str)) {
+            for (String str : strs) {
+                str = str.toLowerCase().trim();
+                if (s.liliStartCommand != null && !s.liliStartCommand.isEmpty())
+                    if (matches(s.liliStartCommand, str, accuracy)) {
                         result[i++] = s;
                         continue d2;
                     }
+            }
+        return result;
+    }
+
+    public Device[] getDevices(String[] strs) {
+        Device[] devices = getDevices();
+        Device[] result = findDevices(devices, strs, 5);
+        if(result == null)
+            result = findDevices(devices, strs, 4);
+        if(result == null)
+            result = findDevices(devices, strs, 3);
+        return result;
+    }
+
+    public Scene[] getScenes(String[] strs) {
+        Scene[] result = findScenes(strs, 5);
+        if(result == null)
+            result = findScenes(strs, 4);
+        if(result == null)
+            result = findScenes(strs, 3);
         return result;
     }
 
@@ -151,7 +163,7 @@ public class FibaroConnector {
         boolean finded = false;
 
         for (Device d : devices) {
-            //System.out.println("process id: " + d.id + ", type: " + d.type + ", name: " + d.name + ", value: " + d.properties.value);
+            //Log.w(TAG, "process id: " + d.id + ", type: " + d.type + ", name: " + d.name + ", value: " + d.properties.value);
             if(d.type.contains("temperatureSensor"))
             {
                 return "" + (int) Double.parseDouble(d.properties.value);
@@ -201,22 +213,22 @@ public class FibaroConnector {
     }
 
     public boolean turnDeviceOff(Device d) {
-        Log.w(LOG_TAG, "turnDeviceOff id: " + d.id + ", type: " + d.type + ", name: " + d.name + ", value: " + d.properties.value);
+        Log.w(TAG, "turnDeviceOff id: " + d.id + ", type: " + d.type + ", name: " + d.name + ", value: " + d.properties.value);
         return sendCommand("callAction?deviceID=" + d.id + "&name=turnOff");
     }
 
     public boolean turnDeviceOn(Device d) {
-        Log.w(LOG_TAG, "turnDeviceOn id: " + d.id + ", type: " + d.type + ", name: " + d.name + ", value: " + d.properties.value);
+        Log.w(TAG, "turnDeviceOn id: " + d.id + ", type: " + d.type + ", name: " + d.name + ", value: " + d.properties.value);
         return sendCommand("callAction?deviceID=" + d.id + "&name=turnOn");
     }
 
     public boolean runScene(Scene s) {
-        Log.w(LOG_TAG, "runScene id: " + s.id + ", type: " + s.type + ", name: " + s.name);
+        Log.w(TAG, "runScene id: " + s.id + ", type: " + s.type + ", name: " + s.name);
         return sendCommand("sceneControl?id=" + s.id + "&action=start");
     }
 
     public boolean stopScene(Scene s) {
-        Log.w(LOG_TAG, "runScene id: " + s.id + ", type: " + s.type + ", name: " + s.name);
+        Log.w(TAG, "runScene id: " + s.id + ", type: " + s.type + ", name: " + s.name);
         return sendCommand("sceneControl?id=" + s.id + "&action=stop");
     }
 
@@ -242,14 +254,14 @@ public class FibaroConnector {
         Device[] all_devices = getAllDevices();
         int count = 0;
         for (Device d : all_devices) {
-            if (d.roomID > 0 && "true".equals(d.properties.saveLogs))// && d.roomID != 41 && d.roomID != 42 && d.roomID != 85)
+            if (d.roomID > 0 && "true".equals(d.properties.saveLogs))
                 count++;
         }
         Device[] devices = new Device[count];
         int i = 0;
         String name;
         for (Device d : all_devices)
-            if (d.roomID > 0 && "true".equals(d.properties.saveLogs))// && d.roomID != 41 && d.roomID != 42 && d.roomID != 85)
+            if (d.roomID > 0 && "true".equals(d.properties.saveLogs))
             {
                 if (d.properties.userDescription != null && !d.properties.userDescription.isEmpty())
                     d.name = d.properties.userDescription;
@@ -257,17 +269,13 @@ public class FibaroConnector {
                     if (d.roomID == room.id) {
                         name = d.name.trim();
                         d.name = room.name.trim() + " " + name;
-                        //d.name2 = room.name.trim() + " включить " + name;
-                        //d.name3 = room.name.trim() + " выключить " + name;
                         break;
                     }
-                d.name = replaceDigits(d.name);
-                //d.name2 = replaceDigits(d.name2);
-                //d.name3 = replaceDigits(d.name3);
+                d.name = MainActivity.replaceTrash(d.name);
                 devices[i++] = d;
             }
         deviceCount = count;
-        Log.w(LOG_TAG, "Founded: " + deviceCount + " devices");
+        //Log.w(TAG, "Founded: " + deviceCount + " devices");
         return devices;
     }
 
@@ -283,25 +291,8 @@ public class FibaroConnector {
             if(s.liliStartCommand != null && !s.liliStartCommand.isEmpty())
                 result[i++] = s;
         sceneCount = count;
-        Log.w(LOG_TAG, "Founded: " + sceneCount + " scenes");
+        //Log.w(TAG, "Founded: " + sceneCount + " scenes");
         return result;
-    }
-
-    public String replaceDigits(String name)
-    {
-        name = name.replaceAll("1", "");
-        name = name.replaceAll("2", "");
-        name = name.replaceAll("3", "");
-        name = name.replaceAll("4", "");
-        name = name.replaceAll("5", "");
-        name = name.replaceAll("6", "");
-        name = name.replaceAll("7", "");
-        name = name.replaceAll("8", "");
-        name = name.replaceAll("9", "");
-        name = name.replaceAll("0", "");
-        name = name.replaceAll(":", "");
-        name = name.trim();
-        return name;
     }
 
     public synchronized Device[] getAllDevices() {
@@ -329,18 +320,17 @@ public class FibaroConnector {
         fibaroURL = "http://" + fibaroHost + "/api/" + fibaroURL;
         URL url;
         HttpURLConnection connection;
-        int responseCode = -1;
         String response = null;
         try {
-            LOGGER.info("Sending command: " + fibaroURL);
+            Log.d(TAG, "Sending command: " + fibaroURL);
             url = new URL(fibaroURL);
             connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
             connection.setRequestProperty("Authorization", "Basic " + fibaroAuth);
             response = connection.getResponseMessage();
-            LOGGER.info("Received response: " + response);
+            Log.d(TAG, "Received response: " + response);
         } catch (Exception e) {
-            LOGGER.severe("Error while sending command: " + fibaroURL);
+            Log.w(TAG, "Error while sending command: " + fibaroURL);
             e.printStackTrace();
             return false;
         }
@@ -355,7 +345,7 @@ public class FibaroConnector {
         try {
             dataJsonObj = new JSONArray(result);
         } catch (JSONException e) {
-            LOGGER.severe("Error while parse Json: " + result);
+            Log.w(TAG, "Error while parse Json: " + result);
             e.printStackTrace();
         }
         return dataJsonObj;
@@ -366,10 +356,8 @@ public class FibaroConnector {
         URL url;
         HttpURLConnection connection;
         String result = null;
-        int responseCode = -1;
-        String response = null;
         try {
-            LOGGER.info("Sending command: " + fibaroURL);
+            Log.d(TAG, "Sending command: " + fibaroURL);
             url = new URL(fibaroURL);
             connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
@@ -386,7 +374,7 @@ public class FibaroConnector {
             br.close();
             result = buffer.toString();
         } catch (Exception e) {
-            LOGGER.severe("Error while get getJson: " + fibaroURL);
+            Log.w(TAG, "Error while get getJson: " + fibaroURL);
             e.printStackTrace();
             return null;
         }
