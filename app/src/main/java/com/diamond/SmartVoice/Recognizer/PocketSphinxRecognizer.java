@@ -44,7 +44,12 @@ public class PocketSphinxRecognizer {
             recognizer.addKeyphraseSearch(KEY_PHRASE_SEARCH, KEYPHRASE);
         } catch (Exception e) {
             e.printStackTrace();
-            Toast.makeText(mContext, "Failed to init recognizer ", Toast.LENGTH_SHORT).show();
+            mContext.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(mContext, "Failed to init recognizer ", Toast.LENGTH_SHORT).show();
+                }
+            });
         }
     }
 
@@ -71,7 +76,8 @@ public class PocketSphinxRecognizer {
 
     protected class PocketSphinxRecognitionListener implements edu.cmu.pocketsphinx.RecognitionListener {
         @Override
-        public void onBeginningOfSpeech() {}
+        public void onBeginningOfSpeech() {
+        }
 
         @Override
         public void onPartialResult(Hypothesis hypothesis) {
@@ -85,10 +91,12 @@ public class PocketSphinxRecognizer {
         }
 
         @Override
-        public void onResult(Hypothesis hypothesis) {}
+        public void onResult(Hypothesis hypothesis) {
+        }
 
         @Override
-        public void onEndOfSpeech() {}
+        public void onEndOfSpeech() {
+        }
 
         public void onError(Exception error) {
             Log.d(TAG, "onError: " + error.toString());

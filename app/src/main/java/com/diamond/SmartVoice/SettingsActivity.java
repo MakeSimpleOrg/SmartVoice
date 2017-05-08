@@ -48,14 +48,8 @@ public class SettingsActivity extends PreferenceActivity {
                 mainActivity.setupFibaro();
             else if (preference.getKey().equals("vera_enabled") && (Boolean) value)
                 mainActivity.setupVera();
-            else if (preference.getKey().equals("tts_enabled")) {
-                if((Boolean) value) {
-                    mainActivity.speak("Я снова здесь!", false, true);
-                    mainActivity.setupTTS();
-                }
-                else
-                    mainActivity.speak("Я буду скучать", false, true);
-            }
+            else if (preference.getKey().equals("tts_enabled") && (Boolean) value)
+                mainActivity.setupTTS();
             else if (preference.getKey().equals("keyphrase")) {
                 mainActivity.keyphrase = value.toString();
                 mainActivity.setupKeyphraseRecognizer();

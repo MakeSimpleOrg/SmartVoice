@@ -8,12 +8,14 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.speech.tts.TextToSpeech;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -43,7 +45,7 @@ public class MainActivity extends Activity {
     private boolean isLoading = true;
     private boolean fibaroLoading = false;
     private boolean veraLoading = false;
-    private boolean ttsLoading = false;
+    public boolean ttsLoading = false;
 
     private View progressBar;
 
@@ -60,12 +62,21 @@ public class MainActivity extends Activity {
         keyphrase = pref.getString("keyphrase", "умный дом");
         offline_recognition = pref.getBoolean("offline_recognition", false);
 
-        ActivityCompat.requestPermissions(this,
-                new String[]{
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                        Manifest.permission.RECORD_AUDIO,
-                        Manifest.permission.INTERNET
-                }, 1);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
+            ActivityCompat.requestPermissions(this,
+                    new String[]{
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    }, 1);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED)
+            ActivityCompat.requestPermissions(this,
+                    new String[]{
+                            Manifest.permission.RECORD_AUDIO,
+                    }, 1);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED)
+            ActivityCompat.requestPermissions(this,
+                    new String[]{
+                            Manifest.permission.INTERNET
+                    }, 1);
 
         progressBar = findViewById(R.id.progressBar);
 
@@ -75,7 +86,7 @@ public class MainActivity extends Activity {
         MicView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                if(isLoading || ttsLoading || fibaroLoading || veraLoading)
+                if (isLoading || ttsLoading || fibaroLoading || veraLoading)
                     return false;
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
@@ -95,7 +106,7 @@ public class MainActivity extends Activity {
         Button settingsBtn = (Button) findViewById(R.id.settingsButton);
         settingsBtn.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
-                if(isLoading || ttsLoading || fibaroLoading || veraLoading)
+                if (isLoading || ttsLoading || fibaroLoading || veraLoading)
                     return;
                 Intent settingsActivity = new Intent(getBaseContext(), SettingsActivity.class);
                 startActivity(settingsActivity);
@@ -131,14 +142,14 @@ public class MainActivity extends Activity {
         thread.start();
     }
 
-    class LoadData1 implements Runnable{
+    class LoadData1 implements Runnable {
         @Override
         public void run() {
             setupKeyphraseRecognizer();
         }
     }
 
-    class LoadData2 implements Runnable{
+    class LoadData2 implements Runnable {
         @Override
         public void run() {
             MainActivity.this.runOnUiThread(new Runnable() {
@@ -150,7 +161,7 @@ public class MainActivity extends Activity {
         }
     }
 
-    class LoadData3 implements Runnable{
+    class LoadData3 implements Runnable {
         @Override
         public void run() {
             if (pref.getBoolean("tts_enabled", false))
@@ -158,7 +169,7 @@ public class MainActivity extends Activity {
         }
     }
 
-    class LoadData4 implements Runnable{
+    class LoadData4 implements Runnable {
         @Override
         public void run() {
             if (pref.getBoolean("fibaro_enabled", false))
@@ -166,7 +177,7 @@ public class MainActivity extends Activity {
         }
     }
 
-    class LoadData5 implements Runnable{
+    class LoadData5 implements Runnable {
         @Override
         public void run() {
             if (pref.getBoolean("vera_enabled", false))
@@ -174,11 +185,10 @@ public class MainActivity extends Activity {
         }
     }
 
-    class LoadData6 implements Runnable{
+    class LoadData6 implements Runnable {
         @Override
         public void run() {
-            long time = System.currentTimeMillis();
-            while (isLoading() && System.currentTimeMillis() - time < 10000) {
+            while (isLoading()) {
                 try {
                     Thread.sleep(500);
                 } catch (InterruptedException e) {
@@ -207,8 +217,7 @@ public class MainActivity extends Activity {
         }
     }
 
-    private boolean isLoading()
-    {
+    private boolean isLoading() {
         return ttsLoading || fibaroLoading || veraLoading || recognizer == null || keyPhraseRecognizer == null;
     }
 
@@ -222,14 +231,18 @@ public class MainActivity extends Activity {
     }
 
     public void setupKeyphraseRecognizer() {
-        if (keyPhraseRecognizer != null)
+        if (keyPhraseRecognizer != null) {
             keyPhraseRecognizer.destroy();
+            keyPhraseRecognizer = null;
+        }
         keyPhraseRecognizer = new PocketSphinxRecognizer(this);
     }
 
     public void setupRecognizer() {
-        if (recognizer != null)
+        if (recognizer != null) {
             recognizer.stopListening();
+            recognizer = null;
+        }
         recognizer = new GoogleRecognizer(this);
     }
 
@@ -239,8 +252,10 @@ public class MainActivity extends Activity {
         textToSpeech = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
             @Override
             public void onInit(int status) {
-                if (status == TextToSpeech.ERROR)
+                if (status == TextToSpeech.ERROR) {
+                    ttsLoading = false;
                     return;
+                }
                 if (textToSpeech.isLanguageAvailable(Locale.getDefault()) == TextToSpeech.LANG_AVAILABLE)
                     textToSpeech.setLanguage(Locale.getDefault());
                 ttsLoading = false;
@@ -324,6 +339,8 @@ public class MainActivity extends Activity {
             @Override
             protected String doInBackground(String... params) {
                 Log.w(TAG, "Вы сказали: " + Arrays.toString(params));
+                if(FibaroController == null || !pref.getBoolean("fibaro_enabled", false))
+                    return "Контроллер не найден";
                 Device[] devices = FibaroController.getDevices(params);
                 if (devices != null)
                     return FibaroController.process(devices);
@@ -348,15 +365,12 @@ public class MainActivity extends Activity {
         speak(text, true);
     }
 
-    public void speak(String text, boolean screen)
-    {
-        speak(text, true, false);
-    }
-
-    public void speak(String text, boolean screen, boolean forced) {
+    public void speak(String text, boolean screen) {
         if (screen)
             Toast.makeText(MainActivity.this, text, Toast.LENGTH_LONG).show();
-        if (forced || pref.getBoolean("tts_enabled", false)) {
+        if (pref.getBoolean("tts_enabled", false)) {
+            if(textToSpeech == null)
+                return;
             Bundle params = new Bundle();
             params.putInt(TextToSpeech.Engine.KEY_PARAM_STREAM, AudioManager.STREAM_MUSIC);
             params.putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME, 1f);
@@ -364,8 +378,7 @@ public class MainActivity extends Activity {
         }
     }
 
-    private void show(String text)
-    {
+    private void show(String text) {
         Toast.makeText(MainActivity.this, text, Toast.LENGTH_LONG).show();
         Log.w(TAG, text);
     }

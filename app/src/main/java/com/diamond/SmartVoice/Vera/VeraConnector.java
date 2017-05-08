@@ -48,6 +48,8 @@ public class VeraConnector {
         if (veraUri == null) return null;
         String theData = get(veraUri.buildUpon().appendQueryParameter("id", "sdata").appendQueryParameter("output_format", "json").build());
         Sdata theSdata = new Gson().fromJson(theData, Sdata.class);
+        if(theSdata == null)
+            return null;
         denormalizeSdata(theSdata);
         roomCount = theSdata.getRooms().size();
         deviceCount = theSdata.getDevices().size();

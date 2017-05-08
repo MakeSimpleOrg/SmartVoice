@@ -7,7 +7,7 @@ android {
 
     defaultConfig {
         applicationId "com.diamond.SmartVoice"
-        minSdkVersion 23
+        minSdkVersion 21
         targetSdkVersion 25
     }
 
@@ -20,11 +20,11 @@ android {
 }
 
 dependencies {
+    compile project(':aars')
     compile files('libs/commons-io-2.4.jar')
     compile files('libs/json-20160212.jar')
     compile 'com.google.code.gson:gson:2.7'
     compile 'com.android.support:design:25.3.1'
-    compile files('libs/pocketsphinx-android-5prealpha-nolib.jar')
 }
 
 ant.importBuild 'assets.xml'
