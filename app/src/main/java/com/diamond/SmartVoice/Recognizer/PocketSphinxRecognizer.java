@@ -38,7 +38,7 @@ public class PocketSphinxRecognizer {
             SpeechRecognizerSetup setup = defaultSetup();
             setup.setAcousticModel(new File(assetDir, "dict"));
             setup.setDictionary(dict);
-            setup.setKeywordThreshold(Float.valueOf(context.pref.getString("keywordThreshold", "1e-15f")));
+            setup.setKeywordThreshold(Float.valueOf("1e-" + context.pref.getString("keywordThreshold", "20") + "f"));
             recognizer = setup.getRecognizer();
             recognizer.addListener(new PocketSphinxRecognitionListener());
             recognizer.addKeyphraseSearch(KEY_PHRASE_SEARCH, KEYPHRASE);

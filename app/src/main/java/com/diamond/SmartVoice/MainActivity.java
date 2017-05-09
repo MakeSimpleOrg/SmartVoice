@@ -22,9 +22,7 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.Toast;
 
-import com.diamond.SmartVoice.Fibaro.Device;
 import com.diamond.SmartVoice.Fibaro.FibaroConnector;
-import com.diamond.SmartVoice.Fibaro.Scene;
 import com.diamond.SmartVoice.Recognizer.GoogleRecognizer;
 import com.diamond.SmartVoice.Recognizer.PocketSphinxRecognizer;
 import com.diamond.SmartVoice.Vera.VeraConnector;
@@ -83,9 +81,9 @@ public class MainActivity extends Activity {
                     return false;
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
-                        if(keyPhraseRecognizer != null)
+                        if (keyPhraseRecognizer != null)
                             keyPhraseRecognizer.stopListening();
-                        if(recognizer != null)
+                        if (recognizer != null)
                             recognizer.startListening();
                         buttonOn();
                         break;
@@ -206,7 +204,7 @@ public class MainActivity extends Activity {
                 }
             });
 
-            if(keyPhraseRecognizer != null)
+            if (keyPhraseRecognizer != null)
                 keyPhraseRecognizer.startListening();
 
             if (pref.getBoolean("tts_enabled", false))
@@ -229,7 +227,7 @@ public class MainActivity extends Activity {
 
     public void buttonOff() {
         MicView.setBackgroundResource(R.drawable.background_big_mic);
-        if(keyPhraseRecognizer != null)
+        if (keyPhraseRecognizer != null)
             keyPhraseRecognizer.startListening();
     }
 
@@ -336,9 +334,9 @@ public class MainActivity extends Activity {
 
     public void OnKeyPhrase() {
         lastKeyPhrase = System.currentTimeMillis();
-        if(keyPhraseRecognizer != null)
+        if (keyPhraseRecognizer != null)
             keyPhraseRecognizer.stopListening();
-        if(recognizer != null)
+        if (recognizer != null)
             recognizer.startListening();
         buttonOn();
     }
@@ -348,15 +346,14 @@ public class MainActivity extends Activity {
             @Override
             protected String doInBackground(String... params) {
                 Log.w(TAG, "Вы сказали: " + Arrays.toString(params));
-                if(FibaroController == null || !pref.getBoolean("fibaro_enabled", false))
-                    return "Контроллер не найден";
-                Device[] devices = FibaroController.getDevices(params);
-                if (devices != null)
-                    return FibaroController.process(devices);
-                Scene[] scenes = FibaroController.getScenes(params);
-                if (scenes != null)
-                    return FibaroController.process(scenes);
-                return null;
+                if(!pref.getBoolean("fibaro_enabled", false) && !pref.getBoolean("vera_enabled", false) || FibaroController == null && VeraController == null)
+                    return "Нечем управлять";
+                String result = null;
+                if(pref.getBoolean("fibaro_enabled", false) && FibaroController != null)
+                    result = FibaroController.process(params);
+                if(result == null && pref.getBoolean("vera_enabled", false) && VeraController != null)
+                    result = VeraController.process(params);
+                return result;
             }
 
             @Override
@@ -378,7 +375,7 @@ public class MainActivity extends Activity {
         if (screen)
             Toast.makeText(MainActivity.this, text, Toast.LENGTH_LONG).show();
         if (pref.getBoolean("tts_enabled", false)) {
-            if(textToSpeech == null)
+            if (textToSpeech == null)
                 return;
             Bundle params = new Bundle();
             params.putInt(TextToSpeech.Engine.KEY_PARAM_STREAM, AudioManager.STREAM_MUSIC);
@@ -390,26 +387,6 @@ public class MainActivity extends Activity {
     private void show(String text) {
         Toast.makeText(MainActivity.this, text, Toast.LENGTH_LONG).show();
         Log.w(TAG, text);
-    }
-
-    public static String replaceTrash(String name) {
-        name = name.replaceAll("1", "");
-        name = name.replaceAll("2", "");
-        name = name.replaceAll("3", "");
-        name = name.replaceAll("4", "");
-        name = name.replaceAll("5", "");
-        name = name.replaceAll("6", "");
-        name = name.replaceAll("7", "");
-        name = name.replaceAll("8", "");
-        name = name.replaceAll("9", "");
-        name = name.replaceAll("0", "");
-        name = name.replaceAll(":", "");
-        name = name.replaceAll("/", "");
-        name = name.replaceAll("-", "");
-        name = name.replaceAll("/", "");
-        name = name.replaceAll("  ", " ");
-        name = name.trim();
-        return name;
     }
 
     @Override
@@ -426,7 +403,7 @@ public class MainActivity extends Activity {
     protected void onDestroy() {
         if (keyPhraseRecognizer != null)
             keyPhraseRecognizer.destroy();
-        if(recognizer != null)
+        if (recognizer != null)
             recognizer.destroy();
         if (textToSpeech != null)
             textToSpeech.shutdown();
