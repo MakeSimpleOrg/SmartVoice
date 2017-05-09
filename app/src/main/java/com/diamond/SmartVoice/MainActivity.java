@@ -1,6 +1,7 @@
 package com.diamond.SmartVoice;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -346,12 +347,12 @@ public class MainActivity extends Activity {
             @Override
             protected String doInBackground(String... params) {
                 Log.w(TAG, "Вы сказали: " + Arrays.toString(params));
-                if(!pref.getBoolean("fibaro_enabled", false) && !pref.getBoolean("vera_enabled", false) || FibaroController == null && VeraController == null)
+                if (!pref.getBoolean("fibaro_enabled", false) && !pref.getBoolean("vera_enabled", false) || FibaroController == null && VeraController == null)
                     return "Нечем управлять";
                 String result = null;
-                if(pref.getBoolean("fibaro_enabled", false) && FibaroController != null)
+                if (pref.getBoolean("fibaro_enabled", false) && FibaroController != null)
                     result = FibaroController.process(params);
-                if(result == null && pref.getBoolean("vera_enabled", false) && VeraController != null)
+                if (result == null && pref.getBoolean("vera_enabled", false) && VeraController != null)
                     result = VeraController.process(params);
                 return result;
             }
@@ -377,10 +378,20 @@ public class MainActivity extends Activity {
         if (pref.getBoolean("tts_enabled", false)) {
             if (textToSpeech == null)
                 return;
-            Bundle params = new Bundle();
-            params.putInt(TextToSpeech.Engine.KEY_PARAM_STREAM, AudioManager.STREAM_MUSIC);
-            params.putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME, 1f);
-            textToSpeech.speak(text, TextToSpeech.QUEUE_ADD, params, UUID.randomUUID().toString());
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                Bundle params = new Bundle();
+                params.putInt(TextToSpeech.Engine.KEY_PARAM_STREAM, AudioManager.STREAM_MUSIC);
+                params.putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME, 1f);
+                textToSpeech.speak(text, TextToSpeech.QUEUE_ADD, params, UUID.randomUUID().toString());
+            } else {
+                Toast.makeText(MainActivity.this, "speak", Toast.LENGTH_SHORT).show();
+                HashMap<String, String> params = new HashMap<String, String>();
+                params.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, UUID.randomUUID().toString());
+                params.put(TextToSpeech.Engine.KEY_PARAM_STREAM, String.valueOf(AudioManager.STREAM_MUSIC));
+                params.put(TextToSpeech.Engine.KEY_PARAM_VOLUME, "1");
+                params.put(TextToSpeech.Engine.KEY_FEATURE_NETWORK_SYNTHESIS, "true");
+                textToSpeech.speak(text, TextToSpeech.QUEUE_ADD, params);
+            }
         }
     }
 
