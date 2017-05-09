@@ -14,7 +14,8 @@
         android:gravity="center"
         android:weightSum="1"
         android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true">
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true">
 
         <ImageView
             android:id="@+id/mic"
