@@ -223,9 +223,9 @@ public class VeraConnector {
                 case 16:
                     return "" + (int) Double.parseDouble(d.humidity);
                 case 17:
-                    return "" + (int) Double.parseDouble(d.light);
-                case 18:
                     return "" + (int) Double.parseDouble(d.temperature);
+                case 18:
+                    return "" + (int) Double.parseDouble(d.light);
             }
         }
         if (finded)

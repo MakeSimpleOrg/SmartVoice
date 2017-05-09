@@ -64,14 +64,22 @@ public class PocketSphinxRecognizer {
     public void startListening() {
         if (recognizer == null)
             return;
-        recognizer.stop();
-        recognizer.startListening(KEY_PHRASE_SEARCH);
+        try {
+            recognizer.stop();
+            recognizer.startListening(KEY_PHRASE_SEARCH);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void stopListening() {
         if (recognizer == null)
             return;
-        recognizer.stop();
+        try {
+            recognizer.stop();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     protected class PocketSphinxRecognitionListener implements edu.cmu.pocketsphinx.RecognitionListener {

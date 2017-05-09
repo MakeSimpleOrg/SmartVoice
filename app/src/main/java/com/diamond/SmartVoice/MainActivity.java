@@ -62,13 +62,18 @@ public class MainActivity extends Activity {
         keyphrase = pref.getString("keyphrase", "умный дом");
         offline_recognition = pref.getBoolean("offline_recognition", false);
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(this, Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED)
-            ActivityCompat.requestPermissions(this,
-                    new String[]{
-                            Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                            Manifest.permission.RECORD_AUDIO,
-                            Manifest.permission.INTERNET
-                    }, 1);
+        try {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(this, Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED)
+                ActivityCompat.requestPermissions(this,
+                        new String[]{
+                                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                                Manifest.permission.RECORD_AUDIO,
+                                Manifest.permission.INTERNET
+                        }, 1);
+        } catch (Exception e) {
+            e.printStackTrace();
+            show("Error 1: " + e.getMessage());
+        }
 
         progressBar = findViewById(R.id.progressBar);
 
@@ -193,6 +198,7 @@ public class MainActivity extends Activity {
                     Thread.sleep(500);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
+                    show("Error 2: " + e.getMessage());
                 }
             }
 
@@ -238,7 +244,12 @@ public class MainActivity extends Activity {
             keyPhraseRecognizer.destroy();
             keyPhraseRecognizer = null;
         }
-        keyPhraseRecognizer = new PocketSphinxRecognizer(this);
+        try {
+            keyPhraseRecognizer = new PocketSphinxRecognizer(this);
+        } catch (Exception e) {
+            e.printStackTrace();
+            show("Error 3: " + e.getMessage());
+        }
         keyPhraseRecognizerLoading = false;
     }
 
@@ -248,27 +259,38 @@ public class MainActivity extends Activity {
             recognizer.stopListening();
             recognizer = null;
         }
-        recognizer = new GoogleRecognizer(this);
+        try {
+            recognizer = new GoogleRecognizer(this);
+        } catch (Exception e) {
+            e.printStackTrace();
+            show("Error 4: " + e.getMessage());
+        }
         recognizerLoading = false;
     }
 
     public void setupTTS() {
         ttsLoading = true;
         progressBar.setVisibility(View.VISIBLE);
-        textToSpeech = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
-            @Override
-            public void onInit(int status) {
-                if (status == TextToSpeech.ERROR) {
+        try {
+            textToSpeech = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
+                @Override
+                public void onInit(int status) {
+                    if (status == TextToSpeech.ERROR) {
+                        ttsLoading = false;
+                        return;
+                    }
+                    if (textToSpeech.isLanguageAvailable(Locale.getDefault()) == TextToSpeech.LANG_AVAILABLE)
+                        textToSpeech.setLanguage(Locale.getDefault());
                     ttsLoading = false;
-                    return;
+                    if (!isLoading())
+                        progressBar.setVisibility(View.INVISIBLE);
                 }
-                if (textToSpeech.isLanguageAvailable(Locale.getDefault()) == TextToSpeech.LANG_AVAILABLE)
-                    textToSpeech.setLanguage(Locale.getDefault());
-                ttsLoading = false;
-                if (!isLoading())
-                    progressBar.setVisibility(View.INVISIBLE);
-            }
-        });
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+            show("Error 5: " + e.getMessage());
+            ttsLoading = false;
+        }
     }
 
     public void setupFibaro() {
@@ -283,6 +305,7 @@ public class MainActivity extends Activity {
                     controller.getScenes();
                 } catch (Exception e) {
                     e.printStackTrace();
+                    show("Error 6: " + e.getMessage());
                 }
                 return controller.getLastDevicesCount() > 0 || controller.getLastScenesCount() > 0 ? controller : null;
             }
@@ -312,6 +335,7 @@ public class MainActivity extends Activity {
                     controller.getSdata();
                 } catch (Exception e) {
                     e.printStackTrace();
+                    show("Error 7: " + e.getMessage());
                 }
                 return controller.getLastDevicesCount() > 0 || controller.getLastScenesCount() > 0 ? controller : null;
             }
@@ -350,10 +374,17 @@ public class MainActivity extends Activity {
                 if (!pref.getBoolean("fibaro_enabled", false) && !pref.getBoolean("vera_enabled", false) || FibaroController == null && VeraController == null)
                     return "Нечем управлять";
                 String result = null;
-                if (pref.getBoolean("fibaro_enabled", false) && FibaroController != null)
-                    result = FibaroController.process(params);
-                if (result == null && pref.getBoolean("vera_enabled", false) && VeraController != null)
-                    result = VeraController.process(params);
+                try {
+                    if (pref.getBoolean("fibaro_enabled", false) && FibaroController != null)
+                        result = FibaroController.process(params);
+                    if (result == null && pref.getBoolean("vera_enabled", false) && VeraController != null)
+                        result = VeraController.process(params);
+                }
+                catch(Exception e)
+                {
+                    e.printStackTrace();
+                    show("Error 8: " + e.getMessage());
+                }
                 return result;
             }
 
@@ -373,30 +404,44 @@ public class MainActivity extends Activity {
     }
 
     public void speak(String text, boolean screen) {
-        if (screen)
-            Toast.makeText(MainActivity.this, text, Toast.LENGTH_LONG).show();
-        if (pref.getBoolean("tts_enabled", false)) {
-            if (textToSpeech == null)
-                return;
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-                Bundle params = new Bundle();
-                params.putInt(TextToSpeech.Engine.KEY_PARAM_STREAM, AudioManager.STREAM_MUSIC);
-                params.putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME, 1f);
-                textToSpeech.speak(text, TextToSpeech.QUEUE_ADD, params, UUID.randomUUID().toString());
-            } else {
-                Toast.makeText(MainActivity.this, "speak", Toast.LENGTH_SHORT).show();
-                HashMap<String, String> params = new HashMap<String, String>();
-                params.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, UUID.randomUUID().toString());
-                params.put(TextToSpeech.Engine.KEY_PARAM_STREAM, String.valueOf(AudioManager.STREAM_MUSIC));
-                params.put(TextToSpeech.Engine.KEY_PARAM_VOLUME, "1");
-                params.put(TextToSpeech.Engine.KEY_FEATURE_NETWORK_SYNTHESIS, "true");
-                textToSpeech.speak(text, TextToSpeech.QUEUE_ADD, params);
+        try {
+            if (screen)
+                Toast.makeText(MainActivity.this, text, Toast.LENGTH_LONG).show();
+        } catch (Exception e) {
+            e.printStackTrace();
+            show("Error 9: " + e.getMessage());
+        }
+        try {
+            if (pref.getBoolean("tts_enabled", false)) {
+                if (textToSpeech == null)
+                    return;
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                    Bundle params = new Bundle();
+                    params.putInt(TextToSpeech.Engine.KEY_PARAM_STREAM, AudioManager.STREAM_MUSIC);
+                    params.putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME, 1f);
+                    textToSpeech.speak(text, TextToSpeech.QUEUE_ADD, params, UUID.randomUUID().toString());
+                } else {
+                    Toast.makeText(MainActivity.this, "speak", Toast.LENGTH_SHORT).show();
+                    HashMap<String, String> params = new HashMap<String, String>();
+                    params.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, UUID.randomUUID().toString());
+                    params.put(TextToSpeech.Engine.KEY_PARAM_STREAM, String.valueOf(AudioManager.STREAM_MUSIC));
+                    params.put(TextToSpeech.Engine.KEY_PARAM_VOLUME, "1");
+                    params.put(TextToSpeech.Engine.KEY_FEATURE_NETWORK_SYNTHESIS, "true");
+                    textToSpeech.speak(text, TextToSpeech.QUEUE_ADD, params);
+                }
             }
+        } catch (Exception e) {
+            e.printStackTrace();
+            show("Error 10: " + e.getMessage());
         }
     }
 
     private void show(String text) {
-        Toast.makeText(MainActivity.this, text, Toast.LENGTH_LONG).show();
+        try {
+            Toast.makeText(MainActivity.this, text, Toast.LENGTH_LONG).show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         Log.w(TAG, text);
     }
 
