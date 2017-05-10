@@ -1,16 +1,16 @@
 apply plugin: 'com.android.application'
 
 android {
+    signingConfigs {
+    }
     compileSdkVersion 25
     buildToolsVersion "25.0.2"
     useLibrary 'org.apache.http.legacy'
-
     defaultConfig {
         applicationId "com.diamond.SmartVoice"
         minSdkVersion 14
         targetSdkVersion 25
     }
-
     buildTypes {
         release {
             minifyEnabled false
@@ -21,10 +21,8 @@ android {
 
 dependencies {
     compile project(':aars')
-    compile files('libs/commons-io-2.4.jar')
-    compile files('libs/json-20160212.jar')
-    compile 'com.google.code.gson:gson:2.7'
-    compile 'com.android.support:design:25.3.1'
+    compile 'com.google.code.gson:gson:2.8.0'
+    compile 'com.android.support:appcompat-v7:25.3.1'
 }
 
 ant.importBuild 'assets.xml'

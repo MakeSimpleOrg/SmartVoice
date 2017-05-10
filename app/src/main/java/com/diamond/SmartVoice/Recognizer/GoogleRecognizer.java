@@ -3,6 +3,7 @@ package com.diamond.SmartVoice.Recognizer;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.media.ToneGenerator;
+import android.os.Build;
 import android.os.Bundle;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
@@ -12,7 +13,6 @@ import android.util.Log;
 import com.diamond.SmartVoice.MainActivity;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Locale;
 
 public class GoogleRecognizer implements RecognitionListener {
@@ -28,14 +28,15 @@ public class GoogleRecognizer implements RecognitionListener {
         recognizer = SpeechRecognizer.createSpeechRecognizer(context);
         recognizer.setRecognitionListener(this);
 
-        intent = new Intent(RecognizerIntent.ACTION_VOICE_SEARCH_HANDS_FREE);
+        intent = new Intent(RecognizerIntent.ACTION_WEB_SEARCH);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, Locale.getDefault());
         intent.putExtra(RecognizerIntent.EXTRA_ONLY_RETURN_LANGUAGE_PREFERENCE, true);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
         intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, context.getPackageName());
         intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, false);
-        intent.putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, context.offline_recognition);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+            intent.putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, context.offline_recognition);
     }
 
     public void startListening() {

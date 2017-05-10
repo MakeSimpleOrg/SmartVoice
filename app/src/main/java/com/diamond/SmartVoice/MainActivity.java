@@ -12,6 +12,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.speech.tts.TextToSpeech;
@@ -94,6 +95,7 @@ public class MainActivity extends Activity {
                         buttonOn();
                         break;
                     case MotionEvent.ACTION_UP:
+                        v.performClick();
                         break;
                 }
                 return true;
@@ -379,9 +381,7 @@ public class MainActivity extends Activity {
                         result = FibaroController.process(params);
                     if (result == null && pref.getBoolean("vera_enabled", false) && VeraController != null)
                         result = VeraController.process(params);
-                }
-                catch(Exception e)
-                {
+                } catch (Exception e) {
                     e.printStackTrace();
                     show("Error 8: " + e.getMessage());
                 }
@@ -415,7 +415,7 @@ public class MainActivity extends Activity {
             if (pref.getBoolean("tts_enabled", false)) {
                 if (textToSpeech == null)
                     return;
-                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                     Bundle params = new Bundle();
                     params.putInt(TextToSpeech.Engine.KEY_PARAM_STREAM, AudioManager.STREAM_MUSIC);
                     params.putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME, 1f);
@@ -426,7 +426,8 @@ public class MainActivity extends Activity {
                     params.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, UUID.randomUUID().toString());
                     params.put(TextToSpeech.Engine.KEY_PARAM_STREAM, String.valueOf(AudioManager.STREAM_MUSIC));
                     params.put(TextToSpeech.Engine.KEY_PARAM_VOLUME, "1");
-                    params.put(TextToSpeech.Engine.KEY_FEATURE_NETWORK_SYNTHESIS, "true");
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1)
+                        params.put(TextToSpeech.Engine.KEY_FEATURE_NETWORK_SYNTHESIS, "true");
                     textToSpeech.speak(text, TextToSpeech.QUEUE_ADD, params);
                 }
             }

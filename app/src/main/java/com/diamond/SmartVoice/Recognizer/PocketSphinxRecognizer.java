@@ -5,9 +5,11 @@ import android.widget.Toast;
 
 import com.diamond.SmartVoice.MainActivity;
 
-import org.apache.commons.io.FileUtils;
-
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.Charset;
 
 import edu.cmu.pocketsphinx.Assets;
 import edu.cmu.pocketsphinx.Hypothesis;
@@ -16,7 +18,6 @@ import edu.cmu.pocketsphinx.SpeechRecognizerSetup;
 import static edu.cmu.pocketsphinx.SpeechRecognizerSetup.defaultSetup;
 
 public class PocketSphinxRecognizer {
-
     private static final String KEY_PHRASE_SEARCH = "wakeup";
     public final String KEYPHRASE;
     private edu.cmu.pocketsphinx.SpeechRecognizer recognizer;
@@ -25,16 +26,14 @@ public class PocketSphinxRecognizer {
 
     public PocketSphinxRecognizer(MainActivity context) {
         this.mContext = context;
-
         KEYPHRASE = context.keyphrase;
-
         try {
             Assets assets = new Assets(mContext);
             File assetDir = assets.syncAssets();
             Grammar grammar = new Grammar(new PhonMapper());
             grammar.addWords(KEYPHRASE);
             File dict = new File(assetDir, "commands.dic");
-            FileUtils.writeStringToFile(dict, grammar.getDict(), "UTF8");
+            writeStringToFile(dict, grammar.getDict());
             SpeechRecognizerSetup setup = defaultSetup();
             setup.setAcousticModel(new File(assetDir, "dict"));
             setup.setDictionary(dict);
@@ -51,6 +50,36 @@ public class PocketSphinxRecognizer {
                 }
             });
         }
+    }
+
+    public static void writeStringToFile(final File file, final String data) throws IOException {
+        OutputStream out = null;
+        try {
+            out = openOutputStream(file, false);
+            out.write(data.getBytes(Charset.forName("UTF8")));
+            out.close();
+        } finally {
+            try {
+                if (out != null)
+                    out.close();
+            } catch (final IOException ioe) {
+            }
+        }
+    }
+
+    public static FileOutputStream openOutputStream(final File file, final boolean append) throws IOException {
+        if (file.exists()) {
+            if (file.isDirectory())
+                throw new IOException("File '" + file + "' exists but is a directory");
+            if (file.canWrite() == false)
+                throw new IOException("File '" + file + "' cannot be written to");
+        } else {
+            final File parent = file.getParentFile();
+            if (parent != null)
+                if (!parent.mkdirs() && !parent.isDirectory())
+                    throw new IOException("Directory '" + parent + "' could not be created");
+        }
+        return new FileOutputStream(file, append);
     }
 
     public void destroy() {

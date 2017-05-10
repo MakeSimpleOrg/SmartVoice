@@ -8,12 +8,10 @@
     <EditTextPreference
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:defaultValue=""
         android:inputType="textUri"
         android:key="fibaro_server_ip"
         android:title="Fibaro: Адрес сервера" />
     <EditTextPreference
-        android:defaultValue=""
         android:inputType="textNoSuggestions|textVisiblePassword"
         android:key="fibaro_server_login"
         android:maxLines="1"
@@ -21,7 +19,6 @@
         android:singleLine="true"
         android:title="Fibaro: Логин" />
     <EditTextPreference
-        android:defaultValue=""
         android:inputType="textPassword"
         android:key="fibaro_server_password"
         android:maxLines="1"
@@ -44,7 +41,7 @@
         android:title="Активация голосом" />
     <EditTextPreference
         android:autoText="true"
-        android:defaultValue="Умный дом"
+        android:defaultValue="@string/defaultKeyPhrase"
         android:inputType="text"
         android:key="keyphrase"
         android:maxLines="1"

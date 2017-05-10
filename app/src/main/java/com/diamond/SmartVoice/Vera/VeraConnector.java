@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Locale;
 import java.util.Map;
 
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -153,8 +154,8 @@ public class VeraConnector {
         String name;
         for (Device d : all_devices)
             if (!d.room.equals("no room")) {
-                d.ai_name = d.name.toLowerCase().trim();
-                d.ai_name = d.room.toLowerCase() + " " + d.ai_name;
+                d.ai_name = d.name.toLowerCase(Locale.getDefault()).trim();
+                d.ai_name = d.room.toLowerCase(Locale.getDefault()) + " " + d.ai_name;
                 d.ai_name = AI.replaceTrash(d.ai_name);
                 Log.w(TAG, d.ai_name);
                 devices[i++] = d;
@@ -168,7 +169,7 @@ public class VeraConnector {
         Scene[] result = new Scene[sdata.scenes.size()];
         int i = 0;
         for (Scene s : scenes) {
-            s.ai_name = s.name.toLowerCase().trim();
+            s.ai_name = s.name.toLowerCase(Locale.getDefault()).trim();
             result[i++] = s;
         }
         return result;

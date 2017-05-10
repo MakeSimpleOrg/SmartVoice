@@ -4,9 +4,9 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Locale;
 
 import com.diamond.SmartVoice.AI;
-import com.diamond.SmartVoice.MainActivity;
 import com.diamond.SmartVoice.UDevice;
 import com.diamond.SmartVoice.UScene;
 import com.google.gson.Gson;
@@ -139,9 +139,9 @@ public class FibaroConnector {
         String name;
         for (Device d : all_devices)
             if (d.roomID > 0 && "true".equals(d.properties.saveLogs)) {
-                d.ai_name = d.name.toLowerCase().trim();
+                d.ai_name = d.name.toLowerCase(Locale.getDefault()).trim();
                 if (d.properties.userDescription != null && !d.properties.userDescription.isEmpty())
-                    d.ai_name = d.properties.userDescription.toLowerCase().trim();
+                    d.ai_name = d.properties.userDescription.toLowerCase(Locale.getDefault()).trim();
                 for (Room room : rooms)
                     if (d.roomID == room.id) {
                         name = d.ai_name;
@@ -165,7 +165,7 @@ public class FibaroConnector {
         int i = 0;
         for (Scene s : scenes)
             if (s.liliStartCommand != null && !s.liliStartCommand.isEmpty()) {
-                s.ai_name = s.liliStartCommand.toLowerCase().trim();
+                s.ai_name = s.liliStartCommand.toLowerCase(Locale.getDefault()).trim();
                 result[i++] = s;
             }
         sceneCount = count;

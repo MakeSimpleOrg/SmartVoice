@@ -2,7 +2,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/background_tiles"
     android:orientation="vertical"
     android:padding="22dp"
     tools:context=".MainActivity" >
@@ -22,7 +21,7 @@
             android:layout_width="260dp"
             android:layout_height="260dp"
             android:background="@drawable/background_big_mic"
-            android:contentDescription="@empty"
+            android:contentDescription="@string/empty"
             android:hapticFeedbackEnabled="true"
             android:padding="18dp"
             android:src="@drawable/big_mic" />
@@ -37,7 +36,7 @@
         android:layout_alignParentTop="true"
         android:layout_alignRight="@+id/linearLayout1"
         android:layout_alignEnd="@+id/linearLayout1"
-        android:text="Настройки" />
+        android:text="@string/settings" />
 
     <ProgressBar
         android:id="@+id/progressBar"

@@ -2,5 +2,8 @@
 <resources>
 
     <string name="app_name">Smart Voice</string>
+    <string name="settings">Настройки</string>
+    <string name="defaultKeyPhrase">Умный дом</string>
+    <string name="empty"></string>
 
 </resources>

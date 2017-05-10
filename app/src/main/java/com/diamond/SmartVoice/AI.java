@@ -3,6 +3,7 @@ package com.diamond.SmartVoice;
 import android.util.Log;
 
 import java.util.Arrays;
+import java.util.Locale;
 
 /**
  * Created by diamond on 09.05.2017.
@@ -49,7 +50,7 @@ public class AI {
 
     private static String replaceMistakes(String str)
     {
-        str = str.toLowerCase();
+        str = str.toLowerCase(Locale.getDefault());
         str = str.replaceAll("цвет", "свет");
         str = str.replaceAll("банный", "ванна");
         str = str.replaceAll("лунный свет", "ванна свет");
@@ -102,7 +103,7 @@ public class AI {
         int count = 0;
         d1: for(UScene s : scenes)
             for (String str : strs) {
-                str = str.toLowerCase().trim();
+                str = str.toLowerCase(Locale.getDefault()).trim();
                     if (matches(s.ai_name, str, accuracy)) {
                         count++;
                         continue d1;
@@ -114,7 +115,7 @@ public class AI {
         int i = 0;
         d2: for(UScene s : scenes)
             for (String str : strs) {
-                str = str.toLowerCase().trim();
+                str = str.toLowerCase(Locale.getDefault()).trim();
                     if (matches(s.ai_name, str, accuracy)) {
                         result[i++] = s;
                         continue d2;

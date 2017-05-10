@@ -5,6 +5,7 @@ import android.text.TextUtils;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 
 public class PhonMapper {
@@ -52,7 +53,7 @@ public class PhonMapper {
     public ArrayList<String> getPhons(String str) {
         ArrayList<String> phons = new ArrayList<String>();
 
-        str = str.toLowerCase();
+        str = str.toLowerCase(Locale.getDefault());
 
         if(mPhons.containsKey(str)) {
             return mPhons.get(str);
