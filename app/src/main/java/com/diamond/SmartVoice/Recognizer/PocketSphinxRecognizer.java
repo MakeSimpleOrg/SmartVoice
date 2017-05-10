@@ -38,6 +38,7 @@ public class PocketSphinxRecognizer {
             setup.setAcousticModel(new File(assetDir, "dict"));
             setup.setDictionary(dict);
             setup.setKeywordThreshold(Float.valueOf("1e-" + context.pref.getString("keywordThreshold", "20") + "f"));
+            setup.setBoolean("-remove_noise", false);
             recognizer = setup.getRecognizer();
             recognizer.addListener(new PocketSphinxRecognitionListener());
             recognizer.addKeyphraseSearch(KEY_PHRASE_SEARCH, KEYPHRASE);
@@ -120,11 +121,8 @@ public class PocketSphinxRecognizer {
         public void onPartialResult(Hypothesis hypothesis) {
             if (hypothesis == null)
                 return;
-            String text = hypothesis.getHypstr();
             if (KEY_PHRASE_SEARCH.equals(recognizer.getSearchName()))
-                if (text.contains(KEYPHRASE)) {
-                    mContext.OnKeyPhrase();
-                }
+                mContext.OnKeyPhrase();
         }
 
         @Override

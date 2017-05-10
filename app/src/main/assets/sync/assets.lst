@@ -1,8 +1,8 @@
 dict/feat.params
-dict/feature_transform
 dict/mdef
 dict/means
 dict/mixture_weights
 dict/noisedict
+dict/sendump
 dict/transition_matrices
 dict/variances
