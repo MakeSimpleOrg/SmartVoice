@@ -49,12 +49,12 @@
         android:singleLine="true"
         android:title="Активационная фраза" />
     <EditTextPreference
-        android:defaultValue="20"
+        android:defaultValue="7"
         android:inputType="numberDecimal"
         android:key="keywordThreshold"
         android:selectAllOnFocus="true"
         android:singleLine="true"
-        android:title="Чувствительность (10-50)" />
+        android:title="Чувствительность (1-100)" />
     <CheckBoxPreference
         android:defaultValue="false"
         android:key="offline_recognition"
