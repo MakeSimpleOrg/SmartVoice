@@ -4,7 +4,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class Dict {
-    private static final String TAG = Dict.class.getSimpleName();
     private final StringBuilder mDict = new StringBuilder();
     private final Set<String> mWords = new HashSet<String>();
     private static final String NL = System.getProperty("line.separator");
@@ -12,7 +11,8 @@ public class Dict {
     public void add(String key, String value) {
         if (!mWords.contains(key)) {
             mDict.append(key);
-            mDict.append("  "); // two spaces
+            //mDict.append("  "); // two spaces
+            mDict.append(" ");
             mDict.append(value);
             mDict.append(NL);
             mWords.add(key);

@@ -1,6 +1,7 @@
 package com.diamond.SmartVoice.Recognizer;
 
 import android.text.TextUtils;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -9,6 +10,8 @@ import java.util.Locale;
 import java.util.Map;
 
 public class PhonMapper {
+    private static final String TAG = PhonMapper.class.getSimpleName();
+
     /*
     private static final Map<String, String> phons = new LinkedHashMap<String, String>() {{
         put("а", "a0");
@@ -51,7 +54,7 @@ public class PhonMapper {
         put("в", "f");
         put("г", "k");
         put("д", "d");
-        put("е", "e");
+        put("е", "je");
         put("ё", "j oo");
         put("ж", "zh");
         put("з", "z");
@@ -79,33 +82,33 @@ public class PhonMapper {
         put("я", "a");
     }};
 
-    private Map<String, ArrayList<String>> mPhons = new HashMap<String, ArrayList<String>>();
+    private static Map<String, String> mPhons = new HashMap<String, String>();
+
+    static {
+        //mPhons.put("умный", "uu m n ay j");
+        mPhons.put("умныйдом", "uu m n y j d oo m");
+        mPhons.put("умный", "uu m n y j");
+        mPhons.put("дом", "d oo m");
+        mPhons.put("ok", "a kk je j");
+        mPhons.put("google", "g u k l");
+    }
 
     public String getPronoun(String str) {
-        ArrayList<String> phons = getPhons(str);
-        return TextUtils.join(" ", phons);
-    }
-
-    public ArrayList<String> getPhons(String str) {
-        ArrayList<String> phons = new ArrayList<String>();
-
-        str = str.toLowerCase(Locale.getDefault());
-
-        if(mPhons.containsKey(str)) {
+        if (mPhons.containsKey(str))
             return mPhons.get(str);
-        }
 
+        String result = "";
+        boolean first = true;
         for (String ch : str.split("")) {
-            String phon = getPhon(ch);
+            String phon = phons.get(ch);
             if (phon != null) {
-                phons.add(phon);
-            }
+                if (!first)
+                    result += " ";
+                result += phon;
+                first = false;
+            } else
+                Log.w(TAG, "NULL phon: " + ch);
         }
-
-        return phons;
-    }
-
-    private String getPhon(String str) {
-        return phons.get(str);
+        return result;
     }
 }
