@@ -31,3 +31,5 @@
 В худшем случае, ее всегда можно полностью отключить, и нажимать кнопку рукой. Это все равно в десятки раз быстрее, чем искать нужный пункт меню :)
 
 Последние apk вы всегда можете скачать здесь: https://github.com/diamond5170/SmartVoice/releases
+
+Или установить из Google Play: https://play.google.com/store/apps/details?id=com.diamond.SmartVoice
