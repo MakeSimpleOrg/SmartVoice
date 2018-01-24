@@ -3,17 +3,17 @@ apply plugin: 'com.android.application'
 android {
     signingConfigs {
     }
-    compileSdkVersion 25
-    buildToolsVersion "25.0.2"
+    compileSdkVersion 27
+    buildToolsVersion "27.0.3"
     useLibrary 'org.apache.http.legacy'
     defaultConfig {
         applicationId "com.diamond.SmartVoice"
         minSdkVersion 14
-        maxSdkVersion 25
-        targetSdkVersion 25
-        versionName 'v0.9.7'
+        maxSdkVersion 27
+        targetSdkVersion 27
+        versionName 'v0.9.8'
         versionNameSuffix '-beta'
-        versionCode 7
+        versionCode 8
     }
     buildTypes {
         release {
@@ -25,10 +25,15 @@ android {
     }
 }
 
+repositories {
+    maven { url "https://maven.google.com" }
+    jcenter()
+}
+
 dependencies {
     compile project(':aars')
-    compile 'com.google.code.gson:gson:2.8.0'
-    compile 'com.android.support:appcompat-v7:25.3.1'
+    compile 'com.google.code.gson:gson:2.8.2'
+    compile 'com.android.support:appcompat-v7:27.0.2'
 }
 
 ant.importBuild 'assets.xml'
