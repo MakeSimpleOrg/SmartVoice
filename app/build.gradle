@@ -1,34 +1,51 @@
 apply plugin: 'com.android.application'
 
+def keystorePropertiesFile = rootProject.file("keystore.properties")
+def keystoreProperties = new Properties()
+keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+
 android {
     signingConfigs {
+        config {
+            keyAlias keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['keyPassword']
+            storeFile file(keystoreProperties['storeFile'])
+            storePassword keystoreProperties['storePassword']
+        }
     }
-    compileSdkVersion 25
-    buildToolsVersion "25.0.2"
+    compileSdkVersion 27
+    buildToolsVersion "27.0.3"
     useLibrary 'org.apache.http.legacy'
     defaultConfig {
         applicationId "com.diamond.SmartVoice"
         minSdkVersion 14
-        maxSdkVersion 25
-        targetSdkVersion 25
-        versionName 'v0.9.7'
+        maxSdkVersion 27
+        targetSdkVersion 27
+        versionName 'v0.9.8'
         versionNameSuffix '-beta'
-        versionCode 7
+        versionCode 8
+        signingConfig signingConfigs.config
     }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+            signingConfig signingConfigs.config
         }
     }
     productFlavors {
     }
 }
 
+repositories {
+    maven { url "https://maven.google.com" }
+    jcenter()
+}
+
 dependencies {
     compile project(':aars')
-    compile 'com.google.code.gson:gson:2.8.0'
-    compile 'com.android.support:appcompat-v7:25.3.1'
+    compile 'com.google.code.gson:gson:2.8.2'
+    compile 'com.android.support:appcompat-v7:27.0.2'
 }
 
 ant.importBuild 'assets.xml'
