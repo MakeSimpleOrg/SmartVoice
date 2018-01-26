@@ -3,6 +3,7 @@
 
     <string name="app_name">Smart Voice</string>
     <string name="settings">Настройки</string>
+    <string name="devices">Устройства</string>
     <string name="defaultKeyPhrase">умный дом</string>
     <string name="empty"></string>
 

@@ -51,27 +51,26 @@ public class Vera extends Controller {
                     r.setName(AI.replaceTrash(r.getName()));
 
             int i = 0;
-            for (Device d : data.getDevices())
-                if (d.isVisible()) {
-                    all_devices[i++] = d;
-                    d.ai_name = d.getName();
-                    if (clearNames)
-                        d.ai_name = AI.replaceTrash(d.ai_name);
+            for (Device d : data.getDevices()) {
+                all_devices[i++] = d;
+                d.ai_name = d.getName();
+                if (clearNames)
+                    d.ai_name = AI.replaceTrash(d.ai_name);
 
-                    for (Room r : all_rooms)
-                        if (r.getId() == d.getRoomID())
-                            d.setRoomName(r.getName());
+                for (Room r : all_rooms)
+                    if (r.getId() == d.getRoomID())
+                        d.setRoomName(r.getName());
 
-                    d.ai_name = d.getRoomName() + " " + d.ai_name;
-                    d.ai_name = d.ai_name.toLowerCase(Locale.getDefault());
+                d.ai_name = d.getRoomName() + " " + d.ai_name;
+                d.ai_name = d.ai_name.toLowerCase(Locale.getDefault());
 
-                    try {
-                        d.setCategoryType(CategoryType.values()[Integer.parseInt(d.getCategory())]);
-                        d.uType = d.getCategoryType().getUType();
-                    } catch (IndexOutOfBoundsException e) {
-                        Log.w(TAG, "Unknown category type: " + d.getCategory());
-                    }
+                try {
+                    d.setCategoryType(CategoryType.values()[Integer.parseInt(d.getCategory())]);
+                    d.uType = d.getCategoryType().getUType();
+                } catch (IndexOutOfBoundsException e) {
+                    Log.w(TAG, "Unknown category type: " + d.getCategory());
                 }
+            }
 
             i = 0;
             for (Scene s : data.getScenes())

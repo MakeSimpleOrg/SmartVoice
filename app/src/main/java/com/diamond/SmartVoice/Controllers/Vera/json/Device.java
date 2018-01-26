@@ -150,6 +150,8 @@ public class Device extends UDevice {
 
     @Override
     public String getValue() {
+        if(level == null)
+            return "0";
         return level;
     }
 

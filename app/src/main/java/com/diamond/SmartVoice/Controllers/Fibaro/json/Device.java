@@ -107,21 +107,29 @@ public class Device extends UDevice {
 
     @Override
     public String getValue() {
+        if(getProperties() == null || getProperties().getValue() == null)
+            return "0";
         return getProperties().getValue();
     }
 
     @Override
     public String getHumidity() {
+        if(getProperties() == null || getProperties().getValue() == null)
+            return "";
         return "" + (int) Double.parseDouble(getValue());
     }
 
     @Override
     public String getLight() {
+        if(getProperties() == null || getProperties().getValue() == null)
+            return "";
         return "" + (int) Double.parseDouble(getValue());
     }
 
     @Override
     public String getTemperature() {
+        if(getProperties() == null || getProperties().getValue() == null)
+            return "";
         return "" + (int) Double.parseDouble(getValue());
     }
 

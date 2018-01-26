@@ -11,6 +11,8 @@ import java.net.URL;
 import com.diamond.SmartVoice.AI;
 import com.google.gson.Gson;
 
+import static com.diamond.SmartVoice.Controllers.UType.OnOff;
+
 /**
  * @author Dmitriy Ponomarev
  */
@@ -80,6 +82,30 @@ public abstract class Controller {
         return null;
     }
 
+    public int getVisibleRoomsCount() {
+        int c = 0;
+        for (URoom u : getRooms())
+            if (u.isVisible())
+                c++;
+        return c;
+    }
+
+    public int getVisibleDevicesCount() {
+        int c = 0;
+        for (UDevice u : getDevices())
+            if (u.isVisible())
+                c++;
+        return c;
+    }
+
+    public int getVisibleScenesCount() {
+        int c = 0;
+        for (UScene u : getScenes())
+            if (u.isVisible())
+                c++;
+        return c;
+    }
+
     public abstract void turnDeviceOn(UDevice d);
 
     public abstract void turnDeviceOff(UDevice d);
@@ -123,12 +149,12 @@ public abstract class Controller {
                         turnDeviceOn(u);
                         finded = true;
                         enabled = true;
-                        text = u.uType == UType.OnOff ? "Включаю" : "Закрываю";
+                        text = u.uType == OnOff ? "Включаю" : "Закрываю";
                     } else if (u.ai_name.contains("выключить")) {
                         turnDeviceOff(u);
                         finded = true;
                         enabled = false;
-                        text = u.uType == UType.OnOff ? "Выключаю" : "Открываю";
+                        text = u.uType == OnOff ? "Выключаю" : "Открываю";
                     } else if (finded)
                         if (enabled)
                             turnDeviceOn(u);
@@ -138,12 +164,12 @@ public abstract class Controller {
                         turnDeviceOn(u);
                         finded = true;
                         enabled = true;
-                        text = u.uType == UType.OnOff ? "Включаю" : "Закрываю";
+                        text = u.uType == OnOff ? "Включаю" : "Закрываю";
                     } else {
                         turnDeviceOff(u);
                         finded = true;
                         enabled = false;
-                        text = u.uType == UType.OnOff ? "Выключаю" : "Открываю";
+                        text = u.uType == OnOff ? "Выключаю" : "Открываю";
                     }
                     break;
             }

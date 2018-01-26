@@ -31,11 +31,11 @@
     <Button
         android:id="@+id/settingsButton"
         style="?android:attr/buttonStyleSmall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="100dp"
+        android:layout_height="35dp"
+        android:layout_alignEnd="@+id/linearLayout1"
         android:layout_alignParentTop="true"
         android:layout_alignRight="@+id/linearLayout1"
-        android:layout_alignEnd="@+id/linearLayout1"
         android:text="@string/settings" />
 
     <ProgressBar
@@ -47,5 +47,16 @@
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="15dp"
         android:visibility="invisible" />
+
+    <Button
+        android:id="@+id/devicesButton"
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="100dp"
+        android:layout_height="35dp"
+        android:layout_alignTop="@+id/linearLayout1"
+        android:layout_marginTop="0dp"
+        android:layout_toStartOf="@+id/settingsButton"
+        android:layout_toLeftOf="@+id/settingsButton"
+        android:text="@string/devices" />
 
 </RelativeLayout>

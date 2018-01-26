@@ -112,8 +112,20 @@ public class MainActivity extends Activity {
             public void onClick(View v) {
                 if (isLoading || ttsLoading || fibaroLoading || veraLoading)
                     return;
-                Intent settingsActivity = new Intent(getBaseContext(), SettingsActivity.class);
-                startActivity(settingsActivity);
+                Intent activity = new Intent(MainActivity.this, SettingsActivity.class);
+                startActivity(activity);
+            }
+        });
+
+        DevicesActivity.mainActivity = this;
+
+        Button devicesBtn = (Button) findViewById(R.id.devicesButton);
+        devicesBtn.setOnClickListener(new OnClickListener() {
+            public void onClick(View v) {
+                if (isLoading || ttsLoading || fibaroLoading || veraLoading)
+                    return;
+                Intent activity = new Intent(MainActivity.this, DevicesActivity.class);
+                startActivity(activity);
             }
         });
 
@@ -312,7 +324,7 @@ public class MainActivity extends Activity {
                     activity.show("Error 6: " + e.getMessage());
                     return null;
                 }
-                return controller.getDevices() != null && controller.getDevices().length > 0 || controller.getScenes() != null && controller.getScenes().length > 0 ? controller : null;
+                return controller.getVisibleDevicesCount() > 0 || controller.getVisibleScenesCount() > 0 ? controller : null;
             }
 
             @Override
@@ -321,7 +333,7 @@ public class MainActivity extends Activity {
                 if (activity.FibaroController == null)
                     activity.show("Fibaro: контроллер не найден! IP: " + activity.pref.getString("fibaro_server_ip", ""));
                 else
-                    activity.show("Fibaro: Найдено " + controller.getRooms().length + " комнат, " + controller.getDevices().length + " устройств и " + controller.getScenes().length + " сцен");
+                    activity.show("Fibaro: Найдено " + controller.getVisibleRoomsCount() + " комнат, " + controller.getVisibleDevicesCount() + " устройств и " + controller.getVisibleScenesCount() + " сцен");
                 activity.fibaroLoading = false;
                 if (!activity.isLoading())
                     activity.progressBar.setVisibility(View.INVISIBLE);
@@ -352,7 +364,7 @@ public class MainActivity extends Activity {
                 if (activity.VeraController == null) {
                     activity.show("Vera: Контроллер не найден! IP: " + activity.pref.getString("vera_server_ip", ""));
                 } else {
-                    activity.show("Vera: Найдено " + controller.getRooms().length + " комнат, " + controller.getDevices().length + " устройств и " + controller.getScenes().length + " сцен");
+                    activity.show("Vera: Найдено " + controller.getVisibleRoomsCount() + " комнат, " + controller.getVisibleDevicesCount() + " устройств и " + controller.getVisibleScenesCount() + " сцен");
                 }
                 activity.veraLoading = false;
                 if (!activity.isLoading())

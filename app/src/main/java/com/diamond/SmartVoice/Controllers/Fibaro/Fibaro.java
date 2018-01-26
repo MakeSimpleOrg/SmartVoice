@@ -45,60 +45,59 @@ public class Fibaro extends Controller {
 
             result = request("/api/devices?enabled=true&visible=true");
             all_devices = result == null ? new Device[0] : gson.fromJson(result, Device[].class);
-            for (Device d : all_devices)
-                if (d.isVisible()) {
-                    if (d.getProperties().getUserDescription() != null && !d.getProperties().getUserDescription().isEmpty())
-                        d.ai_name = d.getProperties().getUserDescription();
-                    else
-                        d.ai_name = d.getName();
-                    if (clearNames)
-                        d.ai_name = AI.replaceTrash(d.ai_name);
-                    for (Room r : all_rooms)
-                        if (r.getId() == d.getRoomID())
-                            d.setRoomName(r.getName());
-                    d.ai_name = d.getRoomName() + " " + d.ai_name;
-                    d.ai_name = d.ai_name.toLowerCase(Locale.getDefault());
+            for (Device d : all_devices) {
+                if (d.getProperties().getUserDescription() != null && !d.getProperties().getUserDescription().isEmpty())
+                    d.ai_name = d.getProperties().getUserDescription();
+                else
+                    d.ai_name = d.getName();
+                if (clearNames)
+                    d.ai_name = AI.replaceTrash(d.ai_name);
+                for (Room r : all_rooms)
+                    if (r.getId() == d.getRoomID())
+                        d.setRoomName(r.getName());
+                d.ai_name = d.getRoomName() + " " + d.ai_name;
+                d.ai_name = d.ai_name.toLowerCase(Locale.getDefault());
 
-                    switch (d.getType()) {
-                        case "com.fibaro.multilevelSwitch":
-                        case "com.fibaro.FGMS001":
-                        case "com.fibaro.motionSensor":
-                        case "com.fibaro.multilevelSensor":
-                        case "com.fibaro.doorSensor":
-                        case "com.fibaro.windowSensor":
-                        case "com.fibaro.FGFS101":
-                        case "com.fibaro.floodSensor":
-                        case "com.fibaro.FGSS001":
-                            d.uType = UType.None;
-                            break;
-                        case "com.fibaro.temperatureSensor":
-                            d.uType = UType.Temperature;
-                            break;
-                        case "com.fibaro.humiditySensor":
-                            d.uType = UType.Humidity;
-                            break;
-                        case "com.fibaro.lightSensor":
-                            d.uType = UType.Light;
-                            break;
-                        case "com.fibaro.doorLock":
-                        case "com.fibaro.gerda":
-                            d.uType = UType.OpenClose;
-                            break;
-                        case "com.fibaro.FGD212":
-                        case "com.fibaro.FGRGBW441M":
-                        case "com.fibaro.colorController":
-                        case "com.fibaro.FGRM222":
-                        case "com.fibaro.FGR221":
-                        case "com.fibaro.rollerShutter":
-                        case "com.fibaro.binarySwitch":
-                        case "com.fibaro.developer.bxs.virtualBinarySwitch":
-                        case "com.fibaro.FGWP101":
-                        case "com.fibaro.FGWP102":
-                        case "virtual_device":
-                            d.uType = UType.OnOff;
-                            break;
-                    }
+                switch (d.getType()) {
+                    case "com.fibaro.multilevelSwitch":
+                    case "com.fibaro.FGMS001":
+                    case "com.fibaro.motionSensor":
+                    case "com.fibaro.multilevelSensor":
+                    case "com.fibaro.doorSensor":
+                    case "com.fibaro.windowSensor":
+                    case "com.fibaro.FGFS101":
+                    case "com.fibaro.floodSensor":
+                    case "com.fibaro.FGSS001":
+                        d.uType = UType.None;
+                        break;
+                    case "com.fibaro.temperatureSensor":
+                        d.uType = UType.Temperature;
+                        break;
+                    case "com.fibaro.humiditySensor":
+                        d.uType = UType.Humidity;
+                        break;
+                    case "com.fibaro.lightSensor":
+                        d.uType = UType.Light;
+                        break;
+                    case "com.fibaro.doorLock":
+                    case "com.fibaro.gerda":
+                        d.uType = UType.OpenClose;
+                        break;
+                    case "com.fibaro.FGD212":
+                    case "com.fibaro.FGRGBW441M":
+                    case "com.fibaro.colorController":
+                    case "com.fibaro.FGRM222":
+                    case "com.fibaro.FGR221":
+                    case "com.fibaro.rollerShutter":
+                    case "com.fibaro.binarySwitch":
+                    case "com.fibaro.developer.bxs.virtualBinarySwitch":
+                    case "com.fibaro.FGWP101":
+                    case "com.fibaro.FGWP102":
+                    case "virtual_device":
+                        d.uType = UType.OnOff;
+                        break;
                 }
+            }
 
             result = request("/api/scenes?enabled=true&visible=true");
             all_scenes = result == null ? new Scene[0] : gson.fromJson(result, Scene[].class);

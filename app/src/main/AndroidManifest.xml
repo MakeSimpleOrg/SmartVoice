@@ -33,6 +33,10 @@
             android:name=".SettingsActivity"
             android:label="Настройки"
             android:screenOrientation="portrait" />
+        <activity
+            android:name=".DevicesActivity"
+            android:label="Устройства"
+            android:screenOrientation="portrait" />
     </application>
 
 </manifest>

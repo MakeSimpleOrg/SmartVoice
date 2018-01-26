@@ -27,6 +27,25 @@ public abstract class UDevice {
     public abstract String getTemperature();
 
     public boolean isVisible() {
-        return !getName().startsWith("_");
+        return uType != UType.None && !getName().startsWith("_");
+    }
+
+    public String getStatus()
+    {
+        switch (uType) {
+            case OnOff:
+                return getValue().equals("false") || getValue().equals("0") ? "Выключено" : "Включено";
+            case OpenClose:
+                return getValue().equals("false") || getValue().equals("0") ? "Открыто" : "Закрыто";
+            case Value:
+                return getValue();
+            case Humidity:
+                return getHumidity();
+            case Light:
+                return getLight();
+            case Temperature:
+                return getTemperature();
+        }
+        return "";
     }
 }
