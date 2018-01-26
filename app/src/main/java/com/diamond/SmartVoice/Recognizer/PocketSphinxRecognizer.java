@@ -17,6 +17,9 @@ import edu.cmu.pocketsphinx.SpeechRecognizerSetup;
 
 import static edu.cmu.pocketsphinx.SpeechRecognizerSetup.defaultSetup;
 
+/**
+ * @author Dmitriy Ponomarev
+ */
 public class PocketSphinxRecognizer {
     private static final String KEY_PHRASE_SEARCH = "wakeup";
     public final String KEYPHRASE;

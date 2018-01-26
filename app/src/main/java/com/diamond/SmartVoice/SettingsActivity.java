@@ -1,10 +1,14 @@
 package com.diamond.SmartVoice;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 
+/**
+ * @author Dmitriy Ponomarev
+ */
 public class SettingsActivity extends PreferenceActivity {
     public static MainActivity mainActivity;
 
@@ -45,10 +49,11 @@ public class SettingsActivity extends PreferenceActivity {
     private Preference.OnPreferenceChangeListener sBindPreferenceChangeListener = new Preference.OnPreferenceChangeListener() {
         @Override
         public boolean onPreferenceChange(Preference preference, Object value) {
-            if (preference.getKey().equals("fibaro_enabled") && (Boolean) value)
-                mainActivity.setupFibaro();
-            else if (preference.getKey().equals("vera_enabled") && (Boolean) value)
-                mainActivity.setupVera();
+            SharedPreferences pref = preference.getSharedPreferences();
+            if (preference.getKey().equals("fibaro_enabled") && (Boolean) value && !pref.getString("fibaro_server_ip", "").isEmpty() && !pref.getString("fibaro_server_login", "").isEmpty())
+                MainActivity.setupFibaro(mainActivity);
+            else if (preference.getKey().equals("vera_enabled") && (Boolean) value && !pref.getString("vera_server_ip", "").isEmpty())
+                MainActivity.setupVera(mainActivity);
             else if (preference.getKey().equals("tts_enabled") && (Boolean) value)
                 mainActivity.setupTTS();
             else if (preference.getKey().equals("keyphrase")) {

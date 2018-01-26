@@ -11,7 +11,6 @@ public class Dict {
     public void add(String key, String value) {
         if (!mWords.contains(key)) {
             mDict.append(key);
-            //mDict.append("  "); // two spaces
             mDict.append(" ");
             mDict.append(value);
             mDict.append(NL);

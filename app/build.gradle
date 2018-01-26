@@ -43,9 +43,9 @@ repositories {
 }
 
 dependencies {
-    compile project(':aars')
-    compile 'com.google.code.gson:gson:2.8.2'
-    compile 'com.android.support:appcompat-v7:27.0.2'
+    implementation project(':aars')
+    implementation 'com.google.code.gson:gson:2.8.2'
+    implementation 'com.android.support:appcompat-v7:27.0.2'
 }
 
 ant.importBuild 'assets.xml'

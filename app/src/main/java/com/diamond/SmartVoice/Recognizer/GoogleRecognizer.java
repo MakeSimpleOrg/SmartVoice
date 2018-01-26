@@ -15,6 +15,9 @@ import com.diamond.SmartVoice.MainActivity;
 import java.util.ArrayList;
 import java.util.Locale;
 
+/**
+ * @author Dmitriy Ponomarev
+ */
 public class GoogleRecognizer implements RecognitionListener {
 
     private static final String TAG = GoogleRecognizer.class.getSimpleName();
@@ -98,7 +101,7 @@ public class GoogleRecognizer implements RecognitionListener {
 
         ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
         if (matches != null)
-            mContext.process(matches.toArray(new String[matches.size()]));
+            MainActivity.process(matches.toArray(new String[matches.size()]), mContext);
         else {
             mContext.speak("Повтори!");
             mContext.buttonOff();
@@ -110,7 +113,7 @@ public class GoogleRecognizer implements RecognitionListener {
         //Log.i(LOG_TAG, "onRmsChanged: " + rmsdB);
     }
 
-    public static String getErrorText(int errorCode) {
+    private static String getErrorText(int errorCode) {
         String message;
         switch (errorCode) {
             case SpeechRecognizer.ERROR_AUDIO:

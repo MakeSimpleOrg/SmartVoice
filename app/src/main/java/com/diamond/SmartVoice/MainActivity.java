@@ -24,11 +24,14 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.Toast;
 
-import com.diamond.SmartVoice.Fibaro.FibaroConnector;
+import com.diamond.SmartVoice.Controllers.Fibaro.Fibaro;
+import com.diamond.SmartVoice.Controllers.Vera.Vera;
 import com.diamond.SmartVoice.Recognizer.GoogleRecognizer;
 import com.diamond.SmartVoice.Recognizer.PocketSphinxRecognizer;
-import com.diamond.SmartVoice.Vera.VeraConnector;
 
+/**
+ * @author Dmitriy Ponomarev
+ */
 public class MainActivity extends Activity {
     private static final String TAG = MainActivity.class.getSimpleName();
 
@@ -38,13 +41,13 @@ public class MainActivity extends Activity {
     private TextToSpeech textToSpeech;
     private View MicView;
     public SharedPreferences pref;
-    public FibaroConnector FibaroController;
-    public VeraConnector VeraController;
+    public Fibaro FibaroController;
+    public Vera VeraController;
 
     private boolean isLoading = true;
     private boolean fibaroLoading = false;
     private boolean veraLoading = false;
-    public boolean ttsLoading = false;
+    private boolean ttsLoading = false;
     private boolean keyPhraseRecognizerLoading = false;
     private boolean recognizerLoading = false;
 
@@ -181,14 +184,14 @@ public class MainActivity extends Activity {
     class LoadData4 implements Runnable {
         @Override
         public void run() {
-            setupFibaro();
+            setupFibaro(MainActivity.this);
         }
     }
 
     class LoadData5 implements Runnable {
         @Override
         public void run() {
-            setupVera();
+            setupVera(MainActivity.this);
         }
     }
 
@@ -295,64 +298,65 @@ public class MainActivity extends Activity {
         }
     }
 
-    public void setupFibaro() {
-        fibaroLoading = true;
-        progressBar.setVisibility(View.VISIBLE);
-        new AsyncTask<Void, Void, FibaroConnector>() {
+    public static void setupFibaro(final MainActivity activity) {
+        activity.fibaroLoading = true;
+        activity.progressBar.setVisibility(View.VISIBLE);
+        new AsyncTask<Void, Void, Fibaro>() {
             @Override
-            protected FibaroConnector doInBackground(Void... params) {
-                FibaroConnector controller = new FibaroConnector(pref.getString("fibaro_server_ip", ""), pref.getString("fibaro_server_login", ""), pref.getString("fibaro_server_password", ""));
+            protected Fibaro doInBackground(Void... params) {
+                Fibaro controller = null;
                 try {
-                    controller.getDevices();
-                    controller.getScenes();
+                    controller = new Fibaro(activity.pref);
                 } catch (Exception e) {
                     e.printStackTrace();
-                    show("Error 6: " + e.getMessage());
+                    activity.show("Error 6: " + e.getMessage());
+                    return null;
                 }
-                return controller.getLastDevicesCount() > 0 || controller.getLastScenesCount() > 0 ? controller : null;
+                return controller.getDevices() != null && controller.getDevices().length > 0 || controller.getScenes() != null && controller.getScenes().length > 0 ? controller : null;
             }
 
             @Override
-            protected void onPostExecute(FibaroConnector controller) {
-                FibaroController = controller;
-                if (FibaroController == null)
-                    show("Fibaro: контроллер не найден! IP: " + pref.getString("fibaro_server_ip", ""));
+            protected void onPostExecute(Fibaro controller) {
+                activity.FibaroController = controller;
+                if (activity.FibaroController == null)
+                    activity.show("Fibaro: контроллер не найден! IP: " + activity.pref.getString("fibaro_server_ip", ""));
                 else
-                    show("Fibaro: Найдено " + controller.getLastRoomsCount() + " комнат, " + controller.getLastDevicesCount() + " устройств и " + controller.getLastScenesCount() + " сцен");
-                fibaroLoading = false;
-                if (!isLoading())
-                    progressBar.setVisibility(View.INVISIBLE);
+                    activity.show("Fibaro: Найдено " + controller.getRooms().length + " комнат, " + controller.getDevices().length + " устройств и " + controller.getScenes().length + " сцен");
+                activity.fibaroLoading = false;
+                if (!activity.isLoading())
+                    activity.progressBar.setVisibility(View.INVISIBLE);
             }
         }.execute();
     }
 
-    public void setupVera() {
-        veraLoading = true;
-        progressBar.setVisibility(View.VISIBLE);
-        new AsyncTask<Void, Void, VeraConnector>() {
+    public static void setupVera(final MainActivity activity) {
+        activity.veraLoading = true;
+        activity.progressBar.setVisibility(View.VISIBLE);
+        new AsyncTask<Void, Void, Vera>() {
             @Override
-            protected VeraConnector doInBackground(Void... params) {
-                VeraConnector controller = new VeraConnector(pref.getString("vera_server_ip", ""));
+            protected Vera doInBackground(Void... params) {
+                Vera controller = null;
                 try {
-                    controller.getSdata();
+                    controller = new Vera(activity.pref);
                 } catch (Exception e) {
                     e.printStackTrace();
-                    show("Error 7: " + e.getMessage());
+                    activity.show("Error 7: " + e.getMessage());
+                    return null;
                 }
-                return controller.getLastDevicesCount() > 0 || controller.getLastScenesCount() > 0 ? controller : null;
+                return controller.getDevices() != null && controller.getDevices().length > 0 || controller.getScenes() != null && controller.getScenes().length > 0 ? controller : null;
             }
 
             @Override
-            protected void onPostExecute(VeraConnector controller) {
-                VeraController = controller;
-                if (VeraController == null) {
-                    show("Vera: Контроллер не найден! IP: " + pref.getString("vera_server_ip", ""));
+            protected void onPostExecute(Vera controller) {
+                activity.VeraController = controller;
+                if (activity.VeraController == null) {
+                    activity.show("Vera: Контроллер не найден! IP: " + activity.pref.getString("vera_server_ip", ""));
                 } else {
-                    show("Vera: Найдено " + controller.getLastRoomsCount() + " комнат, " + controller.getLastDevicesCount() + " устройств и " + controller.getLastScenesCount() + " сцен");
+                    activity.show("Vera: Найдено " + controller.getRooms().length + " комнат, " + controller.getDevices().length + " устройств и " + controller.getScenes().length + " сцен");
                 }
-                veraLoading = false;
-                if (!isLoading())
-                    progressBar.setVisibility(View.INVISIBLE);
+                activity.veraLoading = false;
+                if (!activity.isLoading())
+                    activity.progressBar.setVisibility(View.INVISIBLE);
             }
         }.execute();
     }
@@ -368,22 +372,22 @@ public class MainActivity extends Activity {
         buttonOn();
     }
 
-    public void process(final String[] variants) {
+    public static void process(final String[] variants, final MainActivity activity) {
         new AsyncTask<String, Void, String>() {
             @Override
             protected String doInBackground(String... params) {
                 Log.w(TAG, "Вы сказали: " + Arrays.toString(params));
-                if (!pref.getBoolean("fibaro_enabled", false) && !pref.getBoolean("vera_enabled", false) || FibaroController == null && VeraController == null)
+                if (!activity.pref.getBoolean("fibaro_enabled", false) && !activity.pref.getBoolean("vera_enabled", false) || activity.FibaroController == null && activity.VeraController == null)
                     return "Нечем управлять";
                 String result = null;
                 try {
-                    if (pref.getBoolean("fibaro_enabled", false) && FibaroController != null)
-                        result = FibaroController.process(params);
-                    if (result == null && pref.getBoolean("vera_enabled", false) && VeraController != null)
-                        result = VeraController.process(params);
+                    if (activity.pref.getBoolean("fibaro_enabled", false) && activity.FibaroController != null)
+                        result = activity.FibaroController.process(params);
+                    if (result == null && activity.pref.getBoolean("vera_enabled", false) && activity.VeraController != null)
+                        result = activity.VeraController.process(params);
                 } catch (Exception e) {
                     e.printStackTrace();
-                    show("Error 8: " + e.getMessage());
+                    activity.show("Error 8: " + e.getMessage());
                 }
                 return result;
             }
@@ -391,10 +395,10 @@ public class MainActivity extends Activity {
             @Override
             protected void onPostExecute(String result) {
                 if (result != null)
-                    speak(result);
+                    activity.speak(result);
                 else
-                    speak("Повтори!");
-                buttonOff();
+                    activity.speak("Повтори!");
+                activity.buttonOff();
             }
         }.execute(variants);
     }
