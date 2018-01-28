@@ -2,19 +2,16 @@ package com.diamond.SmartVoice.Controllers.Vera;
 
 import android.content.SharedPreferences;
 import android.util.Log;
-import android.util.SparseArray;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
 
 import com.diamond.SmartVoice.AI;
+import com.diamond.SmartVoice.Controllers.Capability;
 import com.diamond.SmartVoice.Controllers.Controller;
 import com.diamond.SmartVoice.Controllers.UDevice;
 import com.diamond.SmartVoice.Controllers.URoom;
 import com.diamond.SmartVoice.Controllers.UScene;
-import com.diamond.SmartVoice.Controllers.UType;
 import com.diamond.SmartVoice.Controllers.Vera.json.Device;
 import com.diamond.SmartVoice.Controllers.Vera.json.Room;
 import com.diamond.SmartVoice.Controllers.Vera.json.Scene;
@@ -58,7 +55,7 @@ public class Vera extends Controller {
                     d.ai_name = AI.replaceTrash(d.ai_name);
 
                 for (Room r : all_rooms)
-                    if (r.getId() == d.getRoomID())
+                    if (r.getId().equals(d.getRoomID()))
                         d.setRoomName(r.getName());
 
                 d.ai_name = d.getRoomName() + " " + d.ai_name;
@@ -66,7 +63,36 @@ public class Vera extends Controller {
 
                 try {
                     d.setCategoryType(CategoryType.values()[Integer.parseInt(d.getCategory())]);
-                    d.uType = d.getCategoryType().getUType();
+
+                    switch (d.getCategoryType()) {
+                        case DimmableLight:
+                            d.addCapability(Capability.onoff, d.getValue().equals("false") || d.getValue().equals("0") ? "0" : "1");
+                            d.addCapability(Capability.dim, d.getValue());
+                            break;
+                        case Switch:
+                            d.addCapability(Capability.onoff, d.getValue().equals("false") || d.getValue().equals("0") ? "0" : "1");
+                            break;
+                        case DoorLock:
+                        case WindowCovering:
+                            d.addCapability(Capability.openclose, d.getValue().equals("false") || d.getValue().equals("0") ? "1" : "0");
+                            break;
+                        case HumiditySensor:
+                            d.addCapability(Capability.measure_humidity, d.getHumidity());
+                            break;
+                        case TemperatureSensor:
+                            d.addCapability(Capability.measure_temperature, d.getTemperature());
+                            break;
+                        case LightSensor:
+                            d.addCapability(Capability.measure_light, d.getLight());
+                            break;
+                    }
+
+                    if(d.getBatterylevel() != null)
+                        d.addCapability(Capability.measure_battery, d.getBatterylevel());
+                    if (d.getKwh() != null)
+                        d.addCapability(Capability.meter_power, d.getKwh());
+                    if (d.getWatts() != null)
+                        d.addCapability(Capability.measure_power, d.getWatts());
                 } catch (IndexOutOfBoundsException e) {
                     Log.w(TAG, "Unknown category type: " + d.getCategory());
                 }
@@ -80,12 +106,19 @@ public class Vera extends Controller {
                     if (clearNames)
                         s.ai_name = AI.replaceTrash(s.ai_name);
                     for (Room r : all_rooms)
-                        if (r.getId() == s.getRoomID())
+                        if (r.getId().equals(s.getRoomID()))
                             s.setRoomName(r.getName());
                 }
         } catch (IOException e) {
             Log.w(TAG, "Failed to update data");
         }
+
+        if(all_rooms == null)
+            all_rooms = new Room[0];
+        if(all_devices == null)
+            all_devices = new Device[0];
+        if(all_scenes == null)
+            all_scenes = new Scene[0];
     }
 
     private void setStatus(Device d, String status) {

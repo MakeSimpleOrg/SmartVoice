@@ -1,10 +1,16 @@
 package com.diamond.SmartVoice;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
+
+import com.diamond.SmartVoice.OAuth.WebViewActivity;
+
+import net.smartam.leeloo.client.request.OAuthClientRequest;
+import net.smartam.leeloo.common.exception.OAuthSystemException;
 
 /**
  * @author Dmitriy Ponomarev
@@ -19,12 +25,15 @@ public class SettingsActivity extends PreferenceActivity {
 
         addPreferencesFromResource(R.xml.pref_general);
 
+        bindPreferenceSummaryToValue(findPreference("homey_server_ip"));
+        bindPreferenceSummaryToValue(findPreference("homey_bearer"));
         bindPreferenceSummaryToValue(findPreference("fibaro_server_ip"));
         bindPreferenceSummaryToValue(findPreference("fibaro_server_login"));
         bindPreferenceSummaryToValue(findPreference("vera_server_ip"));
         bindPreferenceSummaryToValue(findPreference("keyphrase"));
         bindPreferenceSummaryToValue(findPreference("keywordThreshold"));
 
+        findPreference("homey_enabled").setOnPreferenceChangeListener(sBindPreferenceChangeListener);
         findPreference("fibaro_enabled").setOnPreferenceChangeListener(sBindPreferenceChangeListener);
         findPreference("vera_enabled").setOnPreferenceChangeListener(sBindPreferenceChangeListener);
         findPreference("tts_enabled").setOnPreferenceChangeListener(sBindPreferenceChangeListener);
@@ -62,6 +71,28 @@ public class SettingsActivity extends PreferenceActivity {
             } else if (preference.getKey().equals("offline_recognition")) {
                 mainActivity.offline_recognition = (Boolean) value;
                 mainActivity.setupRecognizer();
+            } else if (preference.getKey().equals("homey_enabled") && (Boolean) value && !pref.getString("homey_server_ip", "").isEmpty()) {
+                if (!pref.getString("homey_bearer", "").isEmpty())
+                    MainActivity.setupHomey(mainActivity);
+                else {
+                    OAuthClientRequest request = null;
+                    try {
+                        request = OAuthClientRequest
+                                .authorizationLocation("https://accounts.athom.com/login")
+                                .setClientId("5534df95588a5ed82aaef73d").setRedirectURI("https://my.athom.com/auth/callback")
+                                .setResponseType("code")
+                                .setParameter("origin", "https://accounts.athom.com/oauth2/authorise")
+                                .buildQueryMessage();
+                    } catch (OAuthSystemException e) {
+                        e.printStackTrace();
+                    }
+                    if (request != null) {
+                        WebViewActivity.settingsActivity = SettingsActivity.this;
+                        Intent intent = new Intent(SettingsActivity.this, WebViewActivity.class);
+                        intent.putExtra("url", request.getLocationUri());
+                        startActivity(intent);
+                    }
+                }
             }
             return true;
         }
@@ -69,6 +100,7 @@ public class SettingsActivity extends PreferenceActivity {
 
     private static void bindPreferenceSummaryToValue(Preference preference) {
         preference.setOnPreferenceChangeListener(sBindPreferenceSummaryToValueListener);
-        sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, PreferenceManager.getDefaultSharedPreferences(preference.getContext()).getString(preference.getKey(), ""));
+        preference.setSummary(PreferenceManager.getDefaultSharedPreferences(preference.getContext()).getString(preference.getKey(), ""));
+        //sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, PreferenceManager.getDefaultSharedPreferences(preference.getContext()).getString(preference.getKey(), ""));
     }
 }

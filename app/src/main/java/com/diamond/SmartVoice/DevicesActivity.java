@@ -1,11 +1,12 @@
 package com.diamond.SmartVoice;
 
-import android.content.SharedPreferences;
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceCategory;
+import android.preference.PreferenceGroup;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 
@@ -14,10 +15,14 @@ import com.diamond.SmartVoice.Controllers.UDevice;
 import com.diamond.SmartVoice.Controllers.URoom;
 import com.diamond.SmartVoice.Controllers.UScene;
 
+import java.util.Arrays;
+
 /**
  * @author Dmitriy Ponomarev
  */
 public class DevicesActivity extends PreferenceActivity {
+
+    @SuppressLint("StaticFieldLeak")
     public static MainActivity mainActivity;
 
     @SuppressWarnings("deprecation")
@@ -26,8 +31,8 @@ public class DevicesActivity extends PreferenceActivity {
         super.onPostCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.pref_devices);
 
+        if (mainActivity.HomeyController != null) load("Homey", mainActivity.HomeyController);
         if (mainActivity.FibaroController != null) load("Fibaro", mainActivity.FibaroController);
-
         if (mainActivity.VeraController != null) load("Vera", mainActivity.VeraController);
 
         // TODO bindPreferenceSummaryToValue(preference);
@@ -40,42 +45,49 @@ public class DevicesActivity extends PreferenceActivity {
         preferenceCategory.setTitle(controllerName);
         preferenceScreen.addPreference(preferenceCategory);
 
-        preferenceCategory = new PreferenceCategory(preferenceScreen.getContext());
-        preferenceCategory.setTitle("Устройства");
-        preferenceScreen.addPreference(preferenceCategory);
+        if (controller.getVisibleDevicesCount() > 0) {
+            preferenceCategory = new PreferenceCategory(preferenceScreen.getContext());
+            preferenceCategory.setTitle("Устройства");
+            preferenceScreen.addPreference(preferenceCategory);
 
-        for (UDevice u : controller.getDevices())
-            if (u.isVisible()) {
-                CheckBoxPreference preference = new CheckBoxPreference(preferenceScreen.getContext());
-                preference.setTitle(u.getName());
-                preference.setSummary(u.getStatus());
-                preferenceCategory.addPreference(preference);
-                preference.setChecked(true); // TODO
-            }
+            for (UDevice u : controller.getDevices())
+                if (u.isVisible()) {
+                    Preference preference = new Preference(preferenceScreen.getContext());
+                    preference.setTitle(u.ai_name);
+                    preference.setSummary(u.getId() + "\n" + u.getCapabilities());
+                    preferenceCategory.addPreference(preference);
+                    preference.setOnPreferenceClickListener(sBindPreferenceChangeListener);
+                }
+        }
 
-        preferenceCategory = new PreferenceCategory(preferenceScreen.getContext());
-        preferenceCategory.setTitle("Сцены");
-        preferenceScreen.addPreference(preferenceCategory);
+        if (controller.getVisibleScenesCount() > 0) {
+            preferenceCategory = new PreferenceCategory(preferenceScreen.getContext());
+            preferenceCategory.setTitle("Сцены");
+            preferenceScreen.addPreference(preferenceCategory);
 
-        for (UScene u : controller.getScenes())
-            if (u.isVisible()) {
-                CheckBoxPreference preference = new CheckBoxPreference(preferenceScreen.getContext());
-                preference.setTitle(u.getName());
-                preferenceCategory.addPreference(preference);
-                preference.setChecked(true); // TODO
-            }
+            for (UScene u : controller.getScenes())
+                if (u.isVisible()) {
+                    CheckBoxPreference preference = new CheckBoxPreference(preferenceScreen.getContext());
+                    preference.setTitle(u.getName());
+                    preference.setSummary("Комната: " + u.getRoomName());
+                    preferenceCategory.addPreference(preference);
+                    preference.setChecked(true); // TODO
+                }
+        }
 
-        preferenceCategory = new PreferenceCategory(preferenceScreen.getContext());
-        preferenceCategory.setTitle("Комнаты");
-        preferenceScreen.addPreference(preferenceCategory);
+        if (controller.getVisibleRoomsCount() > 0) {
+            preferenceCategory = new PreferenceCategory(preferenceScreen.getContext());
+            preferenceCategory.setTitle("Комнаты");
+            preferenceScreen.addPreference(preferenceCategory);
 
-        for (URoom u : controller.getRooms())
-            if (u.isVisible()) {
-                CheckBoxPreference preference = new CheckBoxPreference(preferenceScreen.getContext());
-                preference.setTitle(u.getName());
-                preferenceCategory.addPreference(preference);
-                preference.setChecked(true); // TODO
-            }
+            for (URoom u : controller.getRooms())
+                if (u.isVisible()) {
+                    CheckBoxPreference preference = new CheckBoxPreference(preferenceScreen.getContext());
+                    preference.setTitle(u.getName());
+                    preferenceCategory.addPreference(preference);
+                    preference.setChecked(true); // TODO
+                }
+        }
     }
 
     @Override
@@ -92,9 +104,11 @@ public class DevicesActivity extends PreferenceActivity {
         }
     };
 
-    private Preference.OnPreferenceChangeListener sBindPreferenceChangeListener = new Preference.OnPreferenceChangeListener() {
+    private Preference.OnPreferenceClickListener sBindPreferenceChangeListener = new Preference.OnPreferenceClickListener() {
         @Override
-        public boolean onPreferenceChange(Preference preference, Object value) {
+        public boolean onPreferenceClick(Preference preference) {
+            String name = preference.getTitle().toString();
+            MainActivity.process(new String[]{name}, mainActivity);
             return true;
         }
     };

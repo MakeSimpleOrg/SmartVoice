@@ -24,8 +24,8 @@ public class Room extends URoom {
         this.name = name;
     }
 
-    public int getId() {
-        return Integer.parseInt(id);
+    public String getId() {
+        return id;
     }
 
     public void setId(String id) {

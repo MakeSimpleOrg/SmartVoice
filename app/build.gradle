@@ -21,8 +21,8 @@ android {
         minSdkVersion 14
         maxSdkVersion 27
         targetSdkVersion 27
-        versionName 'v0.9.8'
-        versionNameSuffix '-beta'
+        versionName 'v0.9.9'
+        versionNameSuffix ''
         versionCode 8
         signingConfig signingConfigs.config
     }
@@ -46,6 +46,10 @@ dependencies {
     implementation project(':aars')
     implementation 'com.google.code.gson:gson:2.8.2'
     implementation 'com.android.support:appcompat-v7:27.0.2'
+    implementation 'net.smartam.leeloo:oauth2-client:0.1'
+    implementation 'net.smartam.leeloo:oauth2-common:0.1'
+
+    implementation 'com.android.support.constraint:constraint-layout:1.0.2'
 }
 
 ant.importBuild 'assets.xml'

@@ -3,6 +3,23 @@
 
     <CheckBoxPreference
         android:defaultValue="false"
+        android:key="homey_enabled"
+        android:title="Homey" />
+    <EditTextPreference
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="textUri"
+        android:key="homey_server_ip"
+        android:title="Homey: Адрес сервера" />
+    <EditTextPreference
+        android:inputType="textNoSuggestions|textVisiblePassword"
+        android:key="homey_bearer"
+        android:maxLines="1"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="Homey: Bearer Token" />
+    <CheckBoxPreference
+        android:defaultValue="false"
         android:key="fibaro_enabled"
         android:title="Fibaro" />
     <EditTextPreference

@@ -108,8 +108,8 @@ public class Device extends UDevice {
         return room;
     }
 
-    public int getRoomID() {
-        return Integer.parseInt(room);
+    public String getRoomID() {
+        return room;
     }
 
     public String getKwh() {
@@ -148,24 +148,20 @@ public class Device extends UDevice {
         return tripped;
     }
 
-    @Override
     public String getValue() {
-        if(level == null)
+        if (level == null)
             return "0";
         return level;
     }
 
-    @Override
     public String getHumidity() {
         return "" + (int) Double.parseDouble(humidity);
     }
 
-    @Override
     public String getLight() {
         return "" + (int) Double.parseDouble(light);
     }
 
-    @Override
     public String getTemperature() {
         return "" + (int) Double.parseDouble(temperature);
     }

@@ -83,8 +83,8 @@ public class Scene extends UScene {
         this.name = name;
     }
 
-    public int getRoomID() {
-        return roomID;
+    public String getRoomID() {
+        return "" + roomID;
     }
 
     public String getLiliStartCommand() {

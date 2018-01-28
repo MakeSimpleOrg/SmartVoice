@@ -1,8 +1,6 @@
 package com.diamond.SmartVoice.Controllers;
 
-import java.util.ArrayList;
-
-import org.json.JSONObject;
+import java.util.HashMap;
 
 /**
  * @author Dmitriy Ponomarev
@@ -10,42 +8,25 @@ import org.json.JSONObject;
 public abstract class UDevice {
     public String ai_name;
 
-    public UType uType = UType.None;
-
     public abstract String getId();
 
     public abstract String getName();
 
     public abstract String getRoomName();
 
-    public abstract String getValue();
-
-    public abstract String getHumidity();
-
-    public abstract String getLight();
-
-    public abstract String getTemperature();
-
     public boolean isVisible() {
-        return uType != UType.None && !getName().startsWith("_");
+        return !_capabilities.isEmpty() && !getName().startsWith("_");
     }
 
-    public String getStatus()
+    private HashMap<Capability, String> _capabilities = new HashMap<>();
+
+    public void addCapability(Capability cap, String value)
     {
-        switch (uType) {
-            case OnOff:
-                return getValue().equals("false") || getValue().equals("0") ? "Выключено" : "Включено";
-            case OpenClose:
-                return getValue().equals("false") || getValue().equals("0") ? "Открыто" : "Закрыто";
-            case Value:
-                return getValue();
-            case Humidity:
-                return getHumidity();
-            case Light:
-                return getLight();
-            case Temperature:
-                return getTemperature();
-        }
-        return "";
+        _capabilities.put(cap, value);
+    }
+
+    public HashMap<Capability, String> getCapabilities()
+    {
+        return _capabilities;
     }
 }

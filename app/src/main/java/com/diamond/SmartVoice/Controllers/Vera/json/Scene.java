@@ -49,8 +49,8 @@ public class Scene extends UScene {
         return room;
     }
 
-    public int getRoomID() {
-        return Integer.parseInt(room);
+    public String getRoomID() {
+        return room;
     }
 
     public void setRoom(String room) {

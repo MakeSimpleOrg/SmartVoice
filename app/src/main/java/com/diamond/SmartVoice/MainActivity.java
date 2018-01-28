@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.media.AudioManager;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -25,6 +26,7 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.diamond.SmartVoice.Controllers.Fibaro.Fibaro;
+import com.diamond.SmartVoice.Controllers.Homey.Homey;
 import com.diamond.SmartVoice.Controllers.Vera.Vera;
 import com.diamond.SmartVoice.Recognizer.GoogleRecognizer;
 import com.diamond.SmartVoice.Recognizer.PocketSphinxRecognizer;
@@ -41,10 +43,12 @@ public class MainActivity extends Activity {
     private TextToSpeech textToSpeech;
     private View MicView;
     public SharedPreferences pref;
+    public Homey HomeyController;
     public Fibaro FibaroController;
     public Vera VeraController;
 
     private boolean isLoading = true;
+    private boolean homeyLoading = false;
     private boolean fibaroLoading = false;
     private boolean veraLoading = false;
     private boolean ttsLoading = false;
@@ -87,7 +91,7 @@ public class MainActivity extends Activity {
         MicView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                if (isLoading || ttsLoading || fibaroLoading || veraLoading)
+                if (isLoading || ttsLoading || homeyLoading || fibaroLoading || veraLoading)
                     return false;
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
@@ -110,7 +114,7 @@ public class MainActivity extends Activity {
         Button settingsBtn = (Button) findViewById(R.id.settingsButton);
         settingsBtn.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
-                if (isLoading || ttsLoading || fibaroLoading || veraLoading)
+                if (isLoading || ttsLoading || homeyLoading || fibaroLoading || veraLoading)
                     return;
                 Intent activity = new Intent(MainActivity.this, SettingsActivity.class);
                 startActivity(activity);
@@ -122,7 +126,7 @@ public class MainActivity extends Activity {
         Button devicesBtn = (Button) findViewById(R.id.devicesButton);
         devicesBtn.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
-                if (isLoading || ttsLoading || fibaroLoading || veraLoading)
+                if (isLoading || ttsLoading || homeyLoading || fibaroLoading || veraLoading)
                     return;
                 Intent activity = new Intent(MainActivity.this, DevicesActivity.class);
                 startActivity(activity);
@@ -150,21 +154,27 @@ public class MainActivity extends Activity {
             thread.start();
         }
 
-        if (pref.getBoolean("fibaro_enabled", false)) {
-            load = new LoadData4();
-            thread = new Thread(load);
-            thread.start();
-        }
+        load = new LoadData4();
+        thread = new Thread(load);
+        thread.start();
 
-        if (pref.getBoolean("vera_enabled", false)) {
+        if (pref.getBoolean("homey_enabled", false)) {
             load = new LoadData5();
             thread = new Thread(load);
             thread.start();
         }
 
-        load = new LoadData6();
-        thread = new Thread(load);
-        thread.start();
+        if (pref.getBoolean("fibaro_enabled", false)) {
+            load = new LoadData6();
+            thread = new Thread(load);
+            thread.start();
+        }
+
+        if (pref.getBoolean("vera_enabled", false)) {
+            load = new LoadData7();
+            thread = new Thread(load);
+            thread.start();
+        }
     }
 
     class LoadData1 implements Runnable {
@@ -194,20 +204,6 @@ public class MainActivity extends Activity {
     }
 
     class LoadData4 implements Runnable {
-        @Override
-        public void run() {
-            setupFibaro(MainActivity.this);
-        }
-    }
-
-    class LoadData5 implements Runnable {
-        @Override
-        public void run() {
-            setupVera(MainActivity.this);
-        }
-    }
-
-    class LoadData6 implements Runnable {
         @Override
         public void run() {
             while (isLoading()) {
@@ -241,8 +237,29 @@ public class MainActivity extends Activity {
         }
     }
 
+    class LoadData5 implements Runnable {
+        @Override
+        public void run() {
+            setupHomey(MainActivity.this);
+        }
+    }
+
+    class LoadData6 implements Runnable {
+        @Override
+        public void run() {
+            setupFibaro(MainActivity.this);
+        }
+    }
+
+    class LoadData7 implements Runnable {
+        @Override
+        public void run() {
+            setupVera(MainActivity.this);
+        }
+    }
+
     private boolean isLoading() {
-        return ttsLoading || fibaroLoading || veraLoading || recognizerLoading || keyPhraseRecognizerLoading;
+        return ttsLoading || homeyLoading || fibaroLoading || veraLoading || recognizerLoading || keyPhraseRecognizerLoading;
     }
 
     public void buttonOn() {
@@ -310,6 +327,37 @@ public class MainActivity extends Activity {
         }
     }
 
+    public static void setupHomey(final MainActivity activity) {
+        activity.homeyLoading = true;
+        activity.progressBar.setVisibility(View.VISIBLE);
+        new AsyncTask<Void, Void, Homey>() {
+            @Override
+            protected Homey doInBackground(Void... params) {
+                Homey controller = null;
+                try {
+                    controller = new Homey(activity.pref);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    activity.show("Error 6: " + e.getMessage());
+                    return null;
+                }
+                return controller.getVisibleDevicesCount() > 0 || controller.getVisibleScenesCount() > 0 ? controller : null;
+            }
+
+            @Override
+            protected void onPostExecute(Homey controller) {
+                activity.HomeyController = controller;
+                if (activity.HomeyController == null)
+                    activity.show("Homey: контроллер не найден! IP: " + activity.pref.getString("homey_server_ip", ""));
+                else
+                    activity.show("Homey: Найдено " + controller.getVisibleRoomsCount() + " комнат, " + controller.getVisibleDevicesCount() + " устройств и " + controller.getVisibleScenesCount() + " сцен");
+                activity.homeyLoading = false;
+                if (!activity.isLoading())
+                    activity.progressBar.setVisibility(View.INVISIBLE);
+            }
+        }.execute();
+    }
+
     public static void setupFibaro(final MainActivity activity) {
         activity.fibaroLoading = true;
         activity.progressBar.setVisibility(View.VISIBLE);
@@ -355,7 +403,7 @@ public class MainActivity extends Activity {
                     activity.show("Error 7: " + e.getMessage());
                     return null;
                 }
-                return controller.getDevices() != null && controller.getDevices().length > 0 || controller.getScenes() != null && controller.getScenes().length > 0 ? controller : null;
+                return controller.getVisibleDevicesCount() > 0 || controller.getVisibleScenesCount() > 0 ? controller : null;
             }
 
             @Override
@@ -389,10 +437,12 @@ public class MainActivity extends Activity {
             @Override
             protected String doInBackground(String... params) {
                 Log.w(TAG, "Вы сказали: " + Arrays.toString(params));
-                if (!activity.pref.getBoolean("fibaro_enabled", false) && !activity.pref.getBoolean("vera_enabled", false) || activity.FibaroController == null && activity.VeraController == null)
+                if (!activity.pref.getBoolean("homey_enabled", false) && !activity.pref.getBoolean("fibaro_enabled", false) && !activity.pref.getBoolean("vera_enabled", false) || activity.HomeyController == null && activity.FibaroController == null && activity.VeraController == null)
                     return "Нечем управлять";
                 String result = null;
                 try {
+                    if (activity.pref.getBoolean("homey_enabled", false) && activity.HomeyController != null)
+                        result = activity.HomeyController.process(params);
                     if (activity.pref.getBoolean("fibaro_enabled", false) && activity.FibaroController != null)
                         result = activity.FibaroController.process(params);
                     if (result == null && activity.pref.getBoolean("vera_enabled", false) && activity.VeraController != null)

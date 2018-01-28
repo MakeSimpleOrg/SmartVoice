@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.Locale;
 
 import com.diamond.SmartVoice.AI;
+import com.diamond.SmartVoice.Controllers.Capability;
 import com.diamond.SmartVoice.Controllers.Controller;
 import com.diamond.SmartVoice.Controllers.UDevice;
 import com.diamond.SmartVoice.Controllers.URoom;
@@ -14,7 +15,6 @@ import com.diamond.SmartVoice.Controllers.UScene;
 import com.diamond.SmartVoice.Controllers.Fibaro.json.Device;
 import com.diamond.SmartVoice.Controllers.Fibaro.json.Room;
 import com.diamond.SmartVoice.Controllers.Fibaro.json.Scene;
-import com.diamond.SmartVoice.Controllers.UType;
 import com.google.gson.Gson;
 
 /**
@@ -35,6 +35,7 @@ public class Fibaro extends Controller {
         updateData();
     }
 
+
     private void updateData() {
         try {
             String result = request("/api/rooms");
@@ -53,7 +54,7 @@ public class Fibaro extends Controller {
                 if (clearNames)
                     d.ai_name = AI.replaceTrash(d.ai_name);
                 for (Room r : all_rooms)
-                    if (r.getId() == d.getRoomID())
+                    if (r.getId().equals(d.getRoomID()))
                         d.setRoomName(r.getName());
                 d.ai_name = d.getRoomName() + " " + d.ai_name;
                 d.ai_name = d.ai_name.toLowerCase(Locale.getDefault());
@@ -68,20 +69,19 @@ public class Fibaro extends Controller {
                     case "com.fibaro.FGFS101":
                     case "com.fibaro.floodSensor":
                     case "com.fibaro.FGSS001":
-                        d.uType = UType.None;
                         break;
                     case "com.fibaro.temperatureSensor":
-                        d.uType = UType.Temperature;
+                        d.addCapability(Capability.measure_temperature, "" + (int) Double.parseDouble(d.getValue()));
                         break;
                     case "com.fibaro.humiditySensor":
-                        d.uType = UType.Humidity;
+                        d.addCapability(Capability.measure_humidity, "" + (int) Double.parseDouble(d.getValue()));
                         break;
                     case "com.fibaro.lightSensor":
-                        d.uType = UType.Light;
+                        d.addCapability(Capability.measure_light, "" + (int) Double.parseDouble(d.getValue()));
                         break;
                     case "com.fibaro.doorLock":
                     case "com.fibaro.gerda":
-                        d.uType = UType.OpenClose;
+                        d.addCapability(Capability.openclose, d.getValue().equals("false") || d.getValue().equals("0") ? "1" : "0");
                         break;
                     case "com.fibaro.FGD212":
                     case "com.fibaro.FGRGBW441M":
@@ -94,8 +94,17 @@ public class Fibaro extends Controller {
                     case "com.fibaro.FGWP101":
                     case "com.fibaro.FGWP102":
                     case "virtual_device":
-                        d.uType = UType.OnOff;
+                        d.addCapability(Capability.onoff, d.getValue().equals("false") || d.getValue().equals("0") ? "0" : "1");
                         break;
+                }
+
+                if (d.getProperties() != null) {
+                    if (d.getProperties().getBatteryLevel() != null)
+                        d.addCapability(Capability.measure_battery, d.getProperties().getBatteryLevel());
+                    if (d.getProperties().getEnergy() != null)
+                        d.addCapability(Capability.meter_power, d.getProperties().getEnergy());
+                    if (d.getProperties().getPower() != null)
+                        d.addCapability(Capability.measure_power, d.getProperties().getPower());
                 }
             }
 
@@ -110,13 +119,20 @@ public class Fibaro extends Controller {
                     if (clearNames)
                         s.ai_name = AI.replaceTrash(s.ai_name);
                     for (Room r : all_rooms)
-                        if (r.getId() == s.getRoomID())
+                        if (r.getId().equals(s.getRoomID()))
                             s.setRoomName(r.getName());
                 }
         } catch (IOException e) {
             Log.w(TAG, "Failed to update data");
             e.printStackTrace();
         }
+
+        if(all_rooms == null)
+            all_rooms = new Room[0];
+        if(all_devices == null)
+            all_devices = new Device[0];
+        if(all_scenes == null)
+            all_scenes = new Scene[0];
     }
 
     @Override

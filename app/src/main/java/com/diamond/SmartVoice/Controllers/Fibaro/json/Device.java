@@ -83,8 +83,8 @@ public class Device extends UDevice {
         this.name = name;
     }
 
-    public int getRoomID() {
-        return roomID;
+    public String getRoomID() {
+        return "" + roomID;
     }
 
     public String getType() {
@@ -105,32 +105,10 @@ public class Device extends UDevice {
         devicesWithSaveLogsOnly = value;
     }
 
-    @Override
     public String getValue() {
-        if(getProperties() == null || getProperties().getValue() == null)
+        if (getProperties() == null || getProperties().getValue() == null)
             return "0";
         return getProperties().getValue();
-    }
-
-    @Override
-    public String getHumidity() {
-        if(getProperties() == null || getProperties().getValue() == null)
-            return "";
-        return "" + (int) Double.parseDouble(getValue());
-    }
-
-    @Override
-    public String getLight() {
-        if(getProperties() == null || getProperties().getValue() == null)
-            return "";
-        return "" + (int) Double.parseDouble(getValue());
-    }
-
-    @Override
-    public String getTemperature() {
-        if(getProperties() == null || getProperties().getValue() == null)
-            return "";
-        return "" + (int) Double.parseDouble(getValue());
     }
 
     public boolean isVisible() {

@@ -5,13 +5,13 @@ import android.util.Log;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 
 import com.diamond.SmartVoice.AI;
 import com.google.gson.Gson;
-
-import static com.diamond.SmartVoice.Controllers.UType.OnOff;
 
 /**
  * @author Dmitriy Ponomarev
@@ -22,44 +22,81 @@ public abstract class Controller {
     protected Gson gson;
     protected String host;
     protected String auth;
+    protected String bearer;
     protected boolean clearNames;
 
     protected String request(String request) throws IOException {
         String result;
         URL url = new URL("http://" + host + request);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("GET");
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("GET");
         if (auth != null)
-            connection.setRequestProperty("Authorization", "Basic " + auth);
-        connection.setRequestProperty("Content-Type", "application/json;charset=utf-8");
-        connection.setConnectTimeout(5000);
-        connection.connect();
-        BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            conn.setRequestProperty("Authorization", "Basic " + auth);
+        else if (bearer != null)
+            conn.setRequestProperty("Authorization", "Bearer " + bearer);
+        conn.setRequestProperty("Content-Type", "application/json;charset=utf-8");
+        conn.setConnectTimeout(5000);
+        conn.connect();
+        BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
         StringBuilder buffer = new StringBuilder();
         String line;
         while ((line = br.readLine()) != null)
             buffer.append(line).append("\n");
         br.close();
         result = buffer.toString();
+        conn.disconnect();
         return result;
     }
 
-    protected boolean sendCommand(String request) {
+    protected void sendCommand(String request) {
         Log.d(TAG, "Sending command: " + request);
         try {
             URL url = new URL("http://" + host + request);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
             if (auth != null)
-                connection.setRequestProperty("Authorization", "Basic " + auth);
-            connection.setConnectTimeout(5000);
-            connection.getResponseMessage();
+                conn.setRequestProperty("Authorization", "Basic " + auth);
+            else if (bearer != null)
+                conn.setRequestProperty("Authorization", "Bearer " + bearer);
+            conn.setConnectTimeout(5000);
+            conn.getResponseMessage();
         } catch (IOException e) {
             Log.w(TAG, "Error while get getJson: " + request);
             e.printStackTrace();
-            return false;
         }
-        return true;
+    }
+
+    protected void sendJSON(String request, String json) {
+        try {
+            URL url = new URL("http://" + host + request);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setConnectTimeout(5000);
+            conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+            conn.setDoOutput(true);
+            conn.setDoInput(true);
+            conn.setRequestMethod("PUT");
+            if (auth != null)
+                conn.setRequestProperty("Authorization", "Basic " + auth);
+            else if (bearer != null)
+                conn.setRequestProperty("Authorization", "Bearer " + bearer);
+            OutputStream os = conn.getOutputStream();
+            os.write(json.getBytes("UTF-8"));
+            os.close();
+
+            BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            StringBuilder buffer = new StringBuilder();
+            String line;
+            while ((line = br.readLine()) != null)
+                buffer.append(line).append("\n");
+            br.close();
+
+            Log.w(TAG, "Result: " + buffer.toString());
+
+            conn.disconnect();
+        } catch (IOException e) {
+            Log.w(TAG, "Error while get getJson: " + request);
+            e.printStackTrace();
+        }
     }
 
     public abstract URoom[] getRooms();
@@ -84,25 +121,28 @@ public abstract class Controller {
 
     public int getVisibleRoomsCount() {
         int c = 0;
-        for (URoom u : getRooms())
-            if (u.isVisible())
-                c++;
+        if (getRooms() != null)
+            for (URoom u : getRooms())
+                if (u.isVisible())
+                    c++;
         return c;
     }
 
     public int getVisibleDevicesCount() {
         int c = 0;
-        for (UDevice u : getDevices())
-            if (u.isVisible())
-                c++;
+        if (getDevices() != null)
+            for (UDevice u : getDevices())
+                if (u.isVisible())
+                    c++;
         return c;
     }
 
     public int getVisibleScenesCount() {
         int c = 0;
-        for (UScene u : getScenes())
-            if (u.isVisible())
-                c++;
+        if (getScenes() != null)
+            for (UScene u : getScenes())
+                if (u.isVisible())
+                    c++;
         return c;
     }
 
@@ -132,46 +172,71 @@ public abstract class Controller {
         boolean enabled = false;
         boolean finded = false;
         String text = "Ошибка";
+        ArrayList<UDevice> list = new ArrayList<>();
         for (UDevice u : devices) {
-            Log.w(TAG, "найдено: " + u.ai_name + ", " + u.uType);
-            switch (u.uType) {
-                case Value:
-                    return u.getValue();
-                case Humidity:
-                    return u.getHumidity();
-                case Light:
-                    return u.getLight();
-                case Temperature:
-                    return u.getTemperature();
-                case OnOff:
-                case OpenClose:
-                    if (u.ai_name.contains("включить")) {
-                        turnDeviceOn(u);
+            Log.w(TAG, "найдено: " + u.ai_name);
+            if (u.getCapabilities() != null) {
+                String onoff = u.getCapabilities().get(Capability.onoff);
+                String openclose = u.getCapabilities().get(Capability.openclose);
+                if (onoff != null || openclose != null) {
+                    list.add(u);
+                    if(!finded) {
                         finded = true;
-                        enabled = true;
-                        text = u.uType == OnOff ? "Включаю" : "Закрываю";
-                    } else if (u.ai_name.contains("выключить")) {
-                        turnDeviceOff(u);
-                        finded = true;
-                        enabled = false;
-                        text = u.uType == OnOff ? "Выключаю" : "Открываю";
-                    } else if (finded)
-                        if (enabled)
-                            turnDeviceOn(u);
-                        else
-                            turnDeviceOff(u);
-                    else if (u.getValue().equals("false") || u.getValue().equals("0")) {
-                        turnDeviceOn(u);
-                        finded = true;
-                        enabled = true;
-                        text = u.uType == OnOff ? "Включаю" : "Закрываю";
-                    } else {
-                        turnDeviceOff(u);
-                        finded = true;
-                        enabled = false;
-                        text = u.uType == OnOff ? "Выключаю" : "Открываю";
+                        if (u.ai_name.contains("включить"))
+                            enabled = true;
+                        else if (u.ai_name.contains("выключить"))
+                            enabled = false;
+                         else if ("0".equals(onoff) || "0".equals(openclose))
+                            enabled = true;
+                         else
+                            enabled = false;
                     }
-                    break;
+                } else {
+                    String measure_temperature = u.getCapabilities().get(Capability.measure_temperature);
+                    if (measure_temperature != null)
+                        return measure_temperature;
+                    String measure_humidity = u.getCapabilities().get(Capability.openclose);
+                    if (measure_humidity != null)
+                        return measure_humidity;
+                    String measure_light = u.getCapabilities().get(Capability.openclose);
+                    if (measure_light != null)
+                        return measure_light;
+                    String measure_co2 = u.getCapabilities().get(Capability.openclose);
+                    if (measure_co2 != null)
+                        return measure_co2;
+                    String measure_pressure = u.getCapabilities().get(Capability.openclose);
+                    if (measure_pressure != null)
+                        return measure_pressure;
+                    String measure_noise = u.getCapabilities().get(Capability.openclose);
+                    if (measure_noise != null)
+                        return measure_noise;
+                }
+            }
+        }
+
+        for (UDevice u : list) {
+            String onoff = u.getCapabilities().get(Capability.onoff);
+            String openclose = u.getCapabilities().get(Capability.openclose);
+            if (enabled) {
+                turnDeviceOn(u);
+                if (onoff != null) {
+                    u.getCapabilities().put(Capability.onoff, "1");
+                    text = "Включаю";
+                }
+                if (openclose != null) {
+                    u.getCapabilities().put(Capability.openclose, "1");
+                    text = "Закрываю";
+                }
+            } else {
+                turnDeviceOff(u);
+                if (onoff != null) {
+                    u.getCapabilities().put(Capability.onoff, "0");
+                    text = "Выключаю";
+                }
+                if (openclose != null) {
+                    u.getCapabilities().put(Capability.openclose, "0");
+                    text = "Открываю";
+                }
             }
         }
         return text;

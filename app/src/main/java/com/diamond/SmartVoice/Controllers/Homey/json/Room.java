@@ -1,5 +1,6 @@
-package com.diamond.SmartVoice.Controllers.Fibaro.json;
+package com.diamond.SmartVoice.Controllers.Homey.json;
 
+import com.diamond.SmartVoice.Controllers.Fibaro.json.Sensor;
 import com.diamond.SmartVoice.Controllers.URoom;
 import com.google.gson.annotations.SerializedName;
 
@@ -8,28 +9,22 @@ import com.google.gson.annotations.SerializedName;
  */
 public class Room extends URoom {
     @SerializedName("id")
-    private int id;
+    private String id;
 
     @SerializedName("name")
     private String name;
 
-    @SerializedName("sectionID")
-    private int sectionID;
-
     @SerializedName("icon")
     private String icon;
 
-    @SerializedName("defaultSensors")
-    private Sensor defaultSensors;
+    @SerializedName("index")
+    private int index;
 
-    @SerializedName("defaultThermostat")
-    private int defaultThermostat;
-
-    @SerializedName("sortOrder")
-    private int sortOrder;
+    @SerializedName("parent")
+    private String parent;
 
     public String getId() {
-        return "" + id;
+        return id;
     }
 
     public String getName() {
