@@ -18,7 +18,7 @@ public class OAuthAccessTokenTask extends AsyncTask<Void, Void, Void> {
     @SuppressLint("StaticFieldLeak")
     private Context context;
 
-    public OAuthAccessTokenTask(Context context) {
+    OAuthAccessTokenTask(Context context) {
 
         this.context = context;
     }

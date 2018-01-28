@@ -5,7 +5,8 @@
     <string name="settings">Настройки</string>
     <string name="devices">Устройства</string>
     <string name="defaultKeyPhrase">умный дом</string>
-    <string name="empty"></string>
+    <string name="empty" />
     <string name="title_activity_get_access_token">GetAccessTokenActivity</string>
+    <string name="login">Login</string>
 
 </resources>

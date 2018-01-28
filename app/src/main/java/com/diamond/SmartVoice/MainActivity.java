@@ -350,7 +350,7 @@ public class MainActivity extends Activity {
                 if (activity.HomeyController == null)
                     activity.show("Homey: контроллер не найден! IP: " + activity.pref.getString("homey_server_ip", ""));
                 else
-                    activity.show("Homey: Найдено " + controller.getVisibleRoomsCount() + " комнат, " + controller.getVisibleDevicesCount() + " устройств и " + controller.getVisibleScenesCount() + " сцен");
+                    activity.show("Homey: Найдено " + controller.getVisibleRoomsCount() + " комнат и " + controller.getVisibleDevicesCount() + " устройств");
                 activity.homeyLoading = false;
                 if (!activity.isLoading())
                     activity.progressBar.setVisibility(View.INVISIBLE);
@@ -443,7 +443,7 @@ public class MainActivity extends Activity {
                 try {
                     if (activity.pref.getBoolean("homey_enabled", false) && activity.HomeyController != null)
                         result = activity.HomeyController.process(params);
-                    if (activity.pref.getBoolean("fibaro_enabled", false) && activity.FibaroController != null)
+                    if (result == null && activity.pref.getBoolean("fibaro_enabled", false) && activity.FibaroController != null)
                         result = activity.FibaroController.process(params);
                     if (result == null && activity.pref.getBoolean("vera_enabled", false) && activity.VeraController != null)
                         result = activity.VeraController.process(params);

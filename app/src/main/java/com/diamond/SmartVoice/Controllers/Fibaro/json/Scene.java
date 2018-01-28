@@ -96,15 +96,7 @@ public class Scene extends UScene {
         return "{" + id + ", " + name + "}";
     }
 
-    private boolean liliScenesOnly = false;
-
-    public void setLiliScenesOnly(boolean value) {
-        liliScenesOnly = value;
-    }
-
     public boolean isVisible() {
-        if (liliScenesOnly && (liliStartCommand == null || liliStartCommand.isEmpty()))
-            return false;
         return visible && super.isVisible();
     }
 }

@@ -22,14 +22,13 @@ import static edu.cmu.pocketsphinx.SpeechRecognizerSetup.defaultSetup;
  */
 public class PocketSphinxRecognizer {
     private static final String KEY_PHRASE_SEARCH = "wakeup";
-    public final String KEYPHRASE;
     private edu.cmu.pocketsphinx.SpeechRecognizer recognizer;
     private static final String TAG = PocketSphinxRecognizer.class.getSimpleName();
     private MainActivity mContext;
 
     public PocketSphinxRecognizer(MainActivity context) {
         this.mContext = context;
-        KEYPHRASE = context.keyphrase;
+        String KEYPHRASE = context.keyphrase;
         try {
             Assets assets = new Assets(mContext);
             File assetDir = assets.syncAssets();
@@ -56,26 +55,26 @@ public class PocketSphinxRecognizer {
         }
     }
 
-    public static void writeStringToFile(final File file, final String data) throws IOException {
+    private static void writeStringToFile(final File file, final String data) throws IOException {
         OutputStream out = null;
         try {
-            out = openOutputStream(file, false);
+            out = openOutputStream(file);
             out.write(data.getBytes(Charset.forName("UTF8")));
             out.close();
         } finally {
             try {
                 if (out != null)
                     out.close();
-            } catch (final IOException ioe) {
+            } catch (final IOException ignored) {
             }
         }
     }
 
-    public static FileOutputStream openOutputStream(final File file, final boolean append) throws IOException {
+    private static FileOutputStream openOutputStream(final File file) throws IOException {
         if (file.exists()) {
             if (file.isDirectory())
                 throw new IOException("File '" + file + "' exists but is a directory");
-            if (file.canWrite() == false)
+            if (!file.canWrite())
                 throw new IOException("File '" + file + "' cannot be written to");
         } else {
             final File parent = file.getParentFile();
@@ -83,7 +82,7 @@ public class PocketSphinxRecognizer {
                 if (!parent.mkdirs() && !parent.isDirectory())
                     throw new IOException("Directory '" + parent + "' could not be created");
         }
-        return new FileOutputStream(file, append);
+        return new FileOutputStream(file, false);
     }
 
     public void destroy() {

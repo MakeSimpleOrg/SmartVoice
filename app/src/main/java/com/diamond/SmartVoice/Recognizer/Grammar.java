@@ -6,7 +6,7 @@ public class Grammar {
     private final Dict mDict;
     private final PhonMapper mPhonMapper;
 
-    public Grammar(PhonMapper phonMapper) {
+    Grammar(PhonMapper phonMapper) {
         mDict = new Dict();
         mPhonMapper = phonMapper;
     }

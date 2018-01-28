@@ -5,7 +5,7 @@ import com.google.gson.annotations.SerializedName;
 /**
  * @author Dmitriy Ponomarev
  */
-public class SceneTriggers {
+class SceneTriggers {
     @SerializedName("properties")
     private SceneProperties[] properties;
 

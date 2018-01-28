@@ -99,12 +99,6 @@ public class Device extends UDevice {
         return type.equals("com.fibaro.setPoint") || type.equals("com.fibaro.thermostatDanfoss") || type.equals("com.fibaro.thermostatHorstmann");
     }
 
-    private boolean devicesWithSaveLogsOnly = false;
-
-    public void setDevicesWithSaveLogsOnly(boolean value) {
-        devicesWithSaveLogsOnly = value;
-    }
-
     public String getValue() {
         if (getProperties() == null || getProperties().getValue() == null)
             return "0";
@@ -112,8 +106,6 @@ public class Device extends UDevice {
     }
 
     public boolean isVisible() {
-        if (devicesWithSaveLogsOnly && getProperties() != null && !"true".equals(getProperties().getSaveLogs()))
-            return false;
         return visible && super.isVisible();
     }
 

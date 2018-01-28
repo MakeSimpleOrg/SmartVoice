@@ -5,7 +5,7 @@ import com.google.gson.annotations.SerializedName;
 /**
  * @author Dmitriy Ponomarev
  */
-public class SceneProperties {
+class SceneProperties {
     @SerializedName("id")
     private String id;
 

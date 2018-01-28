@@ -73,8 +73,10 @@ public class Vera extends Controller {
                             d.addCapability(Capability.onoff, d.getValue().equals("false") || d.getValue().equals("0") ? "0" : "1");
                             break;
                         case DoorLock:
+                            d.addCapability(Capability.openclose, d.getValue().equals("false") || d.getValue().equals("0") ? "close" : "open");
+                            break;
                         case WindowCovering:
-                            d.addCapability(Capability.openclose, d.getValue().equals("false") || d.getValue().equals("0") ? "1" : "0");
+                            d.addCapability(Capability.windowcoverings_state, d.getValue().equals("false") || d.getValue().equals("0") ? "down" : "up");
                             break;
                         case HumiditySensor:
                             d.addCapability(Capability.measure_humidity, d.getHumidity());
@@ -87,7 +89,7 @@ public class Vera extends Controller {
                             break;
                     }
 
-                    if(d.getBatterylevel() != null)
+                    if (d.getBatterylevel() != null)
                         d.addCapability(Capability.measure_battery, d.getBatterylevel());
                     if (d.getKwh() != null)
                         d.addCapability(Capability.meter_power, d.getKwh());
@@ -113,21 +115,14 @@ public class Vera extends Controller {
             Log.w(TAG, "Failed to update data");
         }
 
-        if(all_rooms == null)
+        if (all_rooms == null)
             all_rooms = new Room[0];
-        if(all_devices == null)
+        if (all_devices == null)
             all_devices = new Device[0];
-        if(all_scenes == null)
+        if (all_scenes == null)
             all_scenes = new Scene[0];
     }
 
-    private void setStatus(Device d, String status) {
-        //d.setStatus(status);
-        String service = "urn:upnp-org:serviceId:SwitchPower1";
-        if (CategoryType.DoorLock.equals(d.getCategoryType()))
-            service = "urn:micasaverde-com:serviceId:DoorLock1";
-        sendCommand("/data_request?id=action&DeviceNum=" + d.getId() + "&serviceId=" + service + "&action=SetTarget&newTargetValue=" + status);
-    }
 
     @Override
     public URoom[] getRooms() {
@@ -146,17 +141,37 @@ public class Vera extends Controller {
 
     @Override
     public void turnDeviceOn(UDevice d) {
-        setStatus((Device) d, "1");
+        sendCommand("/data_request?id=action&DeviceNum=" + d.getId() + "&serviceId=urn:upnp-org:serviceId:SwitchPower1&action=SetTarget&newTargetValue=1");
     }
 
     @Override
     public void turnDeviceOff(UDevice d) {
-        setStatus((Device) d, "0");
+        sendCommand("/data_request?id=action&DeviceNum=" + d.getId() + "&serviceId=urn:upnp-org:serviceId:SwitchPower1&action=SetTarget&newTargetValue=0");
+    }
+
+    @Override
+    public void closeLock(UDevice d) {
+        sendCommand("/data_request?id=action&DeviceNum=" + d.getId() + "&serviceId=urn:micasaverde-com:serviceId:DoorLock1&action=SetTarget&newTargetValue=1");
+    }
+
+    @Override
+    public void openLock(UDevice d) {
+        sendCommand("/data_request?id=action&DeviceNum=" + d.getId() + "&serviceId=urn:micasaverde-com:serviceId:DoorLock1&action=SetTarget&newTargetValue=0");
+
+    }
+
+    @Override
+    public void closeWindow(UDevice d) {
+        sendCommand("/data_request?id=action&DeviceNum=" + d.getId() + "&serviceId=urn:upnp-org:serviceId:WindowCovering1&action=Down");
+    }
+
+    @Override
+    public void openWindow(UDevice d) {
+        sendCommand("/data_request?id=action&DeviceNum=" + d.getId() + "&serviceId=urn:upnp-org:serviceId:WindowCovering1&action=Up");
     }
 
     @Override
     public void setDimLevel(UDevice d, String level) {
-        //d.setLevel(level);
         sendCommand("/data_request?id=action&DeviceNum=" + d.getId() + "&serviceId=urn:upnp-org:serviceId:Dimming1&action=SetLoadLevelTarget&newLoadlevelTarget=" + level);
     }
 

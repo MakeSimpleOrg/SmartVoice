@@ -81,14 +81,13 @@ public class Fibaro extends Controller {
                         break;
                     case "com.fibaro.doorLock":
                     case "com.fibaro.gerda":
-                        d.addCapability(Capability.openclose, d.getValue().equals("false") || d.getValue().equals("0") ? "1" : "0");
+                        d.addCapability(Capability.openclose, d.getValue().equals("false") || d.getValue().equals("0") ? "close" : "open");
                         break;
                     case "com.fibaro.FGD212":
                     case "com.fibaro.FGRGBW441M":
                     case "com.fibaro.colorController":
                     case "com.fibaro.FGRM222":
                     case "com.fibaro.FGR221":
-                    case "com.fibaro.rollerShutter":
                     case "com.fibaro.binarySwitch":
                     case "com.fibaro.developer.bxs.virtualBinarySwitch":
                     case "com.fibaro.FGWP101":
@@ -96,9 +95,12 @@ public class Fibaro extends Controller {
                     case "virtual_device":
                         d.addCapability(Capability.onoff, d.getValue().equals("false") || d.getValue().equals("0") ? "0" : "1");
                         break;
+                    case "com.fibaro.rollerShutter":
+                        d.addCapability(Capability.windowcoverings_state, d.getValue().equals("false") || d.getValue().equals("0") ? "up" : "down");
+                        break;
                 }
 
-                if (d.getProperties() != null) {
+                if (d.getProperties() != null && !d.getCapabilities().isEmpty()) {
                     if (d.getProperties().getBatteryLevel() != null)
                         d.addCapability(Capability.measure_battery, d.getProperties().getBatteryLevel());
                     if (d.getProperties().getEnergy() != null)
@@ -127,11 +129,11 @@ public class Fibaro extends Controller {
             e.printStackTrace();
         }
 
-        if(all_rooms == null)
+        if (all_rooms == null)
             all_rooms = new Room[0];
-        if(all_devices == null)
+        if (all_devices == null)
             all_devices = new Device[0];
-        if(all_scenes == null)
+        if (all_scenes == null)
             all_scenes = new Scene[0];
     }
 
@@ -158,6 +160,26 @@ public class Fibaro extends Controller {
     @Override
     public void turnDeviceOff(UDevice d) {
         sendCommand("/api/callAction?deviceID=" + d.getId() + "&name=turnOff");
+    }
+
+    @Override
+    public void closeLock(UDevice d) {
+        turnDeviceOn(d);
+    }
+
+    @Override
+    public void openLock(UDevice d) {
+        turnDeviceOff(d);
+    }
+
+    @Override
+    public void closeWindow(UDevice d) {
+        turnDeviceOn(d);
+    }
+
+    @Override
+    public void openWindow(UDevice d) {
+        turnDeviceOff(d);
     }
 
     @Override

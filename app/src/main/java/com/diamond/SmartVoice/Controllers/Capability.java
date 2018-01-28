@@ -3,6 +3,7 @@ package com.diamond.SmartVoice.Controllers;
 public enum Capability {
     onoff,
     openclose,
+    windowcoverings_state,
     dim,
     light_hue,
     light_saturation,

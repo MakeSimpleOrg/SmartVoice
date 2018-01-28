@@ -7,6 +7,7 @@ import java.util.HashMap;
  */
 public abstract class UDevice {
     public String ai_name;
+    public int ai_flag = 0;
 
     public abstract String getId();
 
@@ -20,13 +21,11 @@ public abstract class UDevice {
 
     private HashMap<Capability, String> _capabilities = new HashMap<>();
 
-    public void addCapability(Capability cap, String value)
-    {
+    public void addCapability(Capability cap, String value) {
         _capabilities.put(cap, value);
     }
 
-    public HashMap<Capability, String> getCapabilities()
-    {
+    public HashMap<Capability, String> getCapabilities() {
         return _capabilities;
     }
 }

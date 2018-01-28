@@ -150,6 +150,14 @@ public abstract class Controller {
 
     public abstract void turnDeviceOff(UDevice d);
 
+    public abstract void closeLock(UDevice d);
+
+    public abstract void openLock(UDevice d);
+
+    public abstract void closeWindow(UDevice d);
+
+    public abstract void openWindow(UDevice d);
+
     public abstract void setDimLevel(UDevice d, String level);
 
     public abstract void setColor(UDevice d, int r, int g, int b, int w);
@@ -178,36 +186,30 @@ public abstract class Controller {
             if (u.getCapabilities() != null) {
                 String onoff = u.getCapabilities().get(Capability.onoff);
                 String openclose = u.getCapabilities().get(Capability.openclose);
-                if (onoff != null || openclose != null) {
+                String windowcoverings_state = u.getCapabilities().get(Capability.windowcoverings_state);
+                if (onoff != null || openclose != null || windowcoverings_state != null) {
                     list.add(u);
-                    if(!finded) {
+                    if (!finded) {
                         finded = true;
-                        if (u.ai_name.contains("включить"))
-                            enabled = true;
-                        else if (u.ai_name.contains("выключить"))
-                            enabled = false;
-                         else if ("0".equals(onoff) || "0".equals(openclose))
-                            enabled = true;
-                         else
-                            enabled = false;
+                        enabled = u.ai_flag == 1 || u.ai_flag != 2 && ("0".equals(onoff) || "open".equals(openclose) || "up".equals(windowcoverings_state));
                     }
                 } else {
                     String measure_temperature = u.getCapabilities().get(Capability.measure_temperature);
                     if (measure_temperature != null)
                         return measure_temperature;
-                    String measure_humidity = u.getCapabilities().get(Capability.openclose);
+                    String measure_humidity = u.getCapabilities().get(Capability.measure_humidity);
                     if (measure_humidity != null)
                         return measure_humidity;
-                    String measure_light = u.getCapabilities().get(Capability.openclose);
+                    String measure_light = u.getCapabilities().get(Capability.measure_light);
                     if (measure_light != null)
                         return measure_light;
-                    String measure_co2 = u.getCapabilities().get(Capability.openclose);
+                    String measure_co2 = u.getCapabilities().get(Capability.measure_co2);
                     if (measure_co2 != null)
                         return measure_co2;
-                    String measure_pressure = u.getCapabilities().get(Capability.openclose);
+                    String measure_pressure = u.getCapabilities().get(Capability.measure_pressure);
                     if (measure_pressure != null)
                         return measure_pressure;
-                    String measure_noise = u.getCapabilities().get(Capability.openclose);
+                    String measure_noise = u.getCapabilities().get(Capability.measure_noise);
                     if (measure_noise != null)
                         return measure_noise;
                 }
@@ -217,24 +219,37 @@ public abstract class Controller {
         for (UDevice u : list) {
             String onoff = u.getCapabilities().get(Capability.onoff);
             String openclose = u.getCapabilities().get(Capability.openclose);
+            String windowcoverings_state = u.getCapabilities().get(Capability.windowcoverings_state);
             if (enabled) {
-                turnDeviceOn(u);
                 if (onoff != null) {
+                    turnDeviceOn(u);
                     u.getCapabilities().put(Capability.onoff, "1");
                     text = "Включаю";
                 }
                 if (openclose != null) {
-                    u.getCapabilities().put(Capability.openclose, "1");
+                    closeLock(u);
+                    u.getCapabilities().put(Capability.openclose, "close");
+                    text = "Закрываю";
+                }
+                if (windowcoverings_state != null) {
+                    closeWindow(u);
+                    u.getCapabilities().put(Capability.windowcoverings_state, "down");
                     text = "Закрываю";
                 }
             } else {
-                turnDeviceOff(u);
                 if (onoff != null) {
+                    turnDeviceOff(u);
                     u.getCapabilities().put(Capability.onoff, "0");
                     text = "Выключаю";
                 }
                 if (openclose != null) {
-                    u.getCapabilities().put(Capability.openclose, "0");
+                    openLock(u);
+                    u.getCapabilities().put(Capability.openclose, "open");
+                    text = "Открываю";
+                }
+                if (windowcoverings_state != null) {
+                    openWindow(u);
+                    u.getCapabilities().put(Capability.windowcoverings_state, "up");
                     text = "Открываю";
                 }
             }

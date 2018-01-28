@@ -97,18 +97,18 @@ public class PhonMapper {
         if (mPhons.containsKey(str))
             return mPhons.get(str);
 
-        String result = "";
+        StringBuilder result = new StringBuilder();
         boolean first = true;
         for (String ch : str.split("")) {
             String phon = phons.get(ch);
             if (phon != null) {
                 if (!first)
-                    result += " ";
-                result += phon;
+                    result.append(" ");
+                result.append(phon);
                 first = false;
             } else
                 Log.w(TAG, "NULL phon: " + ch);
         }
-        return result;
+        return result.toString();
     }
 }

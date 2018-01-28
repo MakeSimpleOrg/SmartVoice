@@ -113,6 +113,9 @@ public class Homey extends Controller {
                                     case onoff:
                                         entry.setValue("true".equals(entry.getValue()) ? "1" : "0");
                                         break;
+                                    case windowcoverings_state:
+                                        entry.setValue("up".equals(entry.getValue()) ? "up" : "down");
+                                        break;
                                     case measure_battery:
                                     case measure_power:
                                     case meter_power:
@@ -150,9 +153,9 @@ public class Homey extends Controller {
             e.printStackTrace();
         }
 
-        if(all_rooms == null)
+        if (all_rooms == null)
             all_rooms = new Room[0];
-        if(all_devices == null)
+        if (all_devices == null)
             all_devices = new Device[0];
     }
 
@@ -179,6 +182,26 @@ public class Homey extends Controller {
     @Override
     public void turnDeviceOff(UDevice d) {
         sendJSON("/api/manager/devices/device/" + d.getId() + "/state/", "{\"onoff\": false}");
+    }
+
+    @Override
+    public void closeLock(UDevice d) {
+        sendJSON("/api/manager/devices/device/" + d.getId() + "/state/", "{\"onoff\": true}");
+    }
+
+    @Override
+    public void openLock(UDevice d) {
+        sendJSON("/api/manager/devices/device/" + d.getId() + "/state/", "{\"onoff\": false}");
+    }
+
+    @Override
+    public void closeWindow(UDevice d) {
+        sendJSON("/api/manager/devices/device/" + d.getId() + "/state/", "{\"windowcoverings_state\": \"down\"}");
+    }
+
+    @Override
+    public void openWindow(UDevice d) {
+        sendJSON("/api/manager/devices/device/" + d.getId() + "/state/", "{\"windowcoverings_state\": \"up\"}");
     }
 
     @Override

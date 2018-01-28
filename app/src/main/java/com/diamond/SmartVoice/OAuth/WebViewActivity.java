@@ -9,10 +9,12 @@ import android.webkit.CookieSyncManager;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import com.diamond.SmartVoice.MainActivity;
 import com.diamond.SmartVoice.R;
 import com.diamond.SmartVoice.SettingsActivity;
 
 public class WebViewActivity extends Activity {
+    public static MainActivity mainActivity;
     public static SettingsActivity settingsActivity;
 
     WebView webview;
@@ -22,14 +24,9 @@ public class WebViewActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.webview);
-
         webview = (WebView) findViewById(R.id.webview);
-
-        //Log.w("Webview", "WebviewActivity" + getIntent().getExtras().getString("url"));
-
         webview.clearCache(true);
         webview.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
-
         webview.setWebViewClient(new WebViewClient() {
             @Override
             public void onPageFinished(WebView view, String url) {
@@ -44,6 +41,8 @@ public class WebViewActivity extends Activity {
                                 System.out.println("BEARER: " + m[1]);
                                 PreferenceManager.getDefaultSharedPreferences(WebViewActivity.this).edit().putString("homey_bearer", m[1]).apply();
                                 settingsActivity.findPreference("homey_bearer").setSummary(m[1]);
+                                if (!mainActivity.pref.getString("homey_server_ip", "").isEmpty())
+                                    MainActivity.setupHomey(mainActivity);
                                 WebViewActivity.this.finish();
                             }
                         }

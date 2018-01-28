@@ -9,7 +9,7 @@ import java.util.Arrays;
 import java.util.Locale;
 
 /**
- * Created by diamond on 09.05.2017.
+ * @author Dmitriy Ponomarev
  */
 public class AI {
     private static final String TAG = AI.class.getSimpleName();
@@ -42,8 +42,7 @@ public class AI {
         String[] s = str.split(" ");
         if (s.length > 2 && name.split(" ").length > 1) {
             String str2 = s[2] + " " + s[1];
-            if ((str.contains("включи") || str.contains("выключи") || str.contains("открой") || str.contains("закрой")) && matches(name, str2, accuracy))
-                return true;
+            return (str.contains("включи") || str.contains("выключи") || str.contains("открой") || str.contains("закрой")) && matches(name, str2, accuracy);
         }
         return false;
     }
@@ -56,7 +55,7 @@ public class AI {
         return str.trim();
     }
 
-    public static UDevice[] findDevices(UDevice[] devices, String[] strs, int accuracy) {
+    private static UDevice[] findDevices(UDevice[] devices, String[] strs, int accuracy) {
         int count = 0;
         d1:
         for (UDevice d : devices)
@@ -77,6 +76,7 @@ public class AI {
         String name2[];
         d2:
         for (UDevice d : devices) {
+            d.ai_flag = 0;
             for (String str : strs) {
                 str = replaceMistakes(str);
                 if (matches(d.ai_name, str, accuracy)) {
@@ -84,11 +84,10 @@ public class AI {
                     continue d2;
                 } else if (matchesOnOff(d.ai_name, str, accuracy)) {
                     result[i++] = d;
-                    name2 = d.ai_name.split(" ");
                     if (str.contains("включи") || str.contains("закрой"))
-                        d.ai_name = name2[0] + " включить " + name2[1] + (name2.length > 2 ? (" " + name2[2]) : "");
-                    else if (str.contains("выключи"))
-                        d.ai_name = name2[0] + " выключить " + name2[1] + (name2.length > 2 ? (" " + name2[2]) : "");
+                        d.ai_flag = 1;
+                    else if (str.contains("выключи") || str.contains("открой"))
+                        d.ai_flag = 2;
                     continue d2;
                 }
             }
@@ -96,7 +95,7 @@ public class AI {
         return result;
     }
 
-    public static UScene[] findScenes(UScene[] scenes, String[] strs, int accuracy) {
+    private static UScene[] findScenes(UScene[] scenes, String[] strs, int accuracy) {
         int count = 0;
         d1:
         for (UScene s : scenes)
