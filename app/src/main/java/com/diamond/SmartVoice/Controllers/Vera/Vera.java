@@ -43,11 +43,15 @@ public class Vera extends Controller {
             all_devices = new Device[data.getDevices().size()];
             all_scenes = new Scene[data.getScenes().size()];
 
+            int i = 0;
+            for (Room r : data.getRooms())
+                all_rooms[i++] = r;
+
             if (clearNames)
                 for (Room r : all_rooms)
                     r.setName(AI.replaceTrash(r.getName()));
 
-            int i = 0;
+            i = 0;
             for (Device d : data.getDevices()) {
                 all_devices[i++] = d;
                 d.ai_name = d.getName();

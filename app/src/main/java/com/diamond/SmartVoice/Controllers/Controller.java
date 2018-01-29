@@ -21,13 +21,15 @@ public abstract class Controller {
 
     protected Gson gson;
     protected String host;
+    protected String host_ext;
     protected String auth;
     protected String bearer;
     protected boolean clearNames;
 
     protected String request(String request) throws IOException {
         String result;
-        URL url = new URL("http://" + host + request);
+        URL url = host_ext != null ? new URL("https://" + host_ext + request) : new URL("http://" + host + request);
+        Log.d(TAG, "Sending request: " + url);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("GET");
         if (auth != null)
@@ -49,9 +51,9 @@ public abstract class Controller {
     }
 
     protected void sendCommand(String request) {
-        Log.d(TAG, "Sending command: " + request);
         try {
-            URL url = new URL("http://" + host + request);
+            URL url = host_ext != null ? new URL("https://" + host_ext + request) : new URL("http://" + host + request);
+            Log.d(TAG, "Sending command: " + url);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
             if (auth != null)

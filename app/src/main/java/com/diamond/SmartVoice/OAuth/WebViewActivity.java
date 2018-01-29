@@ -34,17 +34,29 @@ public class WebViewActivity extends Activity {
                     CookieSyncManager.getInstance().sync();
                     String cookies = CookieManager.getInstance().getCookie(url);
                     if (cookies != null && !cookies.isEmpty() && cookies.contains("bearer_token")) {
+                        String bearer = null;
+                        String homey_id = null;
                         String[] all = cookies.split("; ");
                         for (String k : all) {
                             String[] m = k.split("=");
-                            if ("bearer_token".equals(m[0])) {
-                                System.out.println("BEARER: " + m[1]);
-                                PreferenceManager.getDefaultSharedPreferences(WebViewActivity.this).edit().putString("homey_bearer", m[1]).apply();
-                                settingsActivity.findPreference("homey_bearer").setSummary(m[1]);
-                                if (!mainActivity.pref.getString("homey_server_ip", "").isEmpty())
-                                    MainActivity.setupHomey(mainActivity);
-                                WebViewActivity.this.finish();
-                            }
+                            if ("bearer_token".equals(m[0]))
+                                bearer = m[1];
+                            if ("homey_id".equals(m[0]))
+                                homey_id = m[1];
+                        }
+
+                        if (bearer != null) {
+                            System.out.println("bearer: " + bearer);
+                            System.out.println("homey_id: " + homey_id);
+                            PreferenceManager.getDefaultSharedPreferences(WebViewActivity.this).edit().putString("homey_bearer", bearer).apply();
+                            settingsActivity.findPreference("homey_bearer").setSummary(bearer);
+
+                            PreferenceManager.getDefaultSharedPreferences(WebViewActivity.this).edit().putString("homey_id", homey_id).apply();
+
+                            if (!mainActivity.pref.getString("homey_server_ip", "").isEmpty())
+                                MainActivity.setupHomey(mainActivity);
+
+                            WebViewActivity.this.finish();
                         }
                     }
                 } catch (Exception e) {

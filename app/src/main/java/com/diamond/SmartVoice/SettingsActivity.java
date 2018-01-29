@@ -36,6 +36,7 @@ public class SettingsActivity extends PreferenceActivity {
         bindPreferenceSummaryToValue(findPreference("keywordThreshold"));
 
         findPreference("homey_enabled").setOnPreferenceChangeListener(sBindPreferenceChangeListener);
+        findPreference("homey_server_ip").setOnPreferenceChangeListener(sBindPreferenceChangeListener);
         findPreference("fibaro_enabled").setOnPreferenceChangeListener(sBindPreferenceChangeListener);
         findPreference("vera_enabled").setOnPreferenceChangeListener(sBindPreferenceChangeListener);
         findPreference("tts_enabled").setOnPreferenceChangeListener(sBindPreferenceChangeListener);
@@ -73,7 +74,7 @@ public class SettingsActivity extends PreferenceActivity {
             } else if (preference.getKey().equals("offline_recognition")) {
                 mainActivity.offline_recognition = (Boolean) value;
                 mainActivity.setupRecognizer();
-            } else if (preference.getKey().equals("homey_enabled") && (Boolean) value) {
+            } else if ((preference.getKey().equals("homey_enabled") || preference.getKey().equals("homey_server_ip")) && (Boolean) value) {
                 if (!pref.getString("homey_server_ip", "").isEmpty() && !pref.getString("homey_bearer", "").isEmpty())
                     MainActivity.setupHomey(mainActivity);
                 else if (pref.getString("homey_bearer", "").isEmpty()) {

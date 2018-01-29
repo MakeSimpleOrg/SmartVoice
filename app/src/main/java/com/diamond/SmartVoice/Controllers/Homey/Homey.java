@@ -33,6 +33,11 @@ public class Homey extends Controller {
 
     public Homey(SharedPreferences pref) {
         host = pref.getString("homey_server_ip", "");
+        /* TODO config & home wifi detect
+        String homey_id = pref.getString("homey_id", null);
+        if (homey_id != null)
+            host_ext = homey_id + ".homey.athom.com";
+        */
         bearer = pref.getString("homey_bearer", "");
         clearNames = true; // TODO config
         gson = new Gson();
