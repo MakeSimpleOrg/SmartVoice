@@ -30,6 +30,8 @@ public class Vera extends Controller {
 
     public Vera(SharedPreferences pref) {
         host = pref.getString("vera_server_ip", "");
+        if(!host.contains(":"))
+            host += ":3480";
         clearNames = true; // TODO config
         gson = new Gson();
         updateData();
