@@ -315,9 +315,9 @@ public class MainActivity extends Activity {
             protected void onPostExecute(Homey controller) {
                 activity.HomeyController = controller;
                 if (activity.HomeyController == null)
-                    activity.show("Homey: " + activity.getString(R.string.controler_not_found) + activity.pref.getString("homey_server_ip", ""));
+                    activity.show("Homey: " + activity.getString(R.string.controler_not_found)  + " " +  activity.pref.getString("homey_server_ip", ""));
                 else
-                    activity.show("Homey: " + activity.getString(R.string.found) + controller.getVisibleRoomsCount() + activity.getString(R.string.found_rooms_and) + controller.getVisibleDevicesCount() + activity.getString(R.string.found_devices));
+                    activity.show("Homey: " + activity.getString(R.string.found) + " " + controller.getVisibleRoomsCount() + " " + activity.getString(R.string.found_rooms_and) + " " + controller.getVisibleDevicesCount() + " " + activity.getString(R.string.found_devices));
                 activity.homeyLoading = false;
                 if (!activity.isLoading())
                     activity.progressBar.setVisibility(View.INVISIBLE);
@@ -346,9 +346,9 @@ public class MainActivity extends Activity {
             protected void onPostExecute(Fibaro controller) {
                 activity.FibaroController = controller;
                 if (activity.FibaroController == null)
-                    activity.show("Fibaro: " + activity.getString(R.string.controler_not_found) + activity.pref.getString("fibaro_server_ip", ""));
+                    activity.show("Fibaro: " + activity.getString(R.string.controler_not_found)  + " " +  activity.pref.getString("fibaro_server_ip", ""));
                 else
-                    activity.show("Fibaro: " + activity.getString(R.string.found) + controller.getVisibleRoomsCount() + activity.getString(R.string.found_rooms) + controller.getVisibleDevicesCount() + activity.getString(R.string.found_devices_and) + controller.getVisibleScenesCount() + activity.getString(R.string.found_scene));
+                    activity.show("Fibaro: " + activity.getString(R.string.found)  + " " +  controller.getVisibleRoomsCount()  + " " +  activity.getString(R.string.found_rooms)  + " " +  controller.getVisibleDevicesCount()  + " " +  activity.getString(R.string.found_devices_and)  + " " +  controller.getVisibleScenesCount() + activity.getString(R.string.found_scene));
                 activity.fibaroLoading = false;
                 if (!activity.isLoading())
                     activity.progressBar.setVisibility(View.INVISIBLE);
@@ -377,9 +377,9 @@ public class MainActivity extends Activity {
             protected void onPostExecute(Vera controller) {
                 activity.VeraController = controller;
                 if (activity.VeraController == null) {
-                    activity.show("Vera: " + activity.getString(R.string.controler_not_found) + activity.pref.getString("vera_server_ip", ""));
+                    activity.show("Vera: " + activity.getString(R.string.controler_not_found)  + " " +  activity.pref.getString("vera_server_ip", ""));
                 } else {
-                    activity.show("Vera: " + activity.getString(R.string.found) + controller.getVisibleRoomsCount() + activity.getString(R.string.found_rooms) + controller.getVisibleDevicesCount() + activity.getString(R.string.found_devices_and) + controller.getVisibleScenesCount() + activity.getString(R.string.found_scene));
+                    activity.show("Vera: " + activity.getString(R.string.found)  + " " +  controller.getVisibleRoomsCount()  + " " +  activity.getString(R.string.found_rooms)  + " " +  controller.getVisibleDevicesCount()  + " " +  activity.getString(R.string.found_devices_and)  + " " +  controller.getVisibleScenesCount()  + " " +  activity.getString(R.string.found_scene));
                 }
                 activity.veraLoading = false;
                 if (!activity.isLoading())

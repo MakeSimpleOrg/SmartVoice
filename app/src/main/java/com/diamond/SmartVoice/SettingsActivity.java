@@ -74,7 +74,7 @@ public class SettingsActivity extends PreferenceActivity {
             } else if (preference.getKey().equals("offline_recognition")) {
                 mainActivity.offline_recognition = (Boolean) value;
                 mainActivity.setupRecognizer();
-            } else if ((preference.getKey().equals("homey_enabled") || preference.getKey().equals("homey_server_ip")) && (Boolean) value) {
+            } else if ((preference.getKey().equals("homey_enabled") && (Boolean) value || preference.getKey().equals("homey_server_ip") && value instanceof String && !((String) value).isEmpty())) {
                 if (!pref.getString("homey_server_ip", "").isEmpty() && !pref.getString("homey_bearer", "").isEmpty())
                     MainActivity.setupHomey(mainActivity);
                 else if (pref.getString("homey_bearer", "").isEmpty()) {
