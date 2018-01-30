@@ -36,7 +36,7 @@
         android:layout_alignEnd="@+id/linearLayout1"
         android:layout_alignParentTop="true"
         android:layout_alignRight="@+id/linearLayout1"
-        android:text="@string/settings" />
+        android:text="@string/options" />
 
     <ProgressBar
         android:id="@+id/progressBar"

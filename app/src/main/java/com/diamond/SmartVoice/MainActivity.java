@@ -57,8 +57,10 @@ public class MainActivity extends Activity {
 
     private View progressBar;
 
-    public String keyphrase = "умный дом";
+    public String keyphrase;
     public boolean offline_recognition = false;
+
+    public boolean debug = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,7 +69,7 @@ public class MainActivity extends Activity {
 
         pref = PreferenceManager.getDefaultSharedPreferences(this);
 
-        keyphrase = pref.getString("keyphrase", "умный дом");
+        keyphrase = pref.getString("keyphrase", getString(R.string.defaultKeyPhrase));
         offline_recognition = pref.getBoolean("offline_recognition", false);
 
         try {
@@ -135,127 +137,92 @@ public class MainActivity extends Activity {
 
         progressBar.setVisibility(View.VISIBLE);
 
-        Runnable load;
-        Thread thread;
-
         if (pref.getBoolean("keyRecognizer", false)) {
-            load = new LoadData1();
-            thread = new Thread(load);
-            thread.start();
-        }
-
-        load = new LoadData2();
-        thread = new Thread(load);
-        thread.start();
-
-        if (pref.getBoolean("tts_enabled", false)) {
-            load = new LoadData3();
-            thread = new Thread(load);
-            thread.start();
-        }
-
-        load = new LoadData4();
-        thread = new Thread(load);
-        thread.start();
-
-        if (pref.getBoolean("homey_enabled", false)) {
-            load = new LoadData5();
-            thread = new Thread(load);
-            thread.start();
-        }
-
-        if (pref.getBoolean("fibaro_enabled", false)) {
-            load = new LoadData6();
-            thread = new Thread(load);
-            thread.start();
-        }
-
-        if (pref.getBoolean("vera_enabled", false)) {
-            load = new LoadData7();
-            thread = new Thread(load);
-            thread.start();
-        }
-    }
-
-    class LoadData1 implements Runnable {
-        @Override
-        public void run() {
-            setupKeyphraseRecognizer();
-        }
-    }
-
-    class LoadData2 implements Runnable {
-        @Override
-        public void run() {
-            MainActivity.this.runOnUiThread(new Runnable() {
+            new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    setupRecognizer();
+                    setupKeyphraseRecognizer();
                 }
-            });
+            }).start();
         }
-    }
 
-    class LoadData3 implements Runnable {
-        @Override
-        public void run() {
-            setupTTS();
-        }
-    }
-
-    class LoadData4 implements Runnable {
-        @Override
-        public void run() {
-            while (isLoading()) {
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                    show("Error 2: " + e.getMessage());
-                }
-            }
-
-            isLoading = false;
-
-            progressBar.post(new Runnable() {
-                @Override
-                public void run() {
-                    progressBar.setVisibility(View.INVISIBLE);
-                }
-            });
-
-            if (keyPhraseRecognizer != null)
-                keyPhraseRecognizer.startListening();
-
-            if (pref.getBoolean("tts_enabled", false))
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
                 MainActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        speak("Слушаю", false);
+                        setupRecognizer();
                     }
                 });
-        }
-    }
+            }
+        }).start();
 
-    class LoadData5 implements Runnable {
-        @Override
-        public void run() {
-            setupHomey(MainActivity.this);
-        }
-    }
+        if (pref.getBoolean("tts_enabled", false))
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    setupTTS();
+                }
+            }).start();
 
-    class LoadData6 implements Runnable {
-        @Override
-        public void run() {
-            setupFibaro(MainActivity.this);
-        }
-    }
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (isLoading()) {
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                        show("Error 2: " + e.getMessage());
+                    }
+                }
 
-    class LoadData7 implements Runnable {
-        @Override
-        public void run() {
-            setupVera(MainActivity.this);
-        }
+                isLoading = false;
+
+                progressBar.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        progressBar.setVisibility(View.INVISIBLE);
+                    }
+                });
+
+                if (keyPhraseRecognizer != null)
+                    keyPhraseRecognizer.startListening();
+
+                if (pref.getBoolean("tts_enabled", false))
+                    MainActivity.this.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            speak("Слушаю", false);
+                        }
+                    });
+            }
+        }).start();
+
+        if (pref.getBoolean("homey_enabled", false))
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    setupHomey(MainActivity.this);
+                }
+            }).start();
+
+        if (pref.getBoolean("fibaro_enabled", false))
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    setupFibaro(MainActivity.this);
+                }
+            }).start();
+
+        if (pref.getBoolean("vera_enabled", false))
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    setupVera(MainActivity.this);
+                }
+            }).start();
     }
 
     private boolean isLoading() {
@@ -335,7 +302,7 @@ public class MainActivity extends Activity {
             protected Homey doInBackground(Void... params) {
                 Homey controller = null;
                 try {
-                    controller = new Homey(activity.pref);
+                    controller = new Homey(activity);
                 } catch (Exception e) {
                     e.printStackTrace();
                     activity.show("Error 6: " + e.getMessage());
@@ -348,9 +315,9 @@ public class MainActivity extends Activity {
             protected void onPostExecute(Homey controller) {
                 activity.HomeyController = controller;
                 if (activity.HomeyController == null)
-                    activity.show("Homey: контроллер не найден! IP: " + activity.pref.getString("homey_server_ip", ""));
+                    activity.show("Homey: " + activity.getString(R.string.controler_not_found) + activity.pref.getString("homey_server_ip", ""));
                 else
-                    activity.show("Homey: Найдено " + controller.getVisibleRoomsCount() + " комнат и " + controller.getVisibleDevicesCount() + " устройств");
+                    activity.show("Homey: " + activity.getString(R.string.found) + controller.getVisibleRoomsCount() + activity.getString(R.string.found_rooms_and) + controller.getVisibleDevicesCount() + activity.getString(R.string.found_devices));
                 activity.homeyLoading = false;
                 if (!activity.isLoading())
                     activity.progressBar.setVisibility(View.INVISIBLE);
@@ -366,7 +333,7 @@ public class MainActivity extends Activity {
             protected Fibaro doInBackground(Void... params) {
                 Fibaro controller = null;
                 try {
-                    controller = new Fibaro(activity.pref);
+                    controller = new Fibaro(activity);
                 } catch (Exception e) {
                     e.printStackTrace();
                     activity.show("Error 6: " + e.getMessage());
@@ -379,9 +346,9 @@ public class MainActivity extends Activity {
             protected void onPostExecute(Fibaro controller) {
                 activity.FibaroController = controller;
                 if (activity.FibaroController == null)
-                    activity.show("Fibaro: контроллер не найден! IP: " + activity.pref.getString("fibaro_server_ip", ""));
+                    activity.show("Fibaro: " + activity.getString(R.string.controler_not_found) + activity.pref.getString("fibaro_server_ip", ""));
                 else
-                    activity.show("Fibaro: Найдено " + controller.getVisibleRoomsCount() + " комнат, " + controller.getVisibleDevicesCount() + " устройств и " + controller.getVisibleScenesCount() + " сцен");
+                    activity.show("Fibaro: " + activity.getString(R.string.found) + controller.getVisibleRoomsCount() + activity.getString(R.string.found_rooms) + controller.getVisibleDevicesCount() + activity.getString(R.string.found_devices_and) + controller.getVisibleScenesCount() + activity.getString(R.string.found_scene));
                 activity.fibaroLoading = false;
                 if (!activity.isLoading())
                     activity.progressBar.setVisibility(View.INVISIBLE);
@@ -397,7 +364,7 @@ public class MainActivity extends Activity {
             protected Vera doInBackground(Void... params) {
                 Vera controller = null;
                 try {
-                    controller = new Vera(activity.pref);
+                    controller = new Vera(activity);
                 } catch (Exception e) {
                     e.printStackTrace();
                     activity.show("Error 7: " + e.getMessage());
@@ -410,9 +377,9 @@ public class MainActivity extends Activity {
             protected void onPostExecute(Vera controller) {
                 activity.VeraController = controller;
                 if (activity.VeraController == null) {
-                    activity.show("Vera: Контроллер не найден! IP: " + activity.pref.getString("vera_server_ip", ""));
+                    activity.show("Vera: " + activity.getString(R.string.controler_not_found) + activity.pref.getString("vera_server_ip", ""));
                 } else {
-                    activity.show("Vera: Найдено " + controller.getVisibleRoomsCount() + " комнат, " + controller.getVisibleDevicesCount() + " устройств и " + controller.getVisibleScenesCount() + " сцен");
+                    activity.show("Vera: " + activity.getString(R.string.found) + controller.getVisibleRoomsCount() + activity.getString(R.string.found_rooms) + controller.getVisibleDevicesCount() + activity.getString(R.string.found_devices_and) + controller.getVisibleScenesCount() + activity.getString(R.string.found_scene));
                 }
                 activity.veraLoading = false;
                 if (!activity.isLoading())
@@ -436,9 +403,9 @@ public class MainActivity extends Activity {
         new AsyncTask<String, Void, String>() {
             @Override
             protected String doInBackground(String... params) {
-                Log.w(TAG, "Вы сказали: " + Arrays.toString(params));
+                Log.w(TAG, activity.getString(R.string.you_say) + Arrays.toString(params));
                 if (!activity.pref.getBoolean("homey_enabled", false) && !activity.pref.getBoolean("fibaro_enabled", false) && !activity.pref.getBoolean("vera_enabled", false) || activity.HomeyController == null && activity.FibaroController == null && activity.VeraController == null)
-                    return "Нечем управлять";
+                    return activity.getString(R.string.nothing_to_manage);
                 String result = null;
                 try {
                     if (activity.pref.getBoolean("homey_enabled", false) && activity.HomeyController != null)
@@ -459,7 +426,7 @@ public class MainActivity extends Activity {
                 if (result != null)
                     activity.speak(result);
                 else
-                    activity.speak("Повтори!");
+                    activity.speak(activity.getString(R.string.repeat));
                 activity.buttonOff();
             }
         }.execute(variants);
@@ -503,7 +470,7 @@ public class MainActivity extends Activity {
         }
     }
 
-    private void show(String text) {
+    public void show(String text) {
         try {
             Toast.makeText(MainActivity.this, text, Toast.LENGTH_LONG).show();
         } catch (Exception e) {

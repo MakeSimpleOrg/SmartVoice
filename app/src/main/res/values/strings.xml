@@ -2,11 +2,38 @@
 <resources>
 
     <string name="app_name">Smart Voice</string>
-    <string name="settings">Настройки</string>
-    <string name="devices">Устройства</string>
-    <string name="defaultKeyPhrase">умный дом</string>
+    <string name="options">Options</string>
+    <string name="defaultKeyPhrase">smart home</string>
     <string name="empty" />
     <string name="title_activity_get_access_token">GetAccessTokenActivity</string>
     <string name="login">Login</string>
+    <string name="controler_not_found">controller not found! IP:</string>
+    <string name="found">Found</string>
+    <string name="found_rooms_and">rooms and</string>
+    <string name="found_rooms">rooms,</string>
+    <string name="found_devices">devices</string>
+    <string name="found_devices_and">devices and</string>
+    <string name="found_scene">scenes</string>
+    <string name="you_say">You said:</string>
+    <string name="nothing_to_manage">Nothing to manage</string>
+    <string name="repeat">Repeate!</string>
+    <string name="devices">Devices</string>
+    <string name="scenes">Scenes</string>
+    <string name="error">Error</string>
+    <string name="switched_on">Switched on</string>
+    <string name="switched_off">Switched off</string>
+    <string name="closed">Closed</string>
+    <string name="open">Open</string>
+    <string name="scene_launched">Scene launched</string>
+    <string name="HomeyServerAddress">Homey: Server Address</string>
+    <string name="FibaroServerAddress">Fibaro: Server Address</string>
+    <string name="FibaroLogin">Fibaro: Login</string>
+    <string name="FibaroPassword">Fibaro: Password</string>
+    <string name="VeraServerAddress">Vera: Server Address</string>
+    <string name="VoiceActivation">Voice Activation</string>
+    <string name="KeyPhrase">Key Phrase</string>
+    <string name="Sensitivity">Sensitivity (1–100)</string>
+    <string name="OfflineRecognition">Offline Recognition</string>
+    <string name="VoiceResponses">Voice Responses</string>
 
 </resources>

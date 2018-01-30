@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Smart Voice</string>
+    <string name="options">Настройки</string>
+    <string name="defaultKeyPhrase">умный дом</string>
+    <string name="empty" />
+    <string name="title_activity_get_access_token">GetAccessTokenActivity</string>
+    <string name="login">Login</string>
+    <string name="controler_not_found">контроллер не найден! IP:</string>
+    <string name="found">Найдено</string>
+    <string name="found_rooms_and">комнат и</string>
+    <string name="found_rooms">комнат,</string>
+    <string name="found_devices">устройств</string>
+    <string name="found_devices_and">устройств и</string>
+    <string name="found_scene">сцен</string>
+    <string name="you_say">Вы сказали:</string>
+    <string name="nothing_to_manage">Нечем управлять</string>
+    <string name="repeat">Повтори!</string>
+    <string name="devices">Устройства</string>
+    <string name="scenes">Сцены</string>
+    <string name="error">Ошибка</string>
+    <string name="switched_on">Включаю</string>
+    <string name="switched_off">Выключаю</string>
+    <string name="closed">Закрываю</string>
+    <string name="open">Открываю</string>
+    <string name="scene_launched">Сцена активирована</string>
+    <string name="HomeyServerAddress">Homey: Адрес сервера</string>
+    <string name="FibaroServerAddress">Fibaro: Адрес сервера</string>
+    <string name="FibaroLogin">Fibaro: Логин</string>
+    <string name="FibaroPassword">Fibaro: Пароль</string>
+    <string name="VeraServerAddress">Vera: Адрес сервера</string>
+    <string name="VoiceActivation">Активация голосом</string>
+    <string name="KeyPhrase">Активационная фраза</string>
+    <string name="Sensitivity">Чувствительность (1–100)</string>
+    <string name="OfflineRecognition">Распознавание оффлайн</string>
+    <string name="VoiceResponses">Озвучивание ответов</string>
+
+</resources>

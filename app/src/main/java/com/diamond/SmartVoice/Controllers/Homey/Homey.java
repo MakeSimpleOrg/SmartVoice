@@ -11,6 +11,7 @@ import com.diamond.SmartVoice.Controllers.Homey.json.Room;
 import com.diamond.SmartVoice.Controllers.UDevice;
 import com.diamond.SmartVoice.Controllers.URoom;
 import com.diamond.SmartVoice.Controllers.UScene;
+import com.diamond.SmartVoice.MainActivity;
 import com.google.gson.Gson;
 
 import org.json.JSONException;
@@ -31,14 +32,15 @@ public class Homey extends Controller {
     private Device[] all_devices;
     private UScene[] all_scenes = new UScene[0]; // TODO заглушка
 
-    public Homey(SharedPreferences pref) {
-        host = pref.getString("homey_server_ip", "");
+    public Homey(MainActivity activity) {
+        mainActivity = activity;
+        host = activity.pref.getString("homey_server_ip", "");
         /* TODO config & home wifi detect
         String homey_id = pref.getString("homey_id", null);
         if (homey_id != null)
             host_ext = homey_id + ".homey.athom.com";
         */
-        bearer = pref.getString("homey_bearer", "");
+        bearer = activity.pref.getString("homey_bearer", "");
         clearNames = true; // TODO config
         gson = new Gson();
         updateData();
@@ -52,6 +54,8 @@ public class Homey extends Controller {
             try {
                 zones = new JSONObject(result).getJSONObject("result");
             } catch (JSONException e) {
+                if (mainActivity.debug)
+                    mainActivity.show(e.getMessage());
                 e.printStackTrace();
             }
             if (zones != null) {
@@ -67,6 +71,8 @@ public class Homey extends Controller {
                             all_rooms[i++] = gson.fromJson(zones.getString(key), Room.class);
                             //System.out.println("Room: " + all_rooms[i - 1].getName());
                         } catch (JSONException e) {
+                            if (mainActivity.debug)
+                                mainActivity.show(e.getMessage());
                             e.printStackTrace();
                         }
                     }
@@ -82,6 +88,8 @@ public class Homey extends Controller {
             try {
                 devices = new JSONObject(result).getJSONObject("result");
             } catch (JSONException e) {
+                if (mainActivity.debug)
+                    mainActivity.show(e.getMessage());
                 e.printStackTrace();
             }
             if (devices != null) {
@@ -96,6 +104,8 @@ public class Homey extends Controller {
                         try {
                             all_devices[i++] = gson.fromJson(devices.getString(key), Device.class);
                         } catch (JSONException e) {
+                            if (mainActivity.debug)
+                                mainActivity.show(e.getMessage());
                             e.printStackTrace();
                         }
                     }
@@ -154,6 +164,8 @@ public class Homey extends Controller {
                 }
             */
         } catch (IOException e) {
+            if (mainActivity.debug)
+                mainActivity.show(e.getMessage());
             Log.w(TAG, "Failed to update data");
             e.printStackTrace();
         }

@@ -11,6 +11,8 @@ import java.net.URL;
 import java.util.ArrayList;
 
 import com.diamond.SmartVoice.AI;
+import com.diamond.SmartVoice.MainActivity;
+import com.diamond.SmartVoice.R;
 import com.google.gson.Gson;
 
 /**
@@ -18,6 +20,8 @@ import com.google.gson.Gson;
  */
 public abstract class Controller {
     private static final String TAG = Controller.class.getSimpleName();
+
+    protected MainActivity mainActivity;
 
     protected Gson gson;
     protected String host;
@@ -63,6 +67,8 @@ public abstract class Controller {
             conn.setConnectTimeout(5000);
             conn.getResponseMessage();
         } catch (IOException e) {
+            if (mainActivity.debug)
+                mainActivity.show(e.getMessage());
             Log.w(TAG, "Error while get getJson: " + request);
             e.printStackTrace();
         }
@@ -96,6 +102,8 @@ public abstract class Controller {
 
             conn.disconnect();
         } catch (IOException e) {
+            if (mainActivity.debug)
+                mainActivity.show(e.getMessage());
             Log.w(TAG, "Error while get getJson: " + request);
             e.printStackTrace();
         }
@@ -181,7 +189,7 @@ public abstract class Controller {
     private String processDevices(UDevice[] devices) {
         boolean enabled = false;
         boolean finded = false;
-        String text = "Ошибка";
+        String text = mainActivity.getString(R.string.error);
         ArrayList<UDevice> list = new ArrayList<>();
         for (UDevice u : devices) {
             Log.w(TAG, "найдено: " + u.ai_name);
@@ -226,33 +234,33 @@ public abstract class Controller {
                 if (onoff != null) {
                     turnDeviceOn(u);
                     u.getCapabilities().put(Capability.onoff, "1");
-                    text = "Включаю";
+                    text = mainActivity.getString(R.string.switched_on);
                 }
                 if (openclose != null) {
                     closeLock(u);
                     u.getCapabilities().put(Capability.openclose, "close");
-                    text = "Закрываю";
+                    text = mainActivity.getString(R.string.closed);
                 }
                 if (windowcoverings_state != null) {
                     closeWindow(u);
                     u.getCapabilities().put(Capability.windowcoverings_state, "down");
-                    text = "Закрываю";
+                    text = mainActivity.getString(R.string.closed);
                 }
             } else {
                 if (onoff != null) {
                     turnDeviceOff(u);
                     u.getCapabilities().put(Capability.onoff, "0");
-                    text = "Выключаю";
+                    text = mainActivity.getString(R.string.switched_off);
                 }
                 if (openclose != null) {
                     openLock(u);
                     u.getCapabilities().put(Capability.openclose, "open");
-                    text = "Открываю";
+                    text = mainActivity.getString(R.string.open);
                 }
                 if (windowcoverings_state != null) {
                     openWindow(u);
                     u.getCapabilities().put(Capability.windowcoverings_state, "up");
-                    text = "Открываю";
+                    text = mainActivity.getString(R.string.open);
                 }
             }
         }
@@ -262,6 +270,6 @@ public abstract class Controller {
     private String processScenes(UScene[] scenes) {
         for (UScene s : scenes)
             runScene(s);
-        return "Выполняю";
+        return mainActivity.getString(R.string.scene_launched);
     }
 }

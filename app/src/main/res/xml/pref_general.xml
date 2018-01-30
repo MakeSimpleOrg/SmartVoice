@@ -10,7 +10,7 @@
         android:layout_height="wrap_content"
         android:inputType="textUri"
         android:key="homey_server_ip"
-        android:title="Homey: Адрес сервера" />
+        android:title="@string/HomeyServerAddress" />
     <EditTextPreference
         android:inputType="textNoSuggestions|textVisiblePassword"
         android:key="homey_bearer"
@@ -27,14 +27,14 @@
         android:layout_height="wrap_content"
         android:inputType="textUri"
         android:key="fibaro_server_ip"
-        android:title="Fibaro: Адрес сервера" />
+        android:title="@string/FibaroServerAddress" />
     <EditTextPreference
         android:inputType="textNoSuggestions|textVisiblePassword"
         android:key="fibaro_server_login"
         android:maxLines="1"
         android:selectAllOnFocus="true"
         android:singleLine="true"
-        android:title="Fibaro: Логин" />
+        android:title="@string/FibaroLogin" />
     <EditTextPreference
         android:inputType="textPassword"
         android:key="fibaro_server_password"
@@ -42,7 +42,7 @@
         android:password="true"
         android:selectAllOnFocus="true"
         android:singleLine="true"
-        android:title="Fibaro: Пароль" />
+        android:title="@string/FibaroPassword" />
     <CheckBoxPreference
         android:defaultValue="false"
         android:key="vera_enabled"
@@ -51,11 +51,11 @@
         android:key="vera_server_ip"
         android:selectAllOnFocus="true"
         android:singleLine="true"
-        android:title="Vera: Адрес сервера" />
+        android:title="@string/VeraServerAddress" />
     <CheckBoxPreference
         android:defaultValue="false"
         android:key="keyRecognizer"
-        android:title="Активация голосом" />
+        android:title="@string/VoiceActivation" />
     <EditTextPreference
         android:autoText="true"
         android:defaultValue="@string/defaultKeyPhrase"
@@ -64,21 +64,21 @@
         android:maxLines="1"
         android:selectAllOnFocus="true"
         android:singleLine="true"
-        android:title="Активационная фраза" />
+        android:title="@string/KeyPhrase" />
     <EditTextPreference
         android:defaultValue="5"
         android:inputType="numberDecimal"
         android:key="keywordThreshold"
         android:selectAllOnFocus="true"
         android:singleLine="true"
-        android:title="Чувствительность (1-100)" />
+        android:title="@string/Sensitivity" />
     <CheckBoxPreference
         android:defaultValue="false"
         android:key="offline_recognition"
-        android:title="Распознавание оффлайн" />
+        android:title="@string/OfflineRecognition" />
     <CheckBoxPreference
         android:defaultValue="false"
         android:key="tts_enabled"
-        android:title="Озвучивание ответов" />
+        android:title="@string/VoiceResponses" />
 
 </PreferenceScreen>

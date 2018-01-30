@@ -33,16 +33,30 @@ public class AI {
     }
 
     private static boolean matchesOnOff(String name, String str, int accuracy) {
+        str = " " + str + " ";
+
         str = str.replaceAll(" в ", " ");
         str = str.replaceAll(" у ", " ");
+        str = str.replaceAll(" с ", " ");
         str = str.replaceAll(" на ", " ");
         str = str.replaceAll(" рядом с ", " ");
         str = str.replaceAll(" около ", " ");
 
+        str = str.replaceAll(" a ", " ");
+        str = str.replaceAll(" in ", " ");
+        str = str.replaceAll(" at ", " ");
+        str = str.replaceAll(" on ", " ");
+        str = str.replaceAll(" off ", " ");
+        str = str.replaceAll(" near ", " ");
+        str = str.replaceAll(" the ", " ");
+        str = str.replaceAll(" to ", " ");
+
+        str = str.trim();
+
         String[] s = str.split(" ");
         if (s.length > 2 && name.split(" ").length > 1) {
             String str2 = s[2] + " " + s[1];
-            return (str.contains("включи") || str.contains("выключи") || str.contains("открой") || str.contains("закрой")) && matches(name, str2, accuracy);
+            return (str.contains("включи") || str.contains("выключи") || str.contains("открой") || str.contains("закрой") || str.contains("switch") || str.contains("turn") || str.contains("open") || str.contains("close")) && matches(name, str2, accuracy);
         }
         return false;
     }
@@ -73,7 +87,6 @@ public class AI {
             return null;
         UDevice[] result = new UDevice[count];
         int i = 0;
-        String name2[];
         d2:
         for (UDevice d : devices) {
             d.ai_flag = 0;
@@ -84,9 +97,9 @@ public class AI {
                     continue d2;
                 } else if (matchesOnOff(d.ai_name, str, accuracy)) {
                     result[i++] = d;
-                    if (str.contains("включи") || str.contains("закрой"))
+                    if (str.contains("включи") || str.contains("закрой") || str.contains(" on") || str.contains("close"))
                         d.ai_flag = 1;
-                    else if (str.contains("выключи") || str.contains("открой"))
+                    else if (str.contains("выключи") || str.contains("открой") || str.contains(" off") || str.contains("open"))
                         d.ai_flag = 2;
                     continue d2;
                 }

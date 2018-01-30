@@ -15,6 +15,7 @@ import com.diamond.SmartVoice.Controllers.UScene;
 import com.diamond.SmartVoice.Controllers.Fibaro.json.Device;
 import com.diamond.SmartVoice.Controllers.Fibaro.json.Room;
 import com.diamond.SmartVoice.Controllers.Fibaro.json.Scene;
+import com.diamond.SmartVoice.MainActivity;
 import com.google.gson.Gson;
 
 /**
@@ -27,9 +28,10 @@ public class Fibaro extends Controller {
     private Device[] all_devices;
     private Scene[] all_scenes;
 
-    public Fibaro(SharedPreferences pref) {
-        host = pref.getString("fibaro_server_ip", "");
-        auth = android.util.Base64.encodeToString((pref.getString("fibaro_server_login", "") + ":" + pref.getString("fibaro_server_password", "")).getBytes(), android.util.Base64.DEFAULT);
+    public Fibaro(MainActivity activity) {
+        mainActivity = activity;
+        host = activity.pref.getString("fibaro_server_ip", "");
+        auth = android.util.Base64.encodeToString((activity.pref.getString("fibaro_server_login", "") + ":" + activity.pref.getString("fibaro_server_password", "")).getBytes(), android.util.Base64.DEFAULT);
         clearNames = true; // TODO config
         gson = new Gson();
         updateData();
@@ -125,6 +127,8 @@ public class Fibaro extends Controller {
                             s.setRoomName(r.getName());
                 }
         } catch (IOException e) {
+            if (mainActivity.debug)
+                mainActivity.show(e.getMessage());
             Log.w(TAG, "Failed to update data");
             e.printStackTrace();
         }

@@ -36,14 +36,14 @@ public class DevicesActivity extends PreferenceActivity {
     }
 
     private void reload() {
+        getPreferenceScreen().removeAll();
         if (mainActivity.HomeyController != null) list("Homey", mainActivity.HomeyController);
         if (mainActivity.FibaroController != null) list("Fibaro", mainActivity.FibaroController);
         if (mainActivity.VeraController != null) list("Vera", mainActivity.VeraController);
     }
 
     private void list(String controllerName, Controller controller) {
-        PreferenceScreen preferenceScreen = this.getPreferenceScreen();
-        preferenceScreen.removeAll();
+        PreferenceScreen preferenceScreen = getPreferenceScreen();
 
         PreferenceCategory preferenceCategory = new PreferenceCategory(preferenceScreen.getContext());
         preferenceCategory.setTitle(controllerName);
@@ -51,7 +51,7 @@ public class DevicesActivity extends PreferenceActivity {
 
         if (controller.getVisibleRoomsCount() > 0 && controller.getVisibleDevicesCount() > 0) {
             preferenceCategory = new PreferenceCategory(preferenceScreen.getContext());
-            preferenceCategory.setTitle("Устройства");
+            preferenceCategory.setTitle(R.string.devices);
             preferenceScreen.addPreference(preferenceCategory);
 
             for (URoom r : controller.getRooms())
@@ -67,9 +67,8 @@ public class DevicesActivity extends PreferenceActivity {
 
         if (controller.getVisibleScenesCount() > 0) {
             preferenceCategory = new PreferenceCategory(preferenceScreen.getContext());
-            preferenceCategory.setTitle("Сцены");
+            preferenceCategory.setTitle(R.string.scenes);
             preferenceScreen.addPreference(preferenceCategory);
-
             for (UScene s : controller.getScenes())
                 if (s.isVisible() && s.getName() != null) {
                     Preference preference = new Preference(preferenceScreen.getContext());
@@ -79,22 +78,6 @@ public class DevicesActivity extends PreferenceActivity {
                     preferenceCategory.addPreference(preference);
                 }
         }
-
-        /*
-        if (controller.getVisibleRoomsCount() > 0) {
-            preferenceCategory = new PreferenceCategory(preferenceScreen.getContext());
-            preferenceCategory.setTitle("Комнаты");
-            preferenceScreen.addPreference(preferenceCategory);
-
-            for (URoom u : controller.getRooms())
-                if (u.isVisible()) {
-                    CheckBoxPreference preference = new CheckBoxPreference(preferenceScreen.getContext());
-                    preference.setTitle(u.getName());
-                    preferenceCategory.addPreference(preference);
-                    preference.setChecked(true); // TODO
-                }
-        }
-        */
     }
 
     @Override
