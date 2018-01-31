@@ -1,17 +1,11 @@
 package com.diamond.SmartVoice;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.UUID;
-
 import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.media.AudioManager;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -30,6 +24,11 @@ import com.diamond.SmartVoice.Controllers.Homey.Homey;
 import com.diamond.SmartVoice.Controllers.Vera.Vera;
 import com.diamond.SmartVoice.Recognizer.GoogleRecognizer;
 import com.diamond.SmartVoice.Recognizer.PocketSphinxRecognizer;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.UUID;
 
 /**
  * @author Dmitriy Ponomarev
@@ -60,8 +59,6 @@ public class MainActivity extends Activity {
     public String keyphrase;
     public boolean offline_recognition = false;
 
-    public boolean debug = false;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -82,7 +79,8 @@ public class MainActivity extends Activity {
                         }, 1);
         } catch (Exception e) {
             e.printStackTrace();
-            show("Error 1: " + e.getMessage());
+            if (isDebug())
+                show("Error 1: " + e.getMessage());
         }
 
         progressBar = findViewById(R.id.progressBar);
@@ -174,7 +172,8 @@ public class MainActivity extends Activity {
                         Thread.sleep(100);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
-                        show("Error 2: " + e.getMessage());
+                        if (isDebug())
+                            show("Error 2: " + e.getMessage());
                     }
                 }
 
@@ -225,6 +224,10 @@ public class MainActivity extends Activity {
             }).start();
     }
 
+    public boolean isDebug() {
+        return pref.getBoolean("debug", false);
+    }
+
     private boolean isLoading() {
         return ttsLoading || homeyLoading || fibaroLoading || veraLoading || recognizerLoading || keyPhraseRecognizerLoading;
     }
@@ -249,7 +252,8 @@ public class MainActivity extends Activity {
             keyPhraseRecognizer = new PocketSphinxRecognizer(this);
         } catch (Exception e) {
             e.printStackTrace();
-            show("Error 3: " + e.getMessage());
+            if (isDebug())
+                show("Error 3: " + e.getMessage());
         }
         keyPhraseRecognizerLoading = false;
     }
@@ -264,7 +268,8 @@ public class MainActivity extends Activity {
             recognizer = new GoogleRecognizer(this);
         } catch (Exception e) {
             e.printStackTrace();
-            show("Error 4: " + e.getMessage());
+            if (isDebug())
+                show("Error 4: " + e.getMessage());
         }
         recognizerLoading = false;
     }
@@ -289,7 +294,8 @@ public class MainActivity extends Activity {
             });
         } catch (Exception e) {
             e.printStackTrace();
-            show("Error 5: " + e.getMessage());
+            if (isDebug())
+                show("Error 5: " + e.getMessage());
             ttsLoading = false;
         }
     }
@@ -305,7 +311,8 @@ public class MainActivity extends Activity {
                     controller = new Homey(activity);
                 } catch (Exception e) {
                     e.printStackTrace();
-                    activity.show("Error 6: " + e.getMessage());
+                    if (activity.isDebug())
+                        activity.show("Error 6: " + e.getMessage());
                     return null;
                 }
                 return controller.getVisibleDevicesCount() > 0 || controller.getVisibleScenesCount() > 0 ? controller : null;
@@ -315,7 +322,7 @@ public class MainActivity extends Activity {
             protected void onPostExecute(Homey controller) {
                 activity.HomeyController = controller;
                 if (activity.HomeyController == null)
-                    activity.show("Homey: " + activity.getString(R.string.controler_not_found)  + " " +  activity.pref.getString("homey_server_ip", ""));
+                    activity.show("Homey: " + activity.getString(R.string.controler_not_found) + " " + activity.pref.getString("homey_server_ip", ""));
                 else
                     activity.show("Homey: " + activity.getString(R.string.found) + " " + controller.getVisibleRoomsCount() + " " + activity.getString(R.string.found_rooms_and) + " " + controller.getVisibleDevicesCount() + " " + activity.getString(R.string.found_devices));
                 activity.homeyLoading = false;
@@ -336,7 +343,8 @@ public class MainActivity extends Activity {
                     controller = new Fibaro(activity);
                 } catch (Exception e) {
                     e.printStackTrace();
-                    activity.show("Error 6: " + e.getMessage());
+                    if (activity.isDebug())
+                        activity.show("Error 6: " + e.getMessage());
                     return null;
                 }
                 return controller.getVisibleDevicesCount() > 0 || controller.getVisibleScenesCount() > 0 ? controller : null;
@@ -346,9 +354,9 @@ public class MainActivity extends Activity {
             protected void onPostExecute(Fibaro controller) {
                 activity.FibaroController = controller;
                 if (activity.FibaroController == null)
-                    activity.show("Fibaro: " + activity.getString(R.string.controler_not_found)  + " " +  activity.pref.getString("fibaro_server_ip", ""));
+                    activity.show("Fibaro: " + activity.getString(R.string.controler_not_found) + " " + activity.pref.getString("fibaro_server_ip", ""));
                 else
-                    activity.show("Fibaro: " + activity.getString(R.string.found)  + " " +  controller.getVisibleRoomsCount()  + " " +  activity.getString(R.string.found_rooms)  + " " +  controller.getVisibleDevicesCount()  + " " +  activity.getString(R.string.found_devices_and)  + " " +  controller.getVisibleScenesCount() + activity.getString(R.string.found_scene));
+                    activity.show("Fibaro: " + activity.getString(R.string.found) + " " + controller.getVisibleRoomsCount() + " " + activity.getString(R.string.found_rooms) + " " + controller.getVisibleDevicesCount() + " " + activity.getString(R.string.found_devices_and) + " " + controller.getVisibleScenesCount() + activity.getString(R.string.found_scene));
                 activity.fibaroLoading = false;
                 if (!activity.isLoading())
                     activity.progressBar.setVisibility(View.INVISIBLE);
@@ -367,7 +375,8 @@ public class MainActivity extends Activity {
                     controller = new Vera(activity);
                 } catch (Exception e) {
                     e.printStackTrace();
-                    activity.show("Error 7: " + e.getMessage());
+                    if (activity.isDebug())
+                        activity.show("Error 7: " + e.getMessage());
                     return null;
                 }
                 return controller.getVisibleDevicesCount() > 0 || controller.getVisibleScenesCount() > 0 ? controller : null;
@@ -377,9 +386,9 @@ public class MainActivity extends Activity {
             protected void onPostExecute(Vera controller) {
                 activity.VeraController = controller;
                 if (activity.VeraController == null) {
-                    activity.show("Vera: " + activity.getString(R.string.controler_not_found)  + " " +  activity.pref.getString("vera_server_ip", ""));
+                    activity.show("Vera: " + activity.getString(R.string.controler_not_found) + " " + activity.pref.getString("vera_server_ip", ""));
                 } else {
-                    activity.show("Vera: " + activity.getString(R.string.found)  + " " +  controller.getVisibleRoomsCount()  + " " +  activity.getString(R.string.found_rooms)  + " " +  controller.getVisibleDevicesCount()  + " " +  activity.getString(R.string.found_devices_and)  + " " +  controller.getVisibleScenesCount()  + " " +  activity.getString(R.string.found_scene));
+                    activity.show("Vera: " + activity.getString(R.string.found) + " " + controller.getVisibleRoomsCount() + " " + activity.getString(R.string.found_rooms) + " " + controller.getVisibleDevicesCount() + " " + activity.getString(R.string.found_devices_and) + " " + controller.getVisibleScenesCount() + " " + activity.getString(R.string.found_scene));
                 }
                 activity.veraLoading = false;
                 if (!activity.isLoading())
@@ -416,7 +425,8 @@ public class MainActivity extends Activity {
                         result = activity.VeraController.process(params);
                 } catch (Exception e) {
                     e.printStackTrace();
-                    activity.show("Error 8: " + e.getMessage());
+                    if (activity.isDebug())
+                        activity.show("Error 8: " + e.getMessage());
                 }
                 return result;
             }
@@ -442,7 +452,8 @@ public class MainActivity extends Activity {
                 Toast.makeText(MainActivity.this, text, Toast.LENGTH_LONG).show();
         } catch (Exception e) {
             e.printStackTrace();
-            show("Error 9: " + e.getMessage());
+            if (isDebug())
+                show("Error 9: " + e.getMessage());
         }
         try {
             if (pref.getBoolean("tts_enabled", false)) {
@@ -466,7 +477,8 @@ public class MainActivity extends Activity {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            show("Error 10: " + e.getMessage());
+            if (isDebug())
+                show("Error 10: " + e.getMessage());
         }
     }
 

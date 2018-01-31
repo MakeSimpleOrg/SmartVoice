@@ -1,12 +1,9 @@
 package com.diamond.SmartVoice.Recognizer;
 
-import android.text.TextUtils;
 import android.util.Log;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.Locale;
 import java.util.Map;
 
 public class PhonMapper {

@@ -1,22 +1,21 @@
 package com.diamond.SmartVoice.Controllers.Fibaro;
 
-import android.content.SharedPreferences;
 import android.util.Log;
-
-import java.io.IOException;
-import java.util.Locale;
 
 import com.diamond.SmartVoice.AI;
 import com.diamond.SmartVoice.Controllers.Capability;
 import com.diamond.SmartVoice.Controllers.Controller;
-import com.diamond.SmartVoice.Controllers.UDevice;
-import com.diamond.SmartVoice.Controllers.URoom;
-import com.diamond.SmartVoice.Controllers.UScene;
 import com.diamond.SmartVoice.Controllers.Fibaro.json.Device;
 import com.diamond.SmartVoice.Controllers.Fibaro.json.Room;
 import com.diamond.SmartVoice.Controllers.Fibaro.json.Scene;
+import com.diamond.SmartVoice.Controllers.UDevice;
+import com.diamond.SmartVoice.Controllers.URoom;
+import com.diamond.SmartVoice.Controllers.UScene;
 import com.diamond.SmartVoice.MainActivity;
 import com.google.gson.Gson;
+
+import java.io.IOException;
+import java.util.Locale;
 
 /**
  * @author Dmitriy Ponomarev
@@ -127,7 +126,7 @@ public class Fibaro extends Controller {
                             s.setRoomName(r.getName());
                 }
         } catch (IOException e) {
-            if (mainActivity.debug)
+            if (mainActivity.isDebug())
                 mainActivity.show(e.getMessage());
             Log.w(TAG, "Failed to update data");
             e.printStackTrace();

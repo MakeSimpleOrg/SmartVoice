@@ -35,5 +35,6 @@
     <string name="Sensitivity">Sensitivity (1–100)</string>
     <string name="OfflineRecognition">Offline Recognition</string>
     <string name="VoiceResponses">Voice Responses</string>
+    <string name="DebugSummary">Show info about errors</string>
 
 </resources>

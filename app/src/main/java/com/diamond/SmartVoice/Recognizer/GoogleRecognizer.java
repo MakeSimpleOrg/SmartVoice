@@ -153,9 +153,12 @@ public class GoogleRecognizer implements RecognitionListener {
 
     public void destroy() {
         if (recognizer != null) {
-            recognizer.cancel();
-            recognizer.destroy();
-            recognizer = null;
+            try {
+                recognizer.cancel();
+                recognizer.destroy();
+                recognizer = null;
+            } catch (Exception ignored) {
+            }
         }
     }
 }

@@ -1,6 +1,5 @@
 package com.diamond.SmartVoice.Controllers.Homey.json;
 
-import com.diamond.SmartVoice.Controllers.Fibaro.json.Sensor;
 import com.diamond.SmartVoice.Controllers.URoom;
 import com.google.gson.annotations.SerializedName;
 

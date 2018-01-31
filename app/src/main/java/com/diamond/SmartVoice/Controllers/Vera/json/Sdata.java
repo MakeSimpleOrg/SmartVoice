@@ -1,8 +1,8 @@
 package com.diamond.SmartVoice.Controllers.Vera.json;
 
-import java.util.List;
-
 import com.google.gson.annotations.SerializedName;
+
+import java.util.List;
 
 /**
  * @author Dmitriy Ponomarev

@@ -2,6 +2,11 @@ package com.diamond.SmartVoice.Controllers;
 
 import android.util.Log;
 
+import com.diamond.SmartVoice.AI;
+import com.diamond.SmartVoice.MainActivity;
+import com.diamond.SmartVoice.R;
+import com.google.gson.Gson;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -9,11 +14,6 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-
-import com.diamond.SmartVoice.AI;
-import com.diamond.SmartVoice.MainActivity;
-import com.diamond.SmartVoice.R;
-import com.google.gson.Gson;
 
 /**
  * @author Dmitriy Ponomarev
@@ -67,7 +67,7 @@ public abstract class Controller {
             conn.setConnectTimeout(5000);
             conn.getResponseMessage();
         } catch (IOException e) {
-            if (mainActivity.debug)
+            if (mainActivity.isDebug())
                 mainActivity.show(e.getMessage());
             Log.w(TAG, "Error while get getJson: " + request);
             e.printStackTrace();
@@ -102,7 +102,7 @@ public abstract class Controller {
 
             conn.disconnect();
         } catch (IOException e) {
-            if (mainActivity.debug)
+            if (mainActivity.isDebug())
                 mainActivity.show(e.getMessage());
             Log.w(TAG, "Error while get getJson: " + request);
             e.printStackTrace();

@@ -1,10 +1,6 @@
 package com.diamond.SmartVoice.Controllers.Vera;
 
-import android.content.SharedPreferences;
 import android.util.Log;
-
-import java.io.IOException;
-import java.util.Locale;
 
 import com.diamond.SmartVoice.AI;
 import com.diamond.SmartVoice.Controllers.Capability;
@@ -19,6 +15,9 @@ import com.diamond.SmartVoice.Controllers.Vera.json.Sdata;
 import com.diamond.SmartVoice.MainActivity;
 import com.google.gson.Gson;
 
+import java.io.IOException;
+import java.util.Locale;
+
 /**
  * @author Dmitriy Ponomarev
  */
@@ -32,7 +31,7 @@ public class Vera extends Controller {
     public Vera(MainActivity activity) {
         mainActivity = activity;
         host = activity.pref.getString("vera_server_ip", "");
-        if(!host.contains(":"))
+        if (!host.contains(":"))
             host += ":3480";
         clearNames = true; // TODO config
         gson = new Gson();
@@ -104,7 +103,7 @@ public class Vera extends Controller {
                     if (d.getWatts() != null)
                         d.addCapability(Capability.measure_power, d.getWatts());
                 } catch (IndexOutOfBoundsException e) {
-                    if(mainActivity.debug)
+                    if (mainActivity.isDebug())
                         mainActivity.show(e.getMessage());
                     Log.w(TAG, "Unknown category type: " + d.getCategory());
                 }
@@ -122,7 +121,7 @@ public class Vera extends Controller {
                             s.setRoomName(r.getName());
                 }
         } catch (IOException e) {
-            if(mainActivity.debug)
+            if (mainActivity.isDebug())
                 mainActivity.show(e.getMessage());
             Log.w(TAG, "Failed to update data");
         }

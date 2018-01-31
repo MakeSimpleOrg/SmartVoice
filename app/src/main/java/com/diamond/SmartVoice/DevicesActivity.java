@@ -2,12 +2,9 @@ package com.diamond.SmartVoice;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
-import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceCategory;
-import android.preference.PreferenceGroup;
-import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 
 import com.diamond.SmartVoice.Controllers.Controller;
@@ -15,7 +12,6 @@ import com.diamond.SmartVoice.Controllers.UDevice;
 import com.diamond.SmartVoice.Controllers.URoom;
 import com.diamond.SmartVoice.Controllers.UScene;
 
-import java.util.Arrays;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -73,7 +69,7 @@ public class DevicesActivity extends PreferenceActivity {
                 if (s.isVisible() && s.getName() != null) {
                     Preference preference = new Preference(preferenceScreen.getContext());
                     preference.setTitle(s.getName());
-                    if(s.getRoomName() != null)
+                    if (s.getRoomName() != null)
                         preference.setSummary(s.getRoomName());
                     preferenceCategory.addPreference(preference);
                 }

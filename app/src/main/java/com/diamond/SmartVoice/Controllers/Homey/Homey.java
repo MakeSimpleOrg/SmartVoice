@@ -1,11 +1,10 @@
 package com.diamond.SmartVoice.Controllers.Homey;
 
-import android.content.SharedPreferences;
 import android.util.Log;
 
 import com.diamond.SmartVoice.AI;
-import com.diamond.SmartVoice.Controllers.Controller;
 import com.diamond.SmartVoice.Controllers.Capability;
+import com.diamond.SmartVoice.Controllers.Controller;
 import com.diamond.SmartVoice.Controllers.Homey.json.Device;
 import com.diamond.SmartVoice.Controllers.Homey.json.Room;
 import com.diamond.SmartVoice.Controllers.UDevice;
@@ -54,7 +53,7 @@ public class Homey extends Controller {
             try {
                 zones = new JSONObject(result).getJSONObject("result");
             } catch (JSONException e) {
-                if (mainActivity.debug)
+                if (mainActivity.isDebug())
                     mainActivity.show(e.getMessage());
                 e.printStackTrace();
             }
@@ -71,7 +70,7 @@ public class Homey extends Controller {
                             all_rooms[i++] = gson.fromJson(zones.getString(key), Room.class);
                             //System.out.println("Room: " + all_rooms[i - 1].getName());
                         } catch (JSONException e) {
-                            if (mainActivity.debug)
+                            if (mainActivity.isDebug())
                                 mainActivity.show(e.getMessage());
                             e.printStackTrace();
                         }
@@ -88,7 +87,7 @@ public class Homey extends Controller {
             try {
                 devices = new JSONObject(result).getJSONObject("result");
             } catch (JSONException e) {
-                if (mainActivity.debug)
+                if (mainActivity.isDebug())
                     mainActivity.show(e.getMessage());
                 e.printStackTrace();
             }
@@ -104,7 +103,7 @@ public class Homey extends Controller {
                         try {
                             all_devices[i++] = gson.fromJson(devices.getString(key), Device.class);
                         } catch (JSONException e) {
-                            if (mainActivity.debug)
+                            if (mainActivity.isDebug())
                                 mainActivity.show(e.getMessage());
                             e.printStackTrace();
                         }
@@ -164,7 +163,7 @@ public class Homey extends Controller {
                 }
             */
         } catch (IOException e) {
-            if (mainActivity.debug)
+            if (mainActivity.isDebug())
                 mainActivity.show(e.getMessage());
             Log.w(TAG, "Failed to update data");
             e.printStackTrace();

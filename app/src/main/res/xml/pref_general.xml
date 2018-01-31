@@ -80,5 +80,10 @@
         android:defaultValue="false"
         android:key="tts_enabled"
         android:title="@string/VoiceResponses" />
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="debug"
+        android:summary="@string/DebugSummary"
+        android:title="Debug" />
 
 </PreferenceScreen>
