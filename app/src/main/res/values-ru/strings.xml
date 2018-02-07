@@ -35,6 +35,5 @@
     <string name="Sensitivity">Чувствительность (1–100)</string>
     <string name="OfflineRecognition">Распознавание оффлайн</string>
     <string name="VoiceResponses">Озвучивание ответов</string>
-    <string name="DebugSummary">Показывать информацию об ошибках</string>
 
 </resources>

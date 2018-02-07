@@ -24,6 +24,7 @@ import com.diamond.SmartVoice.Controllers.Homey.Homey;
 import com.diamond.SmartVoice.Controllers.Vera.Vera;
 import com.diamond.SmartVoice.Recognizer.GoogleRecognizer;
 import com.diamond.SmartVoice.Recognizer.PocketSphinxRecognizer;
+import com.rollbar.android.Rollbar;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -66,6 +67,8 @@ public class MainActivity extends Activity {
 
         pref = PreferenceManager.getDefaultSharedPreferences(this);
 
+        Rollbar.init(this, "1462b05ac823412281cd257b13eb6c7f", "development");
+
         keyphrase = pref.getString("keyphrase", getString(R.string.defaultKeyPhrase));
         offline_recognition = pref.getBoolean("offline_recognition", false);
 
@@ -79,8 +82,7 @@ public class MainActivity extends Activity {
                         }, 1);
         } catch (Exception e) {
             e.printStackTrace();
-            if (isDebug())
-                show("Error 1: " + e.getMessage());
+            Rollbar.instance().error(e);
         }
 
         progressBar = findViewById(R.id.progressBar);
@@ -172,8 +174,7 @@ public class MainActivity extends Activity {
                         Thread.sleep(100);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
-                        if (isDebug())
-                            show("Error 2: " + e.getMessage());
+                        Rollbar.instance().error(e);
                     }
                 }
 
@@ -224,10 +225,6 @@ public class MainActivity extends Activity {
             }).start();
     }
 
-    public boolean isDebug() {
-        return pref.getBoolean("debug", false);
-    }
-
     private boolean isLoading() {
         return ttsLoading || homeyLoading || fibaroLoading || veraLoading || recognizerLoading || keyPhraseRecognizerLoading;
     }
@@ -252,8 +249,7 @@ public class MainActivity extends Activity {
             keyPhraseRecognizer = new PocketSphinxRecognizer(this);
         } catch (Exception e) {
             e.printStackTrace();
-            if (isDebug())
-                show("Error 3: " + e.getMessage());
+            Rollbar.instance().error(e);
         }
         keyPhraseRecognizerLoading = false;
     }
@@ -268,8 +264,7 @@ public class MainActivity extends Activity {
             recognizer = new GoogleRecognizer(this);
         } catch (Exception e) {
             e.printStackTrace();
-            if (isDebug())
-                show("Error 4: " + e.getMessage());
+            Rollbar.instance().error(e);
         }
         recognizerLoading = false;
     }
@@ -294,8 +289,7 @@ public class MainActivity extends Activity {
             });
         } catch (Exception e) {
             e.printStackTrace();
-            if (isDebug())
-                show("Error 5: " + e.getMessage());
+            Rollbar.instance().error(e);
             ttsLoading = false;
         }
     }
@@ -311,8 +305,7 @@ public class MainActivity extends Activity {
                     controller = new Homey(activity);
                 } catch (Exception e) {
                     e.printStackTrace();
-                    if (activity.isDebug())
-                        activity.show("Error 6: " + e.getMessage());
+                    Rollbar.instance().error(e);
                     return null;
                 }
                 return controller.getVisibleDevicesCount() > 0 || controller.getVisibleScenesCount() > 0 ? controller : null;
@@ -343,8 +336,7 @@ public class MainActivity extends Activity {
                     controller = new Fibaro(activity);
                 } catch (Exception e) {
                     e.printStackTrace();
-                    if (activity.isDebug())
-                        activity.show("Error 6: " + e.getMessage());
+                    Rollbar.instance().error(e);
                     return null;
                 }
                 return controller.getVisibleDevicesCount() > 0 || controller.getVisibleScenesCount() > 0 ? controller : null;
@@ -356,7 +348,7 @@ public class MainActivity extends Activity {
                 if (activity.FibaroController == null)
                     activity.show("Fibaro: " + activity.getString(R.string.controler_not_found) + " " + activity.pref.getString("fibaro_server_ip", ""));
                 else
-                    activity.show("Fibaro: " + activity.getString(R.string.found) + " " + controller.getVisibleRoomsCount() + " " + activity.getString(R.string.found_rooms) + " " + controller.getVisibleDevicesCount() + " " + activity.getString(R.string.found_devices_and) + " " + controller.getVisibleScenesCount() + activity.getString(R.string.found_scene));
+                    activity.show("Fibaro: " + activity.getString(R.string.found) + " " + controller.getVisibleRoomsCount() + " " + activity.getString(R.string.found_rooms) + " " + controller.getVisibleDevicesCount() + " " + activity.getString(R.string.found_devices_and) + " " + controller.getVisibleScenesCount() + " " + activity.getString(R.string.found_scene));
                 activity.fibaroLoading = false;
                 if (!activity.isLoading())
                     activity.progressBar.setVisibility(View.INVISIBLE);
@@ -375,8 +367,7 @@ public class MainActivity extends Activity {
                     controller = new Vera(activity);
                 } catch (Exception e) {
                     e.printStackTrace();
-                    if (activity.isDebug())
-                        activity.show("Error 7: " + e.getMessage());
+                    Rollbar.instance().error(e);
                     return null;
                 }
                 return controller.getVisibleDevicesCount() > 0 || controller.getVisibleScenesCount() > 0 ? controller : null;
@@ -425,8 +416,7 @@ public class MainActivity extends Activity {
                         result = activity.VeraController.process(params);
                 } catch (Exception e) {
                     e.printStackTrace();
-                    if (activity.isDebug())
-                        activity.show("Error 8: " + e.getMessage());
+                    Rollbar.instance().error(e);
                 }
                 return result;
             }
@@ -452,8 +442,7 @@ public class MainActivity extends Activity {
                 Toast.makeText(MainActivity.this, text, Toast.LENGTH_LONG).show();
         } catch (Exception e) {
             e.printStackTrace();
-            if (isDebug())
-                show("Error 9: " + e.getMessage());
+            Rollbar.instance().error(e);
         }
         try {
             if (pref.getBoolean("tts_enabled", false)) {
@@ -477,8 +466,7 @@ public class MainActivity extends Activity {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            if (isDebug())
-                show("Error 10: " + e.getMessage());
+            Rollbar.instance().error(e);
         }
     }
 

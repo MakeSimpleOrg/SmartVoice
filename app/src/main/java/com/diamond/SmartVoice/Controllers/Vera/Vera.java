@@ -14,6 +14,7 @@ import com.diamond.SmartVoice.Controllers.Vera.json.Scene;
 import com.diamond.SmartVoice.Controllers.Vera.json.Sdata;
 import com.diamond.SmartVoice.MainActivity;
 import com.google.gson.Gson;
+import com.rollbar.android.Rollbar;
 
 import java.io.IOException;
 import java.util.Locale;
@@ -103,9 +104,8 @@ public class Vera extends Controller {
                     if (d.getWatts() != null)
                         d.addCapability(Capability.measure_power, d.getWatts());
                 } catch (IndexOutOfBoundsException e) {
-                    if (mainActivity.isDebug())
-                        mainActivity.show(e.getMessage());
                     Log.w(TAG, "Unknown category type: " + d.getCategory());
+                    Rollbar.instance().error(e);
                 }
             }
 
@@ -121,9 +121,8 @@ public class Vera extends Controller {
                             s.setRoomName(r.getName());
                 }
         } catch (IOException e) {
-            if (mainActivity.isDebug())
-                mainActivity.show(e.getMessage());
             Log.w(TAG, "Failed to update data");
+            Rollbar.instance().error(e);
         }
 
         if (all_rooms == null)

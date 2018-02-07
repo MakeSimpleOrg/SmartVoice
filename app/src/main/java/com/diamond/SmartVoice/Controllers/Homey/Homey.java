@@ -11,7 +11,10 @@ import com.diamond.SmartVoice.Controllers.UDevice;
 import com.diamond.SmartVoice.Controllers.URoom;
 import com.diamond.SmartVoice.Controllers.UScene;
 import com.diamond.SmartVoice.MainActivity;
-import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonNull;
+import com.rollbar.android.Rollbar;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -41,38 +44,33 @@ public class Homey extends Controller {
         */
         bearer = activity.pref.getString("homey_bearer", "");
         clearNames = true; // TODO config
-        gson = new Gson();
+        gson = new GsonBuilder().serializeNulls().create();
         updateData();
     }
 
     private void updateData() {
         try {
             String result = request("/api/manager/zones/zone");
-            System.out.println("result: " + result);
             JSONObject zones = null;
             try {
                 zones = new JSONObject(result).getJSONObject("result");
             } catch (JSONException e) {
-                if (mainActivity.isDebug())
-                    mainActivity.show(e.getMessage());
                 e.printStackTrace();
+                Rollbar.instance().error(e);
             }
             if (zones != null) {
                 all_rooms = new Room[zones.length()];
                 int i = 0;
                 Iterator<String> it = zones.keys();
-                JSONObject zone;
                 String key;
                 while (it.hasNext()) {
                     key = it.next();
                     if (key != null) {
                         try {
                             all_rooms[i++] = gson.fromJson(zones.getString(key), Room.class);
-                            //System.out.println("Room: " + all_rooms[i - 1].getName());
                         } catch (JSONException e) {
-                            if (mainActivity.isDebug())
-                                mainActivity.show(e.getMessage());
                             e.printStackTrace();
+                            Rollbar.instance().error(e, result);
                         }
                     }
                 }
@@ -87,25 +85,24 @@ public class Homey extends Controller {
             try {
                 devices = new JSONObject(result).getJSONObject("result");
             } catch (JSONException e) {
-                if (mainActivity.isDebug())
-                    mainActivity.show(e.getMessage());
                 e.printStackTrace();
+                Rollbar.instance().error(e, result);
             }
+
+            Iterator<String> it;
+            String key;
             if (devices != null) {
                 all_devices = new Device[devices.length()];
                 int i = 0;
-                Iterator<String> it = devices.keys();
-                JSONObject device;
-                String key;
+                it = devices.keys();
                 while (it.hasNext()) {
                     key = it.next();
                     if (key != null) {
                         try {
                             all_devices[i++] = gson.fromJson(devices.getString(key), Device.class);
                         } catch (JSONException e) {
-                            if (mainActivity.isDebug())
-                                mainActivity.show(e.getMessage());
                             e.printStackTrace();
+                            Rollbar.instance().error(e, result);
                         }
                     }
                 }
@@ -120,32 +117,44 @@ public class Homey extends Controller {
                     d.ai_name = d.getRoomName() + " " + d.ai_name;
                     d.ai_name = d.ai_name.toLowerCase(Locale.getDefault());
 
-                    if (d.state != null)
-                        for (Map.Entry<Capability, String> entry : d.state.entrySet())
-                            if (entry.getKey() != null && entry.getValue() != null) {
-                                switch (entry.getKey()) {
-                                    case onoff:
-                                        entry.setValue("true".equals(entry.getValue()) ? "1" : "0");
-                                        break;
-                                    case windowcoverings_state:
-                                        entry.setValue("up".equals(entry.getValue()) ? "up" : "down");
-                                        break;
-                                    case measure_battery:
-                                    case measure_power:
-                                    case meter_power:
-                                    case measure_temperature:
-                                    case measure_co2:
-                                    case measure_humidity:
-                                    case measure_light:
-                                    case measure_noise:
-                                    case measure_pressure:
-                                        entry.setValue("" + (int) Double.parseDouble(entry.getValue()));
-                                        break;
+                    if (d.state != null && !(d.state instanceof JsonNull)) {
+                        Capability capability = null;
+                        String value = null;
+                        for (Map.Entry<String, JsonElement> entry : d.state.getAsJsonObject().entrySet()) {
+                            if (entry.getKey() != null) {
+                                try {
+                                    value = entry.getValue() instanceof JsonNull ? "0" : entry.getValue().getAsString();
+                                    capability = Capability.get(entry.getKey());
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    Rollbar.instance().error(e);
                                 }
+                                if (capability != null && value != null) {
+                                    switch (capability) {
+                                        case onoff:
+                                            value = "true".equals(value) ? "1" : "0";
+                                            break;
+                                        case windowcoverings_state:
+                                            value = "up".equals(value) ? "up" : "down";
+                                            break;
+                                        case measure_battery:
+                                        case measure_power:
+                                        case meter_power:
+                                        case measure_temperature:
+                                        case measure_co2:
+                                        case measure_humidity:
+                                        case measure_light:
+                                        case measure_noise:
+                                        case measure_pressure:
+                                            value = "" + (int) Double.parseDouble(value);
+                                            break;
+                                    }
 
-                                d.addCapability(entry.getKey(), entry.getValue());
-                                //System.out.println("Cap: " + entry.getKey() + ", value: " + entry.getValue());
+                                    d.addCapability(capability, value);
+                                }
                             }
+                        }
+                    }
                 }
             }
 
@@ -163,16 +172,17 @@ public class Homey extends Controller {
                 }
             */
         } catch (IOException e) {
-            if (mainActivity.isDebug())
-                mainActivity.show(e.getMessage());
             Log.w(TAG, "Failed to update data");
             e.printStackTrace();
+            Rollbar.instance().error(e);
         }
 
         if (all_rooms == null)
             all_rooms = new Room[0];
         if (all_devices == null)
             all_devices = new Device[0];
+
+        System.out.println("Devices: " + all_devices.length);
     }
 
     @Override

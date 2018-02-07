@@ -2,9 +2,9 @@ package com.diamond.SmartVoice.Controllers.Homey.json;
 
 import com.diamond.SmartVoice.Controllers.Capability;
 import com.diamond.SmartVoice.Controllers.UDevice;
+import com.google.gson.JsonElement;
 import com.google.gson.annotations.SerializedName;
 
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -59,7 +59,7 @@ public class Device extends UDevice {
     private boolean online;
 
     @SerializedName("state")
-    public HashMap<Capability, String> state;
+    public JsonElement state;
 
     @SerializedName("lastUpdated")
     private Object lastUpdated; // TODO

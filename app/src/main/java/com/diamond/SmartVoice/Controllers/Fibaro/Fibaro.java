@@ -13,6 +13,7 @@ import com.diamond.SmartVoice.Controllers.URoom;
 import com.diamond.SmartVoice.Controllers.UScene;
 import com.diamond.SmartVoice.MainActivity;
 import com.google.gson.Gson;
+import com.rollbar.android.Rollbar;
 
 import java.io.IOException;
 import java.util.Locale;
@@ -126,10 +127,9 @@ public class Fibaro extends Controller {
                             s.setRoomName(r.getName());
                 }
         } catch (IOException e) {
-            if (mainActivity.isDebug())
-                mainActivity.show(e.getMessage());
             Log.w(TAG, "Failed to update data");
             e.printStackTrace();
+            Rollbar.instance().error(e);
         }
 
         if (all_rooms == null)

@@ -6,6 +6,7 @@ import com.diamond.SmartVoice.AI;
 import com.diamond.SmartVoice.MainActivity;
 import com.diamond.SmartVoice.R;
 import com.google.gson.Gson;
+import com.rollbar.android.Rollbar;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -67,10 +68,9 @@ public abstract class Controller {
             conn.setConnectTimeout(5000);
             conn.getResponseMessage();
         } catch (IOException e) {
-            if (mainActivity.isDebug())
-                mainActivity.show(e.getMessage());
             Log.w(TAG, "Error while get getJson: " + request);
             e.printStackTrace();
+            Rollbar.instance().error(e);
         }
     }
 
@@ -102,10 +102,9 @@ public abstract class Controller {
 
             conn.disconnect();
         } catch (IOException e) {
-            if (mainActivity.isDebug())
-                mainActivity.show(e.getMessage());
             Log.w(TAG, "Error while get getJson: " + request);
             e.printStackTrace();
+            Rollbar.instance().error(e);
         }
     }
 

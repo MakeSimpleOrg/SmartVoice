@@ -23,7 +23,7 @@ android {
         targetSdkVersion 27
         versionName 'v0.9.9'
         versionNameSuffix ''
-        versionCode 11
+        versionCode 14
         signingConfig signingConfigs.config
     }
     buildTypes {
@@ -48,6 +48,7 @@ dependencies {
     implementation 'com.android.support:appcompat-v7:27.0.2'
     implementation 'net.smartam.leeloo:oauth2-client:0.1'
     implementation 'net.smartam.leeloo:oauth2-common:0.1'
+    implementation('com.rollbar:rollbar-android:1.0.0@aar'){transitive=true}
 
     implementation 'com.android.support.constraint:constraint-layout:1.0.2'
 }

@@ -21,4 +21,11 @@ public enum Capability {
     measure_light,
     measure_noise,
     measure_pressure;
+
+    public static Capability get(String name) {
+        for (Capability value : Capability.values())
+            if (value.name().equalsIgnoreCase(name))
+                return value;
+        return null;
+    }
 }
