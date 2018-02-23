@@ -9,6 +9,9 @@ import android.media.AudioManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.preference.PreferenceManager;
 import android.speech.tts.TextToSpeech;
 import android.support.v4.app.ActivityCompat;
@@ -22,8 +25,11 @@ import android.widget.Toast;
 import com.diamond.SmartVoice.Controllers.Fibaro.Fibaro;
 import com.diamond.SmartVoice.Controllers.Homey.Homey;
 import com.diamond.SmartVoice.Controllers.Vera.Vera;
+import com.diamond.SmartVoice.Recognizer.AbstractRecognizer;
 import com.diamond.SmartVoice.Recognizer.GoogleRecognizer;
 import com.diamond.SmartVoice.Recognizer.PocketSphinxRecognizer;
+import com.diamond.SmartVoice.Recognizer.SnowboyRecognizer;
+import com.diamond.SmartVoice.Recognizer.YandexRecognizer;
 import com.rollbar.android.Rollbar;
 
 import java.util.Arrays;
@@ -31,14 +37,16 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.UUID;
 
+import ai.kitt.snowboy.AppResCopy;
+
 /**
  * @author Dmitriy Ponomarev
  */
 public class MainActivity extends Activity {
     private static final String TAG = MainActivity.class.getSimpleName();
 
-    private PocketSphinxRecognizer keyPhraseRecognizer;
-    private GoogleRecognizer recognizer;
+    private AbstractRecognizer keyPhraseRecognizer;
+    public AbstractRecognizer recognizer;
 
     private TextToSpeech textToSpeech;
     private View MicView;
@@ -57,33 +65,43 @@ public class MainActivity extends Activity {
 
     private View progressBar;
 
-    public String keyphrase;
+    public String PocketSphinxKeyPhrase;
     public boolean offline_recognition = false;
+
+    private boolean buttonPressed = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Log.i(TAG, "OS.ARCH : " + System.getProperty("os.arch"));
+
         pref = PreferenceManager.getDefaultSharedPreferences(this);
 
         Rollbar.init(this, "1462b05ac823412281cd257b13eb6c7f", "development");
 
-        keyphrase = pref.getString("keyphrase", getString(R.string.defaultKeyPhrase));
+        PocketSphinxKeyPhrase = pref.getString("PocketSphinxKeyPhrase", getString(R.string.defaultKeyPhrase));
         offline_recognition = pref.getBoolean("offline_recognition", false);
 
         try {
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(this, Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED)
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
+                    || ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED
+                    || ActivityCompat.checkSelfPermission(this, Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED
+                    || ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_NETWORK_STATE) != PackageManager.PERMISSION_GRANTED)
                 ActivityCompat.requestPermissions(this,
                         new String[]{
                                 Manifest.permission.WRITE_EXTERNAL_STORAGE,
                                 Manifest.permission.RECORD_AUDIO,
-                                Manifest.permission.INTERNET
+                                Manifest.permission.INTERNET,
+                                Manifest.permission.ACCESS_NETWORK_STATE
                         }, 1);
         } catch (Exception e) {
             e.printStackTrace();
             Rollbar.instance().error(e);
         }
+
+        AppResCopy.copyResFromAssetsToSD(this);
 
         progressBar = findViewById(R.id.progressBar);
 
@@ -97,11 +115,22 @@ public class MainActivity extends Activity {
                     return false;
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
-                        if (keyPhraseRecognizer != null)
-                            keyPhraseRecognizer.stopListening();
-                        if (recognizer != null)
-                            recognizer.startListening();
-                        buttonOn();
+                        if (buttonPressed && recognizer instanceof YandexRecognizer) {
+                            Log.w(TAG, "onTouch");
+                            recognizer.stopListening();
+                            try {
+                                Thread.sleep(1000);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                            buttonOff();
+                        } else {
+                            if (keyPhraseRecognizer != null)
+                                keyPhraseRecognizer.stopListening();
+                            if (recognizer != null)
+                                recognizer.startListening();
+                            buttonOn();
+                        }
                         break;
                     case MotionEvent.ACTION_UP:
                         v.performClick();
@@ -137,7 +166,7 @@ public class MainActivity extends Activity {
 
         progressBar.setVisibility(View.VISIBLE);
 
-        if (pref.getBoolean("keyRecognizer", false)) {
+        if (!pref.getString("keyRecognizerType", "None").equalsIgnoreCase("None")) {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -152,7 +181,11 @@ public class MainActivity extends Activity {
                 MainActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        setupRecognizer();
+
+                        if (pref.getString("voiceRecognizerType", "Google").equalsIgnoreCase("Google"))
+                            setupGoogleRecognizer();
+                        else
+                            setupYandexRecognizer();
                     }
                 });
             }
@@ -187,6 +220,8 @@ public class MainActivity extends Activity {
                     }
                 });
 
+                Log.w(TAG, "Start keyPhraseRecognizer");
+
                 if (keyPhraseRecognizer != null)
                     keyPhraseRecognizer.startListening();
 
@@ -200,7 +235,7 @@ public class MainActivity extends Activity {
             }
         }).start();
 
-        if (pref.getBoolean("homey_enabled", false))
+        if (pref.getBoolean("homey_enabled", false) && !pref.getString("homey_server_ip", "").isEmpty() && !pref.getString("homey_bearer", "").isEmpty())
             new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -208,7 +243,7 @@ public class MainActivity extends Activity {
                 }
             }).start();
 
-        if (pref.getBoolean("fibaro_enabled", false))
+        if (pref.getBoolean("fibaro_enabled", false) && !pref.getString("fibaro_server_ip", "").isEmpty() && !pref.getString("fibaro_server_login", "").isEmpty() && !pref.getString("fibaro_server_password", "").isEmpty())
             new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -216,7 +251,7 @@ public class MainActivity extends Activity {
                 }
             }).start();
 
-        if (pref.getBoolean("vera_enabled", false))
+        if (pref.getBoolean("vera_enabled", false) && !pref.getString("vera_server_ip", "").isEmpty())
             new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -230,10 +265,12 @@ public class MainActivity extends Activity {
     }
 
     public void buttonOn() {
+        buttonPressed = true;
         MicView.setBackgroundResource(R.drawable.background_big_mic_green);
     }
 
     public void buttonOff() {
+        buttonPressed = false;
         MicView.setBackgroundResource(R.drawable.background_big_mic);
         if (keyPhraseRecognizer != null)
             keyPhraseRecognizer.startListening();
@@ -246,7 +283,10 @@ public class MainActivity extends Activity {
             keyPhraseRecognizer = null;
         }
         try {
-            keyPhraseRecognizer = new PocketSphinxRecognizer(this);
+            if (pref.getString("keyRecognizerType", "None").equalsIgnoreCase("Snowboy") && !System.getProperty("os.arch").equalsIgnoreCase("i686"))
+                keyPhraseRecognizer = new SnowboyRecognizer(this);
+            else if (pref.getString("keyRecognizerType", "None").equalsIgnoreCase("PocketSphinx"))
+                keyPhraseRecognizer = new PocketSphinxRecognizer(this);
         } catch (Exception e) {
             e.printStackTrace();
             Rollbar.instance().error(e);
@@ -254,7 +294,7 @@ public class MainActivity extends Activity {
         keyPhraseRecognizerLoading = false;
     }
 
-    public void setupRecognizer() {
+    public void setupGoogleRecognizer() {
         recognizerLoading = true;
         if (recognizer != null) {
             recognizer.stopListening();
@@ -262,6 +302,21 @@ public class MainActivity extends Activity {
         }
         try {
             recognizer = new GoogleRecognizer(this);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Rollbar.instance().error(e);
+        }
+        recognizerLoading = false;
+    }
+
+    public void setupYandexRecognizer() {
+        recognizerLoading = true;
+        if (recognizer != null) {
+            recognizer.stopListening();
+            recognizer = null;
+        }
+        try {
+            recognizer = new YandexRecognizer(this);
         } catch (Exception e) {
             e.printStackTrace();
             Rollbar.instance().error(e);
@@ -390,13 +445,20 @@ public class MainActivity extends Activity {
 
     public long lastKeyPhrase;
 
+    public Handler OnKeyPhraseHandler = new Handler(Looper.getMainLooper()) {
+        @Override
+        public void handleMessage(Message message) {
+            lastKeyPhrase = System.currentTimeMillis();
+            if (keyPhraseRecognizer != null)
+                keyPhraseRecognizer.stopListening();
+            if (recognizer != null)
+                recognizer.startListening();
+            buttonOn();
+        }
+    };
+
     public void OnKeyPhrase() {
-        lastKeyPhrase = System.currentTimeMillis();
-        if (keyPhraseRecognizer != null)
-            keyPhraseRecognizer.stopListening();
-        if (recognizer != null)
-            recognizer.startListening();
-        buttonOn();
+        OnKeyPhraseHandler.obtainMessage().sendToTarget();
     }
 
     public static void process(final String[] variants, final MainActivity activity) {
@@ -414,6 +476,8 @@ public class MainActivity extends Activity {
                         result = activity.FibaroController.process(params);
                     if (result == null && activity.pref.getBoolean("vera_enabled", false) && activity.VeraController != null)
                         result = activity.VeraController.process(params);
+                    if (result != null && activity.recognizer instanceof YandexRecognizer)
+                        activity.recognizer.stopListening();
                 } catch (Exception e) {
                     e.printStackTrace();
                     Rollbar.instance().error(e);
@@ -423,11 +487,24 @@ public class MainActivity extends Activity {
 
             @Override
             protected void onPostExecute(String result) {
-                if (result != null)
-                    activity.speak(result);
-                else
-                    activity.speak(activity.getString(R.string.repeat));
-                activity.buttonOff();
+                if (activity.recognizer instanceof YandexRecognizer) {
+                    if (result != null) {
+                        activity.recognizer.stopListening();
+                        activity.speak(result);
+                        try {
+                            Thread.sleep(500);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        activity.buttonOff();
+                    }
+                } else {
+                    if (result != null)
+                        activity.speak(result);
+                    else
+                        activity.speak(activity.getString(R.string.repeat));
+                    activity.buttonOff();
+                }
             }
         }.execute(variants);
     }

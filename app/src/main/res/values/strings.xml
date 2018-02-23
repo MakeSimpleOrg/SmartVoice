@@ -25,15 +25,46 @@
     <string name="closed">Closed</string>
     <string name="open">Open</string>
     <string name="scene_launched">Scene launched</string>
-    <string name="HomeyServerAddress">Homey: Server Address</string>
-    <string name="FibaroServerAddress">Fibaro: Server Address</string>
-    <string name="FibaroLogin">Fibaro: Login</string>
-    <string name="FibaroPassword">Fibaro: Password</string>
-    <string name="VeraServerAddress">Vera: Server Address</string>
+    <string name="voice">Voice</string>
+    <string name="HomeyServerAddress">Server Address</string>
+    <string name="FibaroServerAddress">Server Address</string>
+    <string name="FibaroLogin">Login</string>
+    <string name="FibaroPassword">Password</string>
+    <string name="VeraServerAddress">Server Address</string>
     <string name="VoiceActivation">Voice Activation</string>
-    <string name="KeyPhrase">Key Phrase</string>
-    <string name="Sensitivity">Sensitivity (1–100)</string>
+    <string name="VoiceRecognition">Voice Recognition</string>
+    <string name="SnowboyKeyPhrase">Key Phrase</string>
+    <string name="PocketSphinxKeyPhrase">Key Phrase</string>
+    <string name="SnowboySensitivity">Sensitivity (1–100)</string>
+    <string name="PocketSphinxSensitivity">Sensitivity (1–100)</string>
     <string name="OfflineRecognition">Offline Recognition</string>
     <string name="VoiceResponses">Voice Responses</string>
+
+    <string-array name="VoiceActivationEntries">
+        <item>None</item>
+        <item>Snowboy</item>
+        <item>PocketSphinx</item>
+    </string-array>
+    <string-array name="VoiceActivationValues">
+        <item>None</item>
+        <item>Snowboy</item>
+        <item>PocketSphinx</item>
+    </string-array>
+
+    <string-array name="VoiceRecognitionEntries">
+        <item>Google</item>
+        <item>Yandex</item>
+    </string-array>
+    <string-array name="VoiceRecognitionValues">
+        <item>Google</item>
+        <item>Yandex</item>
+    </string-array>
+
+    <string-array name="KeyPhraseEntries">
+        <item>Alexa</item>
+    </string-array>
+    <string-array name="KeyPhraseValues">
+        <item>Alexa</item>
+    </string-array>
 
 </resources>

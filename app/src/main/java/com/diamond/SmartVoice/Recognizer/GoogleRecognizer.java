@@ -18,7 +18,7 @@ import java.util.Locale;
 /**
  * @author Dmitriy Ponomarev
  */
-public class GoogleRecognizer implements RecognitionListener {
+public class GoogleRecognizer extends AbstractRecognizer implements RecognitionListener {
 
     private static final String TAG = GoogleRecognizer.class.getSimpleName();
     private MainActivity mContext;

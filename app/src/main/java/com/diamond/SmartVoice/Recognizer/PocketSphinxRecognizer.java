@@ -20,7 +20,7 @@ import static edu.cmu.pocketsphinx.SpeechRecognizerSetup.defaultSetup;
 /**
  * @author Dmitriy Ponomarev
  */
-public class PocketSphinxRecognizer {
+public class PocketSphinxRecognizer extends AbstractRecognizer {
     private static final String KEY_PHRASE_SEARCH = "wakeup";
     private edu.cmu.pocketsphinx.SpeechRecognizer recognizer;
     private static final String TAG = PocketSphinxRecognizer.class.getSimpleName();
@@ -28,7 +28,7 @@ public class PocketSphinxRecognizer {
 
     public PocketSphinxRecognizer(MainActivity context) {
         this.mContext = context;
-        String KEYPHRASE = context.keyphrase;
+        String KEYPHRASE = context.PocketSphinxKeyPhrase;
         try {
             Assets assets = new Assets(mContext);
             File assetDir = assets.syncAssets();
@@ -39,7 +39,7 @@ public class PocketSphinxRecognizer {
             SpeechRecognizerSetup setup = defaultSetup();
             setup.setAcousticModel(new File(assetDir, "dict"));
             setup.setDictionary(dict);
-            setup.setKeywordThreshold(Float.valueOf("1e-" + context.pref.getString("keywordThreshold", "5") + "f"));
+            setup.setKeywordThreshold(Float.valueOf("1e-" + (100-Integer.parseInt(context.pref.getString("PocketSphinxSensitivity", "95"))) + "f"));
             //setup.setBoolean("-remove_noise", false);
             recognizer = setup.getRecognizer();
             recognizer.addListener(new PocketSphinxRecognitionListener());
@@ -85,14 +85,6 @@ public class PocketSphinxRecognizer {
         return new FileOutputStream(file, false);
     }
 
-    public void destroy() {
-        if (recognizer != null) {
-            recognizer.cancel();
-            recognizer.shutdown();
-            recognizer = null;
-        }
-    }
-
     public void startListening() {
         if (recognizer == null)
             return;
@@ -114,17 +106,31 @@ public class PocketSphinxRecognizer {
         }
     }
 
+    public void destroy() {
+        if (recognizer != null) {
+            recognizer.cancel();
+            recognizer.shutdown();
+            recognizer = null;
+        }
+    }
+
     protected class PocketSphinxRecognitionListener implements edu.cmu.pocketsphinx.RecognitionListener {
         @Override
         public void onBeginningOfSpeech() {
+            Log.d(TAG, "onBeginningOfSpeech");
+            if (mContext.recognizer instanceof YandexRecognizer)
+                mContext.OnKeyPhrase();
         }
 
         @Override
         public void onPartialResult(Hypothesis hypothesis) {
+            //Log.d(TAG, "onPartialResult");
             if (hypothesis == null)
                 return;
+            Log.d(TAG, "onPartialResult: " + hypothesis.getHypstr());
             if (KEY_PHRASE_SEARCH.equals(recognizer.getSearchName()))
-                mContext.OnKeyPhrase();
+                if (!(mContext.recognizer instanceof YandexRecognizer))
+                    mContext.OnKeyPhrase();
         }
 
         @Override
