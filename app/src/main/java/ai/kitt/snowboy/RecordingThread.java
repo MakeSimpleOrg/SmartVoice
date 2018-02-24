@@ -1,4 +1,4 @@
-package ai.kitt.snowboy.audio;
+package ai.kitt.snowboy;
 
 import android.media.AudioFormat;
 import android.media.AudioRecord;
@@ -6,12 +6,11 @@ import android.media.MediaRecorder;
 import android.util.Log;
 
 import com.diamond.SmartVoice.Recognizer.SnowboyRecognizer.ResultListener;
+import com.diamond.SmartVoice.Utils;
 
+import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-
-import ai.kitt.snowboy.Constants;
-import ai.kitt.snowboy.SnowboyDetect;
 
 public class RecordingThread {
     static {
@@ -20,23 +19,19 @@ public class RecordingThread {
 
     private static final String TAG = RecordingThread.class.getSimpleName();
 
-    private static final String ACTIVE_RES = Constants.ACTIVE_RES;
-    private static final String ACTIVE_UMDL = Constants.ACTIVE_UMDL;
+    private static final int SAMPLE_RATE = 16000;
 
     private boolean shouldContinue;
-    private AudioDataReceivedListener listener = null;
     private ResultListener handler = null;
     private Thread thread;
 
-    private static String strEnvWorkSpace = Constants.DEFAULT_WORK_SPACE;
-    private String activeModel = strEnvWorkSpace + ACTIVE_UMDL;
-    private String commonRes = strEnvWorkSpace + ACTIVE_RES;
+    private SnowboyDetect detector;
 
-    private SnowboyDetect detector = new SnowboyDetect(commonRes, activeModel);
-
-    public RecordingThread(ResultListener handler, AudioDataReceivedListener listener, String sensitivity) {
+    public RecordingThread(ResultListener handler, String model, String sensitivity) {
         this.handler = handler;
-        this.listener = listener;
+        String path = Utils.assetDir.getAbsolutePath() + File.separatorChar + "snowboy" + File.separatorChar;
+        System.out.println("path: " + path);
+        detector = new SnowboyDetect(path + "common.res", path + model);
         detector.SetSensitivity(sensitivity);
         //-detector.SetAudioGain(1);
         detector.ApplyFrontend(true);
@@ -68,15 +63,15 @@ public class RecordingThread {
         android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_AUDIO);
 
         // Buffer size in bytes: for 0.1 second of audio
-        int bufferSize = (int) (Constants.SAMPLE_RATE * 0.1 * 2);
+        int bufferSize = (int) (SAMPLE_RATE * 0.1 * 2);
         if (bufferSize == AudioRecord.ERROR || bufferSize == AudioRecord.ERROR_BAD_VALUE) {
-            bufferSize = Constants.SAMPLE_RATE * 2;
+            bufferSize = SAMPLE_RATE * 2;
         }
 
         byte[] audioBuffer = new byte[bufferSize];
         AudioRecord record = new AudioRecord(
                 MediaRecorder.AudioSource.DEFAULT,
-                Constants.SAMPLE_RATE,
+                SAMPLE_RATE,
                 AudioFormat.CHANNEL_IN_MONO,
                 AudioFormat.ENCODING_PCM_16BIT,
                 bufferSize);
@@ -86,19 +81,13 @@ public class RecordingThread {
             return;
         }
         record.startRecording();
-        if (null != listener) {
-            listener.start();
-        }
+
         Log.v(TAG, "Start recording");
 
         long shortsRead = 0;
         detector.Reset();
         while (shouldContinue) {
             record.read(audioBuffer, 0, audioBuffer.length);
-
-            if (null != listener) {
-                listener.onAudioDataReceived(audioBuffer, audioBuffer.length);
-            }
 
             // Converts to short array.
             short[] audioData = new short[audioBuffer.length / 2];
@@ -112,30 +101,11 @@ public class RecordingThread {
                 Log.i("Snowboy: ", "Hotword " + Integer.toString(result) + " detected!");
                 handler.onResult();
             }
-
-            /*
-            if (result == -2) {
-                // post a higher CPU usage:
-                 //sendMessage(MsgEnum.MSG_VAD_NOSPEECH, null);
-            } else if (result == -1) {
-                sendMessage(MsgEnum.MSG_ERROR, "Unknown Detection Error");
-            } else if (result == 0) {
-                // post a higher CPU usage:
-                 //sendMessage(MsgEnum.MSG_VAD_SPEECH, null);
-            } else if (result > 0) {
-                sendMessage(MsgEnum.MSG_ACTIVE, null);
-                Log.i("Snowboy: ", "Hotword " + Integer.toString(result) + " detected!");
-                player.start();
-            }
-            */
         }
 
         record.stop();
         record.release();
 
-        if (null != listener) {
-            listener.stop();
-        }
         Log.v(TAG, String.format("Recording stopped. Samples read: %d", shortsRead));
     }
 }

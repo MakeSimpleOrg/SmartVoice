@@ -55,57 +55,66 @@ public abstract class Controller {
         return result;
     }
 
-    protected void sendCommand(String request) {
-        try {
-            URL url = host_ext != null ? new URL("https://" + host_ext + request) : new URL("http://" + host + request);
-            Log.d(TAG, "Sending command: " + url);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-            if (auth != null)
-                conn.setRequestProperty("Authorization", "Basic " + auth);
-            else if (bearer != null)
-                conn.setRequestProperty("Authorization", "Bearer " + bearer);
-            conn.setConnectTimeout(5000);
-            conn.getResponseMessage();
-        } catch (IOException e) {
-            Log.w(TAG, "Error while get getJson: " + request);
-            e.printStackTrace();
-            Rollbar.instance().error(e);
-        }
+    protected void sendCommand(final String request) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    URL url = host_ext != null ? new URL("https://" + host_ext + request) : new URL("http://" + host + request);
+                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    conn.setRequestMethod("GET");
+                    if (auth != null)
+                        conn.setRequestProperty("Authorization", "Basic " + auth);
+                    else if (bearer != null)
+                        conn.setRequestProperty("Authorization", "Bearer " + bearer);
+                    conn.setConnectTimeout(5000);
+                    conn.getResponseMessage();
+                } catch (IOException e) {
+                    Log.w(TAG, "Error while get getJson: " + request);
+                    e.printStackTrace();
+                    Rollbar.instance().error(e);
+                }
+            }
+        }).start();
     }
 
-    protected void sendJSON(String request, String json) {
-        try {
-            URL url = new URL("http://" + host + request);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setConnectTimeout(5000);
-            conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-            conn.setDoOutput(true);
-            conn.setDoInput(true);
-            conn.setRequestMethod("PUT");
-            if (auth != null)
-                conn.setRequestProperty("Authorization", "Basic " + auth);
-            else if (bearer != null)
-                conn.setRequestProperty("Authorization", "Bearer " + bearer);
-            OutputStream os = conn.getOutputStream();
-            os.write(json.getBytes("UTF-8"));
-            os.close();
+    protected void sendJSON(final String request, final String json) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    URL url = new URL("http://" + host + request);
+                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    conn.setConnectTimeout(5000);
+                    conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                    conn.setDoOutput(true);
+                    conn.setDoInput(true);
+                    conn.setRequestMethod("PUT");
+                    if (auth != null)
+                        conn.setRequestProperty("Authorization", "Basic " + auth);
+                    else if (bearer != null)
+                        conn.setRequestProperty("Authorization", "Bearer " + bearer);
+                    OutputStream os = conn.getOutputStream();
+                    os.write(json.getBytes("UTF-8"));
+                    os.close();
 
-            BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            StringBuilder buffer = new StringBuilder();
-            String line;
-            while ((line = br.readLine()) != null)
-                buffer.append(line).append("\n");
-            br.close();
+                    BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                    StringBuilder buffer = new StringBuilder();
+                    String line;
+                    while ((line = br.readLine()) != null)
+                        buffer.append(line).append("\n");
+                    br.close();
 
-            Log.w(TAG, "Result: " + buffer.toString());
+                    Log.w(TAG, "Result: " + buffer.toString());
 
-            conn.disconnect();
-        } catch (IOException e) {
-            Log.w(TAG, "Error while get getJson: " + request);
-            e.printStackTrace();
-            Rollbar.instance().error(e);
-        }
+                    conn.disconnect();
+                } catch (IOException e) {
+                    Log.w(TAG, "Error while get getJson: " + request);
+                    e.printStackTrace();
+                    Rollbar.instance().error(e);
+                }
+            }
+        }).start();
     }
 
     public abstract URoom[] getRooms();

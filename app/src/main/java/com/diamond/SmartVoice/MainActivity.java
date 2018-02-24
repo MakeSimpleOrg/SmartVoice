@@ -37,8 +37,6 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.UUID;
 
-import ai.kitt.snowboy.AppResCopy;
-
 /**
  * @author Dmitriy Ponomarev
  */
@@ -77,6 +75,8 @@ public class MainActivity extends Activity {
 
         Log.i(TAG, "OS.ARCH : " + System.getProperty("os.arch"));
 
+        Utils.load(this);
+
         pref = PreferenceManager.getDefaultSharedPreferences(this);
 
         Rollbar.init(this, "1462b05ac823412281cd257b13eb6c7f", "development");
@@ -101,10 +101,7 @@ public class MainActivity extends Activity {
             Rollbar.instance().error(e);
         }
 
-        AppResCopy.copyResFromAssetsToSD(this);
-
         progressBar = findViewById(R.id.progressBar);
-
         progressBar.setVisibility(View.VISIBLE);
 
         MicView = findViewById(R.id.mic);
@@ -225,6 +222,7 @@ public class MainActivity extends Activity {
                 if (keyPhraseRecognizer != null)
                     keyPhraseRecognizer.startListening();
 
+                /*
                 if (pref.getBoolean("tts_enabled", false))
                     MainActivity.this.runOnUiThread(new Runnable() {
                         @Override
@@ -232,6 +230,7 @@ public class MainActivity extends Activity {
                             speak("Слушаю", false);
                         }
                     });
+                */
             }
         }).start();
 
@@ -476,8 +475,11 @@ public class MainActivity extends Activity {
                         result = activity.FibaroController.process(params);
                     if (result == null && activity.pref.getBoolean("vera_enabled", false) && activity.VeraController != null)
                         result = activity.VeraController.process(params);
-                    if (result != null && activity.recognizer instanceof YandexRecognizer)
+                    if (result != null && activity.recognizer instanceof YandexRecognizer) {
+                        if (!activity.pref.getBoolean("tts_enabled", false))
+                            Utils.dong.start();
                         activity.recognizer.stopListening();
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                     Rollbar.instance().error(e);
@@ -492,7 +494,7 @@ public class MainActivity extends Activity {
                         activity.recognizer.stopListening();
                         activity.speak(result);
                         try {
-                            Thread.sleep(500);
+                            Thread.sleep(100); // Иначе яндекс не успевает отключиться
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }

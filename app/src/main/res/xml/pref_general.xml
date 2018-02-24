@@ -79,7 +79,7 @@
             android:key="SnowboyKeyPhrase"
             android:title="@string/SnowboyKeyPhrase" />
         <EditTextPreference
-            android:defaultValue="70"
+            android:defaultValue="60"
             android:inputType="numberDecimal"
             android:key="SnowboySensitivity"
             android:selectAllOnFocus="true"

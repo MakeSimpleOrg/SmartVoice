@@ -23,7 +23,7 @@ android {
         targetSdkVersion 27
         versionName 'v1.0.2'
         versionNameSuffix ''
-        versionCode 15
+        versionCode 16
         signingConfig signingConfigs.config
     }
     buildTypes {

@@ -33,7 +33,7 @@ public class YandexRecognizer extends AbstractRecognizer implements RecognizerLi
 
     private long lastSpeech;
 
-    private boolean continuousMode = false;
+    private boolean continuousMode = true;
 
     public YandexRecognizer(MainActivity context) {
         this.mContext = context;

@@ -37,7 +37,6 @@ public class Fibaro extends Controller {
         updateData();
     }
 
-
     private void updateData() {
         try {
             String result = request("/api/rooms");
