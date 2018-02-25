@@ -31,6 +31,9 @@
     <string name="FibaroLogin">Логин</string>
     <string name="FibaroPassword">Пароль</string>
     <string name="VeraServerAddress">Адрес сервера</string>
+    <string name="ZipatoServerAddress">Адрес сервера</string>
+    <string name="ZipatoLogin">Логин</string>
+    <string name="ZipatoPassword">Пароль</string>
     <string name="VoiceActivation">Активация голосом</string>
     <string name="VoiceRecognition">Распознавание речи</string>
     <string name="SnowboyKeyPhrase">Активационная фраза</string>

@@ -25,6 +25,7 @@ import android.widget.Toast;
 import com.diamond.SmartVoice.Controllers.Fibaro.Fibaro;
 import com.diamond.SmartVoice.Controllers.Homey.Homey;
 import com.diamond.SmartVoice.Controllers.Vera.Vera;
+import com.diamond.SmartVoice.Controllers.Zipato.Zipato;
 import com.diamond.SmartVoice.Recognizer.AbstractRecognizer;
 import com.diamond.SmartVoice.Recognizer.GoogleRecognizer;
 import com.diamond.SmartVoice.Recognizer.PocketSphinxRecognizer;
@@ -52,11 +53,13 @@ public class MainActivity extends Activity {
     public Homey HomeyController;
     public Fibaro FibaroController;
     public Vera VeraController;
+    public Zipato ZipatoController;
 
     private boolean isLoading = true;
     private boolean homeyLoading = false;
     private boolean fibaroLoading = false;
     private boolean veraLoading = false;
+    private boolean zipatoLoading = false;
     private boolean ttsLoading = false;
     private boolean keyPhraseRecognizerLoading = false;
     private boolean recognizerLoading = false;
@@ -108,7 +111,7 @@ public class MainActivity extends Activity {
         MicView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                if (isLoading || ttsLoading || homeyLoading || fibaroLoading || veraLoading)
+                if (isLoading || ttsLoading || homeyLoading || fibaroLoading || veraLoading || zipatoLoading)
                     return false;
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
@@ -142,7 +145,7 @@ public class MainActivity extends Activity {
         Button settingsBtn = (Button) findViewById(R.id.settingsButton);
         settingsBtn.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
-                if (isLoading || ttsLoading || homeyLoading || fibaroLoading || veraLoading)
+                if (isLoading || ttsLoading || homeyLoading || fibaroLoading || veraLoading || zipatoLoading)
                     return;
                 Intent activity = new Intent(MainActivity.this, SettingsActivity.class);
                 startActivity(activity);
@@ -154,7 +157,7 @@ public class MainActivity extends Activity {
         Button devicesBtn = (Button) findViewById(R.id.devicesButton);
         devicesBtn.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
-                if (isLoading || ttsLoading || homeyLoading || fibaroLoading || veraLoading)
+                if (isLoading || ttsLoading || homeyLoading || fibaroLoading || veraLoading || zipatoLoading)
                     return;
                 Intent activity = new Intent(MainActivity.this, DevicesActivity.class);
                 startActivity(activity);
@@ -257,10 +260,18 @@ public class MainActivity extends Activity {
                     setupVera(MainActivity.this);
                 }
             }).start();
+
+        if (pref.getBoolean("zipato_enabled", false) && !pref.getString("zipato_server_ip", "my.zipato.com:443").isEmpty() && !pref.getString("zipato_server_login", "").isEmpty() && !pref.getString("zipato_server_password", "").isEmpty())
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    setupZipato(MainActivity.this);
+                }
+            }).start();
     }
 
     private boolean isLoading() {
-        return ttsLoading || homeyLoading || fibaroLoading || veraLoading || recognizerLoading || keyPhraseRecognizerLoading;
+        return ttsLoading || homeyLoading || fibaroLoading || veraLoading || zipatoLoading || recognizerLoading || keyPhraseRecognizerLoading;
     }
 
     public void buttonOn() {
@@ -436,6 +447,38 @@ public class MainActivity extends Activity {
                     activity.show("Vera: " + activity.getString(R.string.found) + " " + controller.getVisibleRoomsCount() + " " + activity.getString(R.string.found_rooms) + " " + controller.getVisibleDevicesCount() + " " + activity.getString(R.string.found_devices_and) + " " + controller.getVisibleScenesCount() + " " + activity.getString(R.string.found_scene));
                 }
                 activity.veraLoading = false;
+                if (!activity.isLoading())
+                    activity.progressBar.setVisibility(View.INVISIBLE);
+            }
+        }.execute();
+    }
+
+    public static void setupZipato(final MainActivity activity) {
+        activity.zipatoLoading = true;
+        activity.progressBar.setVisibility(View.VISIBLE);
+        new AsyncTask<Void, Void, Zipato>() {
+            @Override
+            protected Zipato doInBackground(Void... params) {
+                Zipato controller = null;
+                try {
+                    controller = new Zipato(activity);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Rollbar.instance().error(e);
+                    return null;
+                }
+                return controller.getVisibleDevicesCount() > 0 || controller.getVisibleScenesCount() > 0 ? controller : null;
+            }
+
+            @Override
+            protected void onPostExecute(Zipato controller) {
+                activity.ZipatoController = controller;
+                if (activity.ZipatoController == null) {
+                    activity.show("Zipato: " + activity.getString(R.string.controler_not_found) + " " + activity.pref.getString("zipato_server_ip", ""));
+                } else {
+                    activity.show("Zipato: " + activity.getString(R.string.found) + " " + controller.getVisibleRoomsCount() + " " + activity.getString(R.string.found_rooms) + " " + controller.getVisibleDevicesCount() + " " + activity.getString(R.string.found_devices_and) + " " + controller.getVisibleScenesCount() + " " + activity.getString(R.string.found_scene));
+                }
+                activity.zipatoLoading = false;
                 if (!activity.isLoading())
                     activity.progressBar.setVisibility(View.INVISIBLE);
             }

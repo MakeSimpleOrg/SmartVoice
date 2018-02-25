@@ -57,6 +57,34 @@
             android:singleLine="true"
             android:title="@string/VeraServerAddress" />
     </PreferenceCategory>
+    <PreferenceCategory android:title="Zipato">
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="zipato_enabled"
+            android:title="Zipato" />
+        <EditTextPreference
+            android:defaultValue="my.zipato.com:443"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textUri"
+            android:key="zipato_server_ip"
+            android:title="@string/ZipatoServerAddress" />
+        <EditTextPreference
+            android:inputType="textNoSuggestions|textVisiblePassword"
+            android:key="zipato_server_login"
+            android:maxLines="1"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/ZipatoLogin" />
+        <EditTextPreference
+            android:inputType="textPassword"
+            android:key="zipato_server_password"
+            android:maxLines="1"
+            android:password="true"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/ZipatoPassword" />
+    </PreferenceCategory>
     <PreferenceCategory android:title="@string/voice">
         <ListPreference
             android:defaultValue="None"

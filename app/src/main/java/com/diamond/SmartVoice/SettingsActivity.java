@@ -32,6 +32,8 @@ public class SettingsActivity extends PreferenceActivity {
         bindPreferenceSummaryToValue("fibaro_server_ip");
         bindPreferenceSummaryToValue("fibaro_server_login");
         bindPreferenceSummaryToValue("vera_server_ip");
+        bindPreferenceSummaryToValue("zipato_server_ip");
+        bindPreferenceSummaryToValue("zipato_server_login");
         bindPreferenceSummaryToValue("keyRecognizerType");
         bindPreferenceSummaryToValue("voiceRecognizerType");
         bindPreferenceSummaryToValue("SnowboyKeyPhrase");
@@ -43,6 +45,7 @@ public class SettingsActivity extends PreferenceActivity {
         findPreference("homey_server_ip").setOnPreferenceChangeListener(sBindPreferenceChangeListener);
         findPreference("fibaro_enabled").setOnPreferenceChangeListener(sBindPreferenceChangeListener);
         findPreference("vera_enabled").setOnPreferenceChangeListener(sBindPreferenceChangeListener);
+        findPreference("zipato_enabled").setOnPreferenceChangeListener(sBindPreferenceChangeListener);
         findPreference("tts_enabled").setOnPreferenceChangeListener(sBindPreferenceChangeListener);
         findPreference("keyRecognizerType").setOnPreferenceChangeListener(sBindPreferenceChangeListener);
         findPreference("PocketSphinxKeyPhrase").setOnPreferenceChangeListener(sBindPreferenceChangeListener);
@@ -59,6 +62,8 @@ public class SettingsActivity extends PreferenceActivity {
                 MainActivity.setupFibaro(mainActivity);
             else if (preference.getKey().equals("vera_enabled") && (Boolean) value && !pref.getString("vera_server_ip", "").isEmpty())
                 MainActivity.setupVera(mainActivity);
+            if (preference.getKey().equals("zipato_enabled") && (Boolean) value && !pref.getString("zipato_server_ip", "").isEmpty() && !pref.getString("zipato_server_login", "my.zipato.com:443").isEmpty() && !pref.getString("zipato_server_password", "").isEmpty())
+                MainActivity.setupZipato(mainActivity);
             else if (preference.getKey().equals("tts_enabled") && (Boolean) value)
                 mainActivity.setupTTS();
             else if (preference.getKey().equals("PocketSphinxKeyPhrase")) {

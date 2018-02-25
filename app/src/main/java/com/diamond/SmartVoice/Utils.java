@@ -11,6 +11,9 @@ import java.nio.charset.Charset;
 
 import edu.cmu.pocketsphinx.Assets;
 
+/**
+ * @author Dmitriy Ponomarev
+ */
 public class Utils {
     private static final String TAG = Utils.class.getSimpleName();
 
@@ -34,7 +37,6 @@ public class Utils {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
 
     public static void writeStringToFile(final File file, final String data) throws IOException {

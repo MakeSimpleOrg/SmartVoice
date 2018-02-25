@@ -39,13 +39,13 @@ public class Fibaro extends Controller {
 
     private void updateData() {
         try {
-            String result = request("/api/rooms");
+            String result = request("/api/rooms", null);
             all_rooms = result == null ? new Room[0] : gson.fromJson(result, Room[].class);
             if (clearNames)
                 for (Room r : all_rooms)
                     r.setName(AI.replaceTrash(r.getName()));
 
-            result = request("/api/devices?enabled=true&visible=true");
+            result = request("/api/devices?enabled=true&visible=true", null);
             all_devices = result == null ? new Device[0] : gson.fromJson(result, Device[].class);
             for (Device d : all_devices) {
                 if (d.getProperties().getUserDescription() != null && !d.getProperties().getUserDescription().isEmpty())
@@ -111,7 +111,7 @@ public class Fibaro extends Controller {
                 }
             }
 
-            result = request("/api/scenes?enabled=true&visible=true");
+            result = request("/api/scenes?enabled=true&visible=true", null);
             all_scenes = result == null ? new Scene[0] : gson.fromJson(result, Scene[].class);
             for (Scene s : all_scenes)
                 if (s.isVisible()) {

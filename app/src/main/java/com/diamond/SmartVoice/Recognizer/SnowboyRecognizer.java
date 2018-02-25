@@ -1,16 +1,15 @@
 package com.diamond.SmartVoice.Recognizer;
 
-import android.media.MediaPlayer;
 import android.util.Log;
 
 import com.diamond.SmartVoice.MainActivity;
 import com.diamond.SmartVoice.Utils;
 
-import java.io.File;
-import java.io.IOException;
-
 import ai.kitt.snowboy.RecordingThread;
 
+/**
+ * @author Dmitriy Ponomarev
+ */
 public class SnowboyRecognizer extends AbstractRecognizer {
 
     private MainActivity mContext;

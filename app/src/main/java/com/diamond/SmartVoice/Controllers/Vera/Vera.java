@@ -40,90 +40,94 @@ public class Vera extends Controller {
     }
 
     private void updateData() {
+        String result = null;
         try {
-            String result = request("/data_request?id=sdata&output_format=json");
-            Sdata data = gson.fromJson(result, Sdata.class);
-            all_rooms = new Room[data.getRooms().size()];
-            all_devices = new Device[data.getDevices().size()];
-            all_scenes = new Scene[data.getScenes().size()];
-
-            int i = 0;
-            for (Room r : data.getRooms())
-                all_rooms[i++] = r;
-
-            if (clearNames)
-                for (Room r : all_rooms)
-                    r.setName(AI.replaceTrash(r.getName()));
-
-            i = 0;
-            for (Device d : data.getDevices()) {
-                all_devices[i++] = d;
-                d.ai_name = d.getName();
-                if (clearNames)
-                    d.ai_name = AI.replaceTrash(d.ai_name);
-
-                for (Room r : all_rooms)
-                    if (r.getId().equals(d.getRoomID()))
-                        d.setRoomName(r.getName());
-
-                d.ai_name = d.getRoomName() + " " + d.ai_name;
-                d.ai_name = d.ai_name.toLowerCase(Locale.getDefault());
-
-                try {
-                    d.setCategoryType(CategoryType.values()[Integer.parseInt(d.getCategory())]);
-
-                    switch (d.getCategoryType()) {
-                        case DimmableLight:
-                            d.addCapability(Capability.onoff, d.getValue().equals("false") || d.getValue().equals("0") ? "0" : "1");
-                            d.addCapability(Capability.dim, d.getValue());
-                            break;
-                        case Switch:
-                            d.addCapability(Capability.onoff, d.getValue().equals("false") || d.getValue().equals("0") ? "0" : "1");
-                            break;
-                        case DoorLock:
-                            d.addCapability(Capability.openclose, d.getValue().equals("false") || d.getValue().equals("0") ? "close" : "open");
-                            break;
-                        case WindowCovering:
-                            d.addCapability(Capability.windowcoverings_state, d.getValue().equals("false") || d.getValue().equals("0") ? "down" : "up");
-                            break;
-                        case HumiditySensor:
-                            d.addCapability(Capability.measure_humidity, d.getHumidity());
-                            break;
-                        case TemperatureSensor:
-                            d.addCapability(Capability.measure_temperature, d.getTemperature());
-                            break;
-                        case LightSensor:
-                            d.addCapability(Capability.measure_light, d.getLight());
-                            break;
-                    }
-
-                    if (d.getBatterylevel() != null)
-                        d.addCapability(Capability.measure_battery, d.getBatterylevel());
-                    if (d.getKwh() != null)
-                        d.addCapability(Capability.meter_power, d.getKwh());
-                    if (d.getWatts() != null)
-                        d.addCapability(Capability.measure_power, d.getWatts());
-                } catch (IndexOutOfBoundsException e) {
-                    Log.w(TAG, "Unknown category type: " + d.getCategory());
-                    Rollbar.instance().error(e);
-                }
-            }
-
-            i = 0;
-            for (Scene s : data.getScenes())
-                if (s.isVisible()) {
-                    all_scenes[i++] = s;
-                    s.ai_name = s.getName();
-                    if (clearNames)
-                        s.ai_name = AI.replaceTrash(s.ai_name);
-                    for (Room r : all_rooms)
-                        if (r.getId().equals(s.getRoomID()))
-                            s.setRoomName(r.getName());
-                }
+            result = request("/data_request?id=sdata&output_format=json", null);
         } catch (IOException e) {
-            Log.w(TAG, "Failed to update data");
-            Rollbar.instance().error(e);
+            e.printStackTrace();
         }
+        Sdata data = result == null ? null : gson.fromJson(result, Sdata.class);
+        if (data != null)
+            try {
+                all_rooms = new Room[data.getRooms().size()];
+                all_devices = new Device[data.getDevices().size()];
+                all_scenes = new Scene[data.getScenes().size()];
+
+                int i = 0;
+                for (Room r : data.getRooms())
+                    all_rooms[i++] = r;
+
+                if (clearNames)
+                    for (Room r : all_rooms)
+                        r.setName(AI.replaceTrash(r.getName()));
+
+                i = 0;
+                for (Device d : data.getDevices()) {
+                    all_devices[i++] = d;
+                    d.ai_name = d.getName();
+                    if (clearNames)
+                        d.ai_name = AI.replaceTrash(d.ai_name);
+
+                    for (Room r : all_rooms)
+                        if (r.getId().equals(d.getRoomID()))
+                            d.setRoomName(r.getName());
+
+                    d.ai_name = d.getRoomName() + " " + d.ai_name;
+                    d.ai_name = d.ai_name.toLowerCase(Locale.getDefault());
+
+                    try {
+                        d.setCategoryType(CategoryType.getById(Integer.parseInt(d.getCategory())));
+                        switch (d.getCategoryType()) {
+                            case DimmableLight:
+                                d.addCapability(Capability.onoff, d.getValue().equals("false") || d.getValue().equals("0") ? "0" : "1");
+                                d.addCapability(Capability.dim, d.getValue());
+                                break;
+                            case Switch:
+                                d.addCapability(Capability.onoff, d.getValue().equals("false") || d.getValue().equals("0") ? "0" : "1");
+                                break;
+                            case DoorLock:
+                                d.addCapability(Capability.openclose, d.getValue().equals("false") || d.getValue().equals("0") ? "close" : "open");
+                                break;
+                            case WindowCovering:
+                                d.addCapability(Capability.windowcoverings_state, d.getValue().equals("false") || d.getValue().equals("0") ? "down" : "up");
+                                break;
+                            case HumiditySensor:
+                                d.addCapability(Capability.measure_humidity, d.getHumidity());
+                                break;
+                            case TemperatureSensor:
+                                d.addCapability(Capability.measure_temperature, d.getTemperature());
+                                break;
+                            case LightSensor:
+                                d.addCapability(Capability.measure_light, d.getLight());
+                                break;
+                        }
+                        if (d.getBatterylevel() != null)
+                            d.addCapability(Capability.measure_battery, d.getBatterylevel());
+                        if (d.getKwh() != null)
+                            d.addCapability(Capability.meter_power, d.getKwh());
+                        if (d.getWatts() != null)
+                            d.addCapability(Capability.measure_power, d.getWatts());
+                    } catch (IndexOutOfBoundsException e) {
+                        Log.w(TAG, "Unknown category type: " + d.getCategory());
+                        Rollbar.instance().error(e);
+                    }
+                }
+
+                i = 0;
+                for (Scene s : data.getScenes())
+                    if (s.isVisible()) {
+                        all_scenes[i++] = s;
+                        s.ai_name = s.getName();
+                        if (clearNames)
+                            s.ai_name = AI.replaceTrash(s.ai_name);
+                        for (Room r : all_rooms)
+                            if (r.getId().equals(s.getRoomID()))
+                                s.setRoomName(r.getName());
+                    }
+            } catch (Exception e) {
+                Log.w(TAG, "Failed to update data");
+                Rollbar.instance().error(e);
+            }
 
         if (all_rooms == null)
             all_rooms = new Room[0];

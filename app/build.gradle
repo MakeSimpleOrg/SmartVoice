@@ -21,9 +21,9 @@ android {
         minSdkVersion 14
         maxSdkVersion 27
         targetSdkVersion 27
-        versionName 'v1.0.2'
+        versionName 'v1.0.3'
         versionNameSuffix ''
-        versionCode 16
+        versionCode 17
         signingConfig signingConfigs.config
     }
     buildTypes {

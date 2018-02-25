@@ -50,10 +50,11 @@ public class Homey extends Controller {
 
     private void updateData() {
         try {
-            String result = request("/api/manager/zones/zone");
+            String result = request("/api/manager/zones/zone", null);
             JSONObject zones = null;
             try {
-                zones = new JSONObject(result).getJSONObject("result");
+                if(result != null)
+                    zones = new JSONObject(result).getJSONObject("result");
             } catch (JSONException e) {
                 e.printStackTrace();
                 Rollbar.instance().error(e);
@@ -80,10 +81,11 @@ public class Homey extends Controller {
                 for (Room r : all_rooms)
                     r.setName(AI.replaceTrash(r.getName()));
 
-            result = request("/api/manager/devices/device");
+            result = request("/api/manager/devices/device", null);
             JSONObject devices = null;
             try {
-                devices = new JSONObject(result).getJSONObject("result");
+                if(result != null)
+                    devices = new JSONObject(result).getJSONObject("result");
             } catch (JSONException e) {
                 e.printStackTrace();
                 Rollbar.instance().error(e, result);

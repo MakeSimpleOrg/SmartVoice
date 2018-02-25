@@ -1,5 +1,8 @@
 package com.diamond.SmartVoice.Controllers;
 
+/**
+ * @author Dmitriy Ponomarev
+ */
 public enum Capability {
     onoff,
     openclose,

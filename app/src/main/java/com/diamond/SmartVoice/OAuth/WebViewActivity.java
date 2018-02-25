@@ -13,6 +13,9 @@ import com.diamond.SmartVoice.MainActivity;
 import com.diamond.SmartVoice.R;
 import com.diamond.SmartVoice.SettingsActivity;
 
+/**
+ * @author Dmitriy Ponomarev
+ */
 public class WebViewActivity extends Activity {
     public static MainActivity mainActivity;
     public static SettingsActivity settingsActivity;

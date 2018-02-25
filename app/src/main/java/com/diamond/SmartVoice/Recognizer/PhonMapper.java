@@ -6,6 +6,9 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/**
+ * @author Dmitriy Ponomarev
+ */
 public class PhonMapper {
     private static final String TAG = PhonMapper.class.getSimpleName();
 

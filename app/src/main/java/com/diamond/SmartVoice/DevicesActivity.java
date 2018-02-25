@@ -36,6 +36,7 @@ public class DevicesActivity extends PreferenceActivity {
         if (mainActivity.HomeyController != null) list("Homey", mainActivity.HomeyController);
         if (mainActivity.FibaroController != null) list("Fibaro", mainActivity.FibaroController);
         if (mainActivity.VeraController != null) list("Vera", mainActivity.VeraController);
+        if (mainActivity.ZipatoController != null) list("Zipato", mainActivity.ZipatoController);
     }
 
     private void list(String controllerName, Controller controller) {

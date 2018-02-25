@@ -3,6 +3,9 @@ package com.diamond.SmartVoice.Recognizer;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * @author Dmitriy Ponomarev
+ */
 public class Dict {
     private final StringBuilder mDict = new StringBuilder();
     private final Set<String> mWords = new HashSet<String>();

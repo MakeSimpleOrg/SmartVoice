@@ -43,6 +43,13 @@ public enum CategoryType {
         this.name = name;
     }
 
+    public static CategoryType getById(int id) {
+        for (CategoryType cat : values())
+            if (cat.id == id)
+                return cat;
+        return Unknown;
+    }
+
     public int getId() {
         return id;
     }

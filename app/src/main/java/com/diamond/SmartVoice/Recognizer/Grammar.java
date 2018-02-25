@@ -2,6 +2,9 @@ package com.diamond.SmartVoice.Recognizer;
 
 import java.util.Locale;
 
+/**
+ * @author Dmitriy Ponomarev
+ */
 public class Grammar {
     private final Dict mDict;
     private final PhonMapper mPhonMapper;

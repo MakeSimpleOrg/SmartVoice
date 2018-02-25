@@ -13,8 +13,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.NoRouteToHostException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * @author Dmitriy Ponomarev
@@ -31,27 +33,35 @@ public abstract class Controller {
     protected String bearer;
     protected boolean clearNames;
 
-    protected String request(String request) throws IOException {
-        String result;
-        URL url = host_ext != null ? new URL("https://" + host_ext + request) : new URL("http://" + host + request);
-        Log.d(TAG, "Sending request: " + url);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestMethod("GET");
-        if (auth != null)
-            conn.setRequestProperty("Authorization", "Basic " + auth);
-        else if (bearer != null)
-            conn.setRequestProperty("Authorization", "Bearer " + bearer);
-        conn.setRequestProperty("Content-Type", "application/json;charset=utf-8");
-        conn.setConnectTimeout(5000);
-        conn.connect();
-        BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-        StringBuilder buffer = new StringBuilder();
-        String line;
-        while ((line = br.readLine()) != null)
-            buffer.append(line).append("\n");
-        br.close();
-        result = buffer.toString();
-        conn.disconnect();
+    protected String request(String request, String cookie) throws IOException {
+        String result = null;
+        try {
+            URL url = host_ext != null ? new URL("https://" + host_ext + request) : new URL("http://" + host + request);
+            Log.d(TAG, "Sending request: " + url);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            if (auth != null)
+                conn.setRequestProperty("Authorization", "Basic " + auth);
+            else if (bearer != null)
+                conn.setRequestProperty("Authorization", "Bearer " + bearer);
+            conn.setRequestProperty("Content-Type", "application/json;charset=utf-8");
+            if(cookie != null)
+                conn.setRequestProperty("Cookie", cookie);
+            conn.setConnectTimeout(10000);
+            conn.connect();
+            BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            StringBuilder buffer = new StringBuilder();
+            String line;
+            while ((line = br.readLine()) != null)
+                buffer.append(line).append("\n");
+            br.close();
+            result = buffer.toString();
+            conn.disconnect();
+        }
+        catch(NoRouteToHostException e)
+        {
+            e.printStackTrace();
+        }
         return result;
     }
 
@@ -67,9 +77,14 @@ public abstract class Controller {
                         conn.setRequestProperty("Authorization", "Basic " + auth);
                     else if (bearer != null)
                         conn.setRequestProperty("Authorization", "Bearer " + bearer);
-                    conn.setConnectTimeout(5000);
+                    conn.setConnectTimeout(10000);
                     conn.getResponseMessage();
-                } catch (IOException e) {
+                }
+                catch(NoRouteToHostException e)
+                {
+                    e.printStackTrace();
+                }
+                catch (IOException e) {
                     Log.w(TAG, "Error while get getJson: " + request);
                     e.printStackTrace();
                     Rollbar.instance().error(e);
@@ -83,9 +98,9 @@ public abstract class Controller {
             @Override
             public void run() {
                 try {
-                    URL url = new URL("http://" + host + request);
+                    URL url = host_ext != null ? new URL("https://" + host_ext + request) : new URL("http://" + host + request);
                     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                    conn.setConnectTimeout(5000);
+                    conn.setConnectTimeout(10000);
                     conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
                     conn.setDoOutput(true);
                     conn.setDoInput(true);
@@ -108,7 +123,12 @@ public abstract class Controller {
                     Log.w(TAG, "Result: " + buffer.toString());
 
                     conn.disconnect();
-                } catch (IOException e) {
+                }
+                catch(NoRouteToHostException e)
+                {
+                    e.printStackTrace();
+                }
+                catch (IOException e) {
                     Log.w(TAG, "Error while get getJson: " + request);
                     e.printStackTrace();
                     Rollbar.instance().error(e);
