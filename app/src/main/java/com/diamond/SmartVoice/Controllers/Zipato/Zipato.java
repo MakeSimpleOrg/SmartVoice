@@ -157,7 +157,7 @@ public class Zipato extends Controller {
                         a.room.setName(AI.replaceTrash(a.room.getName()));
                         rooms.put(a.room.id, a.room);
                         d.setRoomName(a.room.getName());
-                    }
+                    } else d.setRoomName("");
 
                     d.ai_name = d.getRoomName() + " " + d.getName();
 

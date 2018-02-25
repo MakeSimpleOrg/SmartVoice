@@ -508,7 +508,7 @@ public class MainActivity extends Activity {
             @Override
             protected String doInBackground(String... params) {
                 Log.w(TAG, activity.getString(R.string.you_say) + Arrays.toString(params));
-                if (!activity.pref.getBoolean("homey_enabled", false) && !activity.pref.getBoolean("fibaro_enabled", false) && !activity.pref.getBoolean("vera_enabled", false) || activity.HomeyController == null && activity.FibaroController == null && activity.VeraController == null)
+                if (!activity.pref.getBoolean("homey_enabled", false) && !activity.pref.getBoolean("fibaro_enabled", false) && !activity.pref.getBoolean("vera_enabled", false) && !activity.pref.getBoolean("zipato_enabled", false) || activity.HomeyController == null && activity.FibaroController == null && activity.VeraController == null && activity.ZipatoController == null)
                     return activity.getString(R.string.nothing_to_manage);
                 String result = null;
                 try {
@@ -518,6 +518,8 @@ public class MainActivity extends Activity {
                         result = activity.FibaroController.process(params);
                     if (result == null && activity.pref.getBoolean("vera_enabled", false) && activity.VeraController != null)
                         result = activity.VeraController.process(params);
+                    if (result == null && activity.pref.getBoolean("zipato_enabled", false) && activity.ZipatoController != null)
+                        result = activity.ZipatoController.process(params);
                     if (result != null && activity.recognizer instanceof YandexRecognizer) {
                         if (!activity.pref.getBoolean("tts_enabled", false))
                             Utils.dong.start();
