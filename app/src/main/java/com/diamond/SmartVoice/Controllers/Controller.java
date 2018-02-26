@@ -14,9 +14,9 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.NoRouteToHostException;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 /**
  * @author Dmitriy Ponomarev
@@ -33,7 +33,7 @@ public abstract class Controller {
     protected String bearer;
     protected boolean clearNames;
 
-    protected String request(String request, String cookie) throws IOException {
+    protected String request(String request, String cookie) {
         String result = null;
         try {
             URL url = host_ext != null ? new URL("https://" + host_ext + request) : new URL("http://" + host + request);
@@ -45,7 +45,7 @@ public abstract class Controller {
             else if (bearer != null)
                 conn.setRequestProperty("Authorization", "Bearer " + bearer);
             conn.setRequestProperty("Content-Type", "application/json;charset=utf-8");
-            if(cookie != null)
+            if (cookie != null)
                 conn.setRequestProperty("Cookie", cookie);
             conn.setConnectTimeout(10000);
             conn.connect();
@@ -57,10 +57,14 @@ public abstract class Controller {
             br.close();
             result = buffer.toString();
             conn.disconnect();
-        }
-        catch(NoRouteToHostException e)
-        {
+        } catch (SocketTimeoutException e) {
             e.printStackTrace();
+        } catch (NoRouteToHostException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            Log.w(TAG, "Error while send request: " + request);
+            e.printStackTrace();
+            Rollbar.instance().error(e);
         }
         return result;
     }
@@ -79,12 +83,11 @@ public abstract class Controller {
                         conn.setRequestProperty("Authorization", "Bearer " + bearer);
                     conn.setConnectTimeout(10000);
                     conn.getResponseMessage();
-                }
-                catch(NoRouteToHostException e)
-                {
+                } catch (SocketTimeoutException e) {
                     e.printStackTrace();
-                }
-                catch (IOException e) {
+                } catch (NoRouteToHostException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
                     Log.w(TAG, "Error while get getJson: " + request);
                     e.printStackTrace();
                     Rollbar.instance().error(e);
@@ -123,12 +126,11 @@ public abstract class Controller {
                     Log.w(TAG, "Result: " + buffer.toString());
 
                     conn.disconnect();
-                }
-                catch(NoRouteToHostException e)
-                {
+                } catch (SocketTimeoutException e) {
                     e.printStackTrace();
-                }
-                catch (IOException e) {
+                } catch (NoRouteToHostException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
                     Log.w(TAG, "Error while get getJson: " + request);
                     e.printStackTrace();
                     Rollbar.instance().error(e);

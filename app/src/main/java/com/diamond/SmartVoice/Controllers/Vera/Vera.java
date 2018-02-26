@@ -40,12 +40,7 @@ public class Vera extends Controller {
     }
 
     private void updateData() {
-        String result = null;
-        try {
-            result = request("/data_request?id=sdata&output_format=json", null);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        String result = request("/data_request?id=sdata&output_format=json", null);
         Sdata data = result == null ? null : gson.fromJson(result, Sdata.class);
         if (data != null)
             try {
@@ -125,7 +120,7 @@ public class Vera extends Controller {
                                 s.setRoomName(r.getName());
                     }
             } catch (Exception e) {
-                Log.w(TAG, "Failed to update data");
+                e.printStackTrace();
                 Rollbar.instance().error(e);
             }
 

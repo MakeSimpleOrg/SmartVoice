@@ -6,8 +6,6 @@
             android:key="homey_enabled"
             android:title="Homey" />
         <EditTextPreference
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
             android:inputType="textUri"
             android:key="homey_server_ip"
             android:title="@string/HomeyServerAddress" />
@@ -17,7 +15,7 @@
             android:maxLines="1"
             android:selectAllOnFocus="true"
             android:singleLine="true"
-            android:title="Homey: Bearer Token" />
+            android:title="Bearer Token" />
     </PreferenceCategory>
     <PreferenceCategory android:title="Fibaro">
         <CheckBoxPreference
@@ -25,8 +23,6 @@
             android:key="fibaro_enabled"
             android:title="Fibaro" />
         <EditTextPreference
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
             android:inputType="textUri"
             android:key="fibaro_server_ip"
             android:title="@string/FibaroServerAddress" />
@@ -64,8 +60,6 @@
             android:title="Zipato" />
         <EditTextPreference
             android:defaultValue="my.zipato.com:443"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
             android:inputType="textUri"
             android:key="zipato_server_ip"
             android:title="@string/ZipatoServerAddress" />

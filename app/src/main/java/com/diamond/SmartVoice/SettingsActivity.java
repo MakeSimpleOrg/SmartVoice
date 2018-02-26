@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
@@ -42,7 +43,6 @@ public class SettingsActivity extends PreferenceActivity {
         bindPreferenceSummaryToValue("PocketSphinxSensitivity");
 
         findPreference("homey_enabled").setOnPreferenceChangeListener(sBindPreferenceChangeListener);
-        findPreference("homey_server_ip").setOnPreferenceChangeListener(sBindPreferenceChangeListener);
         findPreference("fibaro_enabled").setOnPreferenceChangeListener(sBindPreferenceChangeListener);
         findPreference("vera_enabled").setOnPreferenceChangeListener(sBindPreferenceChangeListener);
         findPreference("zipato_enabled").setOnPreferenceChangeListener(sBindPreferenceChangeListener);
@@ -69,10 +69,11 @@ public class SettingsActivity extends PreferenceActivity {
             else if (preference.getKey().equals("PocketSphinxKeyPhrase")) {
                 mainActivity.PocketSphinxKeyPhrase = value.toString();
                 mainActivity.setupKeyphraseRecognizer();
+                setSummary(preference, value.toString());
             } else if (preference.getKey().equals("offline_recognition")) {
                 mainActivity.offline_recognition = (Boolean) value;
                 mainActivity.setupGoogleRecognizer();
-            } else if ((preference.getKey().equals("homey_enabled") && (Boolean) value || preference.getKey().equals("homey_server_ip") && value instanceof String && !((String) value).isEmpty())) {
+            } else if ((preference.getKey().equals("homey_enabled") && (Boolean) value)) {
                 if (!pref.getString("homey_server_ip", "").isEmpty() && !pref.getString("homey_bearer", "").isEmpty())
                     MainActivity.setupHomey(mainActivity);
                 else if (pref.getString("homey_bearer", "").isEmpty()) {
@@ -95,8 +96,10 @@ public class SettingsActivity extends PreferenceActivity {
                         startActivity(intent);
                     }
                 }
-            } else if (preference.getKey().equals("keyRecognizerType"))
+            } else if (preference.getKey().equals("keyRecognizerType")) {
                 process_keyRecognizerType(preference, value.toString());
+                setSummary(preference, value.toString());
+            }
 
             return true;
         }
@@ -129,8 +132,7 @@ public class SettingsActivity extends PreferenceActivity {
     private static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
         @Override
         public boolean onPreferenceChange(Preference preference, Object value) {
-            String stringValue = value.toString();
-            preference.setSummary(stringValue);
+            setSummary(preference, value.toString());
             return true;
         }
     };
@@ -138,7 +140,19 @@ public class SettingsActivity extends PreferenceActivity {
     private void bindPreferenceSummaryToValue(String str) {
         Preference preference = findPreference(str);
         preference.setOnPreferenceChangeListener(sBindPreferenceSummaryToValueListener);
-        preference.setSummary(PreferenceManager.getDefaultSharedPreferences(preference.getContext()).getString(preference.getKey(), ""));
+        setSummary(preference, PreferenceManager.getDefaultSharedPreferences(this).getString(preference.getKey(), ""));
+    }
+
+    private static void setSummary(Preference preference, String summary)
+    {
+        if (preference instanceof ListPreference) {
+            ListPreference listPreference = (ListPreference) preference;
+            int index = listPreference.findIndexOfValue(summary);
+            preference.setSummary(index >= 0 ? listPreference.getEntries()[index] : null);
+        } else
+            preference.setSummary(summary);
+        preference.getEditor().apply();
+        System.out.println(preference.getKey() + " summary: " + summary);
     }
 
     @Override

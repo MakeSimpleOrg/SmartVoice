@@ -3,9 +3,13 @@ package com.diamond.SmartVoice;
 import android.media.MediaPlayer;
 import android.util.Log;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 
@@ -37,6 +41,34 @@ public class Utils {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private static String convertStreamToString(InputStream is) throws Exception {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is, "utf8"), 8192);
+        StringBuilder sb = new StringBuilder();
+        String line = null;
+        while ((line = reader.readLine()) != null) {
+            sb.append(line).append("\n");
+        }
+        reader.close();
+        return sb.toString();
+    }
+
+    public static String getStringFromFile(File file) throws Exception {
+        FileInputStream in = null;
+        String ret = null;
+        try {
+            in = new FileInputStream(file);
+            ret = convertStreamToString(in);
+            in.close();
+        } finally {
+            try {
+                if (in != null)
+                    in.close();
+            } catch (final IOException ignored) {
+            }
+        }
+        return ret;
     }
 
     public static void writeStringToFile(final File file, final String data) throws IOException {

@@ -173,8 +173,7 @@ public class Homey extends Controller {
                             s.setRoomName(r.getName());
                 }
             */
-        } catch (IOException e) {
-            Log.w(TAG, "Failed to update data");
+        } catch (Exception e) {
             e.printStackTrace();
             Rollbar.instance().error(e);
         }
