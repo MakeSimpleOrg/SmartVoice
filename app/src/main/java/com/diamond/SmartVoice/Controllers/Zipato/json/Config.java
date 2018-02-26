@@ -31,7 +31,7 @@ public class Config {
     private Object enumValues;
 
     @SerializedName("scale")
-    private int scale;
+    private double scale;
 
     @SerializedName("precision")
     private int precision;
