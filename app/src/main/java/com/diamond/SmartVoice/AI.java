@@ -2,9 +2,11 @@ package com.diamond.SmartVoice;
 
 import android.util.Log;
 
+import com.diamond.SmartVoice.Controllers.Capability;
 import com.diamond.SmartVoice.Controllers.UDevice;
 import com.diamond.SmartVoice.Controllers.UScene;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Locale;
 
@@ -32,8 +34,10 @@ public class AI {
         return true;
     }
 
-    private static boolean matchesOnOff(String name, String str, int accuracy) {
-        str = " " + str + " ";
+    private static boolean matchesOnOffDim(String name, String strarg, int accuracy) {
+        String str = "     " + strarg + "     ";
+
+        str = str.replaceAll("[0-9:/-]", "");
 
         str = str.replaceAll(" в ", " ");
         str = str.replaceAll(" у ", " ");
@@ -41,6 +45,10 @@ public class AI {
         str = str.replaceAll(" на ", " ");
         str = str.replaceAll(" рядом с ", " ");
         str = str.replaceAll(" около ", " ");
+        str = str.replaceAll(" % ", " ");
+        str = str.replaceAll(" процент ", " ");
+        str = str.replaceAll(" процентов ", " ");
+        str = str.replaceAll(" яркость ", " ");
 
         str = str.replaceAll(" a ", " ");
         str = str.replaceAll(" in ", " ");
@@ -50,89 +58,89 @@ public class AI {
         str = str.replaceAll(" near ", " ");
         str = str.replaceAll(" the ", " ");
         str = str.replaceAll(" to ", " ");
+        str = str.replaceAll(" percent ", " ");
+        str = str.replaceAll(" percents ", " ");
+        str = str.replaceAll(" brightness ", " ");
 
+        str = str.replaceAll("\\s+", " ");
         str = str.trim();
 
         String[] s = str.split(" ");
         if (s.length > 2 && name.split(" ").length > 1) {
             String str2 = s[2] + " " + s[1];
-            return (str.contains("включи") || str.contains("выключи") || str.contains("открой") || str.contains("закрой") || str.contains("switch") || str.contains("turn") || str.contains("open") || str.contains("close")) && matches(name, str2, accuracy);
+            return matches(name, str2, accuracy);
         }
         return false;
     }
 
     private static String replaceMistakes(String str) {
         str = str.toLowerCase(Locale.getDefault());
-        str = str.replaceAll("цвет", "свет");
+        //str = str.replaceAll("цвет", "свет");
         str = str.replaceAll("банный", "ванна");
         str = str.replaceAll("лунный свет", "ванна свет");
         return str.trim();
     }
 
     private static UDevice[] findDevices(UDevice[] devices, String[] strs, int accuracy) {
-        int count = 0;
+        ArrayList<UDevice> list = new ArrayList<>();
+        String dim = null;
         d1:
-        for (UDevice d : devices)
-            for (String str : strs) {
-                str = replaceMistakes(str);
-                if (matches(d.ai_name, str, accuracy)) {
-                    count++;
-                    continue d1;
-                } else if (matchesOnOff(d.ai_name, str, accuracy)) {
-                    count++;
-                    continue d1;
-                }
-            }
-        if (count == 0)
-            return null;
-        UDevice[] result = new UDevice[count];
-        int i = 0;
-        d2:
         for (UDevice d : devices) {
             d.ai_flag = 0;
+            dim = d.getCapabilities().get(Capability.dim);
             for (String str : strs) {
                 str = replaceMistakes(str);
                 if (matches(d.ai_name, str, accuracy)) {
-                    result[i++] = d;
-                    continue d2;
-                } else if (matchesOnOff(d.ai_name, str, accuracy)) {
-                    result[i++] = d;
-                    if (str.contains("включи") || str.contains("закрой") || str.contains(" on") || str.contains("close"))
-                        d.ai_flag = 1;
-                    else if (str.contains("выключи") || str.contains("открой") || str.contains(" off") || str.contains("open"))
-                        d.ai_flag = 2;
-                    continue d2;
+                    list.add(d);
+                    continue d1;
+                } else {
+                    if (str.contains("%") || str.contains("процент") || str.contains("яркость") || str.contains("percent") || str.contains("brightness")) {
+                        if (dim != null && matchesOnOffDim(d.ai_name, str, accuracy)) {
+                            Log.w(TAG, "яркость: " + str);
+                            String str2 = str.replaceAll(" %", "");
+                            str2 = str2.replaceAll("%", "");
+                            String[] words = str2.split(" ");
+                            for (String word : words) {
+                                if (Character.isDigit(word.charAt(0))) {
+                                    try {
+                                        d.ai_value = String.valueOf(Integer.parseInt(word));
+                                        d.ai_flag = 3;
+                                        list.add(d);
+                                        continue d1;
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            }
+                        }
+                    } else if (str.contains("включи") || str.contains("выключи") || str.contains("открой") || str.contains("закрой") || str.contains("switch") || str.contains("turn") || str.contains("open") || str.contains("close")) {
+                        if (matchesOnOffDim(d.ai_name, str, accuracy)) {
+                            list.add(d);
+                            if (str.contains("включи") || str.contains("закрой") || str.contains(" on") || str.contains("close"))
+                                d.ai_flag = 1;
+                            else if (str.contains("выключи") || str.contains("открой") || str.contains(" off") || str.contains("open"))
+                                d.ai_flag = 2;
+                            continue d1;
+                        }
+                    }
                 }
             }
         }
-        return result;
+        return list.isEmpty() ? null : list.toArray(new UDevice[list.size()]);
     }
 
     private static UScene[] findScenes(UScene[] scenes, String[] strs, int accuracy) {
-        int count = 0;
+        ArrayList<UScene> list = new ArrayList<>();
         d1:
         for (UScene s : scenes)
             for (String str : strs) {
                 str = str.toLowerCase(Locale.getDefault()).trim();
                 if (matches(s.ai_name, str, accuracy)) {
-                    count++;
+                    list.add(s);
                     continue d1;
                 }
             }
-        if (count == 0)
-            return null;
-        UScene[] result = new UScene[count];
-        int i = 0;
-        d2:
-        for (UScene s : scenes)
-            for (String str : strs) {
-                str = str.toLowerCase(Locale.getDefault()).trim();
-                if (matches(s.ai_name, str, accuracy)) {
-                    result[i++] = s;
-                    continue d2;
-                }
-            }
-        return result;
+        return list.isEmpty() ? null : list.toArray(new UScene[list.size()]);
     }
 
     public static UDevice[] getDevices(UDevice[] devices, String[] strs) {

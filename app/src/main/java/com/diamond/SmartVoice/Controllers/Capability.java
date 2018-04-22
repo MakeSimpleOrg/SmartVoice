@@ -12,6 +12,7 @@ public enum Capability {
     light_saturation,
     light_temperature,
     light_mode,
+    light_rgbw,
     volume_set,
     alarm_contact,
     alarm_battery,
@@ -23,7 +24,8 @@ public enum Capability {
     measure_humidity,
     measure_light,
     measure_noise,
-    measure_pressure;
+    measure_pressure,
+    button;
 
     public static Capability get(String name) {
         for (Capability value : Capability.values())

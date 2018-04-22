@@ -1,12 +1,11 @@
 package com.diamond.SmartVoice.Controllers.Homey;
 
-import android.util.Log;
-
 import com.diamond.SmartVoice.AI;
 import com.diamond.SmartVoice.Controllers.Capability;
 import com.diamond.SmartVoice.Controllers.Controller;
 import com.diamond.SmartVoice.Controllers.Homey.json.Device;
 import com.diamond.SmartVoice.Controllers.Homey.json.Room;
+import com.diamond.SmartVoice.Controllers.Homey.json.Scene;
 import com.diamond.SmartVoice.Controllers.UDevice;
 import com.diamond.SmartVoice.Controllers.URoom;
 import com.diamond.SmartVoice.Controllers.UScene;
@@ -19,7 +18,7 @@ import com.rollbar.android.Rollbar;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
@@ -53,7 +52,7 @@ public class Homey extends Controller {
             String result = request("/api/manager/zones/zone", null);
             JSONObject zones = null;
             try {
-                if(result != null)
+                if (result != null)
                     zones = new JSONObject(result).getJSONObject("result");
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -84,12 +83,14 @@ public class Homey extends Controller {
             result = request("/api/manager/devices/device", null);
             JSONObject devices = null;
             try {
-                if(result != null)
+                if (result != null)
                     devices = new JSONObject(result).getJSONObject("result");
             } catch (JSONException e) {
                 e.printStackTrace();
                 Rollbar.instance().error(e, result);
             }
+
+            ArrayList<Scene> scenes = new ArrayList<>();
 
             Iterator<String> it;
             String key;
@@ -139,6 +140,13 @@ public class Homey extends Controller {
                                         case windowcoverings_state:
                                             value = "up".equals(value) ? "up" : "down";
                                             break;
+                                        case dim:
+                                            try {
+                                                value = String.valueOf((int) Float.parseFloat(value));
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
+                                            }
+                                            break;
                                         case measure_battery:
                                         case measure_power:
                                         case meter_power:
@@ -152,7 +160,17 @@ public class Homey extends Controller {
                                             break;
                                     }
 
-                                    d.addCapability(capability, value);
+                                    if (capability == Capability.button) {
+                                        Scene s = new Scene();
+                                        s.setName(d.getName());
+                                        s.setId(d.getId());
+                                        s.setRoomName(d.getRoomName());
+                                        s.ai_name = s.getName();
+                                        if (clearNames)
+                                            s.ai_name = AI.replaceTrash(s.ai_name);
+                                        scenes.add(s);
+                                    } else
+                                        d.addCapability(capability, value);
                                 }
                             }
                         }
@@ -160,19 +178,7 @@ public class Homey extends Controller {
                 }
             }
 
-            /* TODO сцены
-            result = request("/api/scenes?enabled=true&visible=true");
-            all_scenes = result == null ? new Scene[0] : gson.fromJson(result, Scene[].class);
-            for (Scene s : all_scenes)
-                if (s.isVisible()) {
-                        s.ai_name = s.getName();
-                    if (clearNames)
-                        s.ai_name = AI.replaceTrash(s.ai_name);
-                    for (Room r : all_rooms)
-                        if (r.getId().equals(s.getRoomID()))
-                            s.setRoomName(r.getName());
-                }
-            */
+            all_scenes = scenes.isEmpty() ? new Scene[0] : scenes.toArray(new Scene[0]);
         } catch (Exception e) {
             e.printStackTrace();
             Rollbar.instance().error(e);
@@ -233,7 +239,7 @@ public class Homey extends Controller {
 
     @Override
     public void setDimLevel(UDevice d, String level) {
-        sendJSON("/api/manager/devices/device/" + d.getId() + "/state/", "{\"dim\": " + level + "}");
+        sendJSON("/api/manager/devices/device/" + d.getId() + "/state/", "{\"dim\": " + (level.equals("0") ? 0f : ((float) Integer.parseInt(level) / 100)) + "}");
     }
 
     @Override
@@ -248,6 +254,6 @@ public class Homey extends Controller {
 
     @Override
     public void runScene(UScene s) {
-        // TODO
+        sendJSON("/api/manager/devices/device/" + s.getId() + "/state/", "{\"button\": true}");
     }
 }

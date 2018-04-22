@@ -33,7 +33,7 @@ public class YandexRecognizer extends AbstractRecognizer implements RecognizerLi
 
     private long lastSpeech;
 
-    private boolean continuousMode = true;
+    public static boolean continuousMode = true;
 
     public YandexRecognizer(MainActivity context) {
         this.mContext = context;
@@ -93,11 +93,6 @@ public class YandexRecognizer extends AbstractRecognizer implements RecognizerLi
         //Log.w(TAG, "power: " + power);
         if (continuousMode && System.currentTimeMillis() - lastSpeech > 5000) {
             resetRecognizer();
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
             mContext.buttonOff();
         }
     }

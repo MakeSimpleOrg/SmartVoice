@@ -8,6 +8,7 @@ import java.util.HashMap;
 public abstract class UDevice {
     public String ai_name;
     public int ai_flag = 0;
+    public String ai_value = null;
 
     public abstract String getId();
 

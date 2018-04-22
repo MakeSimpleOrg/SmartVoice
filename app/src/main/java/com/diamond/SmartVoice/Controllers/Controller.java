@@ -70,6 +70,7 @@ public abstract class Controller {
     }
 
     protected void sendCommand(final String request) {
+        Log.w(TAG, "Command: " + request);
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -97,6 +98,7 @@ public abstract class Controller {
     }
 
     protected void sendJSON(final String request, final String json) {
+        Log.w(TAG, "Json: " + json);
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -222,16 +224,20 @@ public abstract class Controller {
         String text = mainActivity.getString(R.string.error);
         ArrayList<UDevice> list = new ArrayList<>();
         for (UDevice u : devices) {
-            Log.w(TAG, "найдено: " + u.ai_name);
+            Log.w(TAG, "найдено: " + u.getId() + " " + u.ai_name);
             if (u.getCapabilities() != null) {
                 String onoff = u.getCapabilities().get(Capability.onoff);
                 String openclose = u.getCapabilities().get(Capability.openclose);
                 String windowcoverings_state = u.getCapabilities().get(Capability.windowcoverings_state);
-                if (onoff != null || openclose != null || windowcoverings_state != null) {
+                if (u.ai_flag == 3) {
+                    setDimLevel(u, u.ai_value);
+                    u.getCapabilities().put(Capability.dim, u.ai_value);
+                    text = u.ai_value + " " + mainActivity.getString(R.string.percent);
+                } else if (onoff != null || openclose != null || windowcoverings_state != null) {
                     list.add(u);
                     if (!finded) {
                         finded = true;
-                        enabled = u.ai_flag == 1 || u.ai_flag != 2 && ("0".equals(onoff) || "open".equals(openclose) || "up".equals(windowcoverings_state));
+                        enabled = u.ai_flag == 1 || u.ai_flag == 0 && ("0".equals(onoff) || "open".equals(openclose) || "up".equals(windowcoverings_state));
                     }
                 } else {
                     String measure_temperature = u.getCapabilities().get(Capability.measure_temperature);
@@ -253,13 +259,15 @@ public abstract class Controller {
                     if (measure_noise != null)
                         return measure_noise;
                 }
-            }
+            } else
+                Log.w(TAG, "u.getCapabilities() == null: " + u.getId() + u.ai_name);
         }
 
         for (UDevice u : list) {
             String onoff = u.getCapabilities().get(Capability.onoff);
             String openclose = u.getCapabilities().get(Capability.openclose);
             String windowcoverings_state = u.getCapabilities().get(Capability.windowcoverings_state);
+            String dim = u.getCapabilities().get(Capability.dim);
             if (enabled) {
                 if (onoff != null) {
                     turnDeviceOn(u);
@@ -275,6 +283,10 @@ public abstract class Controller {
                     closeWindow(u);
                     u.getCapabilities().put(Capability.windowcoverings_state, "down");
                     text = mainActivity.getString(R.string.closed);
+                }
+                if (dim != null) {
+                    setDimLevel(u, "100");
+                    u.getCapabilities().put(Capability.dim, "100");
                 }
             } else {
                 if (onoff != null) {

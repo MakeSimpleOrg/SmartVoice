@@ -1,6 +1,6 @@
 package com.diamond.SmartVoice.Controllers.Fibaro;
 
-import android.util.Log;
+import android.graphics.Color;
 
 import com.diamond.SmartVoice.AI;
 import com.diamond.SmartVoice.Controllers.Capability;
@@ -15,7 +15,6 @@ import com.diamond.SmartVoice.MainActivity;
 import com.google.gson.Gson;
 import com.rollbar.android.Rollbar;
 
-import java.io.IOException;
 import java.util.Locale;
 
 /**
@@ -61,7 +60,6 @@ public class Fibaro extends Controller {
                 d.ai_name = d.ai_name.toLowerCase(Locale.getDefault());
 
                 switch (d.getType()) {
-                    case "com.fibaro.multilevelSwitch":
                     case "com.fibaro.FGMS001":
                     case "com.fibaro.motionSensor":
                     case "com.fibaro.multilevelSensor":
@@ -70,6 +68,46 @@ public class Fibaro extends Controller {
                     case "com.fibaro.FGFS101":
                     case "com.fibaro.floodSensor":
                     case "com.fibaro.FGSS001":
+                        break;
+                    case "com.fibaro.FGD212":
+                    case "com.fibaro.multilevelSwitch":
+                        d.addCapability(Capability.onoff, d.getValue().equals("false") || d.getValue().equals("0") ? "0" : "1");
+                        d.addCapability(Capability.dim, d.getValue());
+                        break;
+                    case "com.fibaro.FGRGBW441M":
+                        d.addCapability(Capability.onoff, d.getValue().equals("false") || d.getValue().equals("0") ? "0" : "1");
+                        d.addCapability(Capability.dim, d.getValue());
+                        d.addCapability(Capability.light_rgbw, d.getProperties().getColor());
+
+                        /*
+                        String[] scolor = d.getProperties().getColor().split(",");
+                        float r = Integer.parseInt(scolor[0]) / 255;
+                        float g = Integer.parseInt(scolor[1]) / 255;
+                        float b = Integer.parseInt(scolor[2]) / 255;
+                        //int w = Integer.parseInt(scolor[3]) / 255;
+
+                        float hue = 0;
+                        float saturation = 0;
+                        float value = 0;
+
+                        float minRGB = Math.min(r, Math.min(g, b));
+                        float maxRGB = Math.max(r, Math.max(g, b));
+
+                        // Black-gray-white
+                        if (minRGB == maxRGB)
+                            value = minRGB;
+                        else {
+                            // Colors other than black-gray-white:
+                            float t = (r == minRGB) ? g - b : ((b == minRGB) ? r - g : b - r);
+                            float h = (r == minRGB) ? 3 : ((b == minRGB) ? 1 : 5);
+                            hue = 60 * (h - t / (maxRGB - minRGB));
+                            saturation = (maxRGB - minRGB) / maxRGB;
+                            value = maxRGB;
+                        }
+
+                        d.addCapability(Capability.light_hue, String.valueOf(hue));
+                        d.addCapability(Capability.light_saturation, String.valueOf(saturation));
+                        */
                         break;
                     case "com.fibaro.temperatureSensor":
                         d.addCapability(Capability.measure_temperature, "" + (int) Double.parseDouble(d.getValue()));
@@ -84,8 +122,7 @@ public class Fibaro extends Controller {
                     case "com.fibaro.gerda":
                         d.addCapability(Capability.openclose, d.getValue().equals("false") || d.getValue().equals("0") ? "close" : "open");
                         break;
-                    case "com.fibaro.FGD212":
-                    case "com.fibaro.FGRGBW441M":
+
                     case "com.fibaro.colorController":
                     case "com.fibaro.FGRM222":
                     case "com.fibaro.FGR221":
@@ -185,16 +222,11 @@ public class Fibaro extends Controller {
 
     @Override
     public void setDimLevel(UDevice d, String level) {
-        sendCommand("/api/callAction?deviceID=" + d.getId() + "&name=setTargetLevel&arg1=" + level);
+        sendCommand("/api/callAction?deviceID=" + d.getId() + "&name=setValue&arg1=" + level);
     }
 
     @Override
     public void setColor(UDevice d, int r, int g, int b, int w) {
-        //int r = (int) Math.round(255 * (hsb.getRed().doubleValue() / 100));
-        //int g = (int) Math.round(255 * (hsb.getGreen().doubleValue() / 100));
-        //int b = (int) Math.round(255 * (hsb.getBlue().doubleValue() / 100));
-        //int w = (int) Math.round(255 * (hsb.getBrightness().doubleValue() / 100));
-
         sendCommand("/api/callAction?deviceID=" + d.getId() + "&name=setColor&arg1=" + r + "&arg2=" + g + "&arg3=" + b + "&arg4=" + w);
 
         // sendCommand("/api/callAction?deviceID=" + d.getId() + "&name=setR&arg1=" + r);

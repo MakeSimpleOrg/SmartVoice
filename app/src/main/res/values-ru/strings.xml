@@ -24,6 +24,7 @@
     <string name="switched_off">Выключаю</string>
     <string name="closed">Закрываю</string>
     <string name="open">Открываю</string>
+    <string name="percent">процентов</string>
     <string name="scene_launched">Выполняю</string>
     <string name="voice">Голос</string>
     <string name="HomeyServerAddress">Адрес сервера</string>

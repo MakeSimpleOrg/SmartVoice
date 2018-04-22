@@ -118,11 +118,6 @@ public class MainActivity extends Activity {
                         if (buttonPressed && recognizer instanceof YandexRecognizer) {
                             Log.w(TAG, "onTouch");
                             recognizer.stopListening();
-                            try {
-                                Thread.sleep(1000);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
                             buttonOff();
                         } else {
                             if (keyPhraseRecognizer != null)
@@ -280,6 +275,11 @@ public class MainActivity extends Activity {
     }
 
     public void buttonOff() {
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         buttonPressed = false;
         MicView.setBackgroundResource(R.drawable.background_big_mic);
         if (keyPhraseRecognizer != null)
@@ -535,16 +535,12 @@ public class MainActivity extends Activity {
             @Override
             protected void onPostExecute(String result) {
                 if (activity.recognizer instanceof YandexRecognizer) {
-                    if (result != null) {
+                    if (YandexRecognizer.continuousMode && result != null)
                         activity.recognizer.stopListening();
+                    if (result != null)
                         activity.speak(result);
-                        try {
-                            Thread.sleep(100); // Иначе яндекс не успевает отключиться
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
+                    if (result == null || !YandexRecognizer.continuousMode)
                         activity.buttonOff();
-                    }
                 } else {
                     if (result != null)
                         activity.speak(result);

@@ -24,6 +24,7 @@
     <string name="switched_off">Switched off</string>
     <string name="closed">Closed</string>
     <string name="open">Open</string>
+    <string name="percent">percent</string>
     <string name="scene_launched">Scene launched</string>
     <string name="voice">Voice</string>
     <string name="HomeyServerAddress">Server Address</string>
