@@ -55,8 +55,19 @@
         android:layout_height="35dp"
         android:layout_alignTop="@+id/linearLayout1"
         android:layout_marginTop="0dp"
+        android:layout_toStartOf="@+id/scenesButton"
+        android:layout_toLeftOf="@+id/scenesButton"
+        android:text="@string/devices" />
+
+    <Button
+        android:id="@+id/scenesButton"
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="100dp"
+        android:layout_height="35dp"
+        android:layout_alignTop="@+id/linearLayout1"
+        android:layout_marginTop="0dp"
         android:layout_toStartOf="@+id/settingsButton"
         android:layout_toLeftOf="@+id/settingsButton"
-        android:text="@string/devices" />
+        android:text="@string/scenes" />
 
 </RelativeLayout>

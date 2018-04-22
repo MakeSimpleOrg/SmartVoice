@@ -31,7 +31,7 @@ public class Homey extends Controller {
 
     private Room[] all_rooms;
     private Device[] all_devices;
-    private UScene[] all_scenes = new UScene[0]; // TODO заглушка
+    private UScene[] all_scenes;
 
     public Homey(MainActivity activity) {
         mainActivity = activity;
@@ -188,6 +188,8 @@ public class Homey extends Controller {
             all_rooms = new Room[0];
         if (all_devices == null)
             all_devices = new Device[0];
+        if (all_scenes == null)
+            all_scenes = new Scene[0];
 
         System.out.println("Devices: " + all_devices.length);
     }

@@ -18,7 +18,7 @@ import java.util.TimerTask;
 /**
  * @author Dmitriy Ponomarev
  */
-public class DevicesActivity extends PreferenceActivity {
+public class ScenesActivity extends PreferenceActivity {
 
     @SuppressLint("StaticFieldLeak")
     public static MainActivity mainActivity;
@@ -46,16 +46,15 @@ public class DevicesActivity extends PreferenceActivity {
         preferenceCategory.setTitle(controllerName);
         preferenceScreen.addPreference(preferenceCategory);
 
-        if (controller.getVisibleRoomsCount() > 0 && controller.getVisibleDevicesCount() > 0) {
-            for (URoom r : controller.getRooms())
-                for (UDevice d : controller.getDevices())
-                    if (d.ai_name != null && d.getRoomName() != null && d.getRoomName().equals(r.getName()) && d.isVisible()) {
-                        Preference preference = new Preference(preferenceScreen.getContext());
-                        preference.setTitle(d.ai_name);
-                        preference.setSummary(d.getId() + "\n" + d.getCapabilities());
-                        preferenceCategory.addPreference(preference);
-                        preference.setOnPreferenceClickListener(sBindPreferenceChangeListener);
-                    }
+        if (controller.getVisibleScenesCount() > 0) {
+            for (UScene s : controller.getScenes())
+                if (s.isVisible() && s.getName() != null) {
+                    Preference preference = new Preference(preferenceScreen.getContext());
+                    preference.setTitle(s.getName());
+                    if (s.getRoomName() != null)
+                        preference.setSummary(s.getRoomName());
+                    preferenceCategory.addPreference(preference);
+                }
         }
     }
 

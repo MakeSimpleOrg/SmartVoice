@@ -137,7 +137,7 @@ public class MainActivity extends Activity {
 
         SettingsActivity.mainActivity = this;
 
-        Button settingsBtn = (Button) findViewById(R.id.settingsButton);
+        Button settingsBtn = findViewById(R.id.settingsButton);
         settingsBtn.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
                 if (isLoading || ttsLoading || homeyLoading || fibaroLoading || veraLoading || zipatoLoading)
@@ -149,12 +149,24 @@ public class MainActivity extends Activity {
 
         DevicesActivity.mainActivity = this;
 
-        Button devicesBtn = (Button) findViewById(R.id.devicesButton);
+        Button devicesBtn = findViewById(R.id.devicesButton);
         devicesBtn.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
                 if (isLoading || ttsLoading || homeyLoading || fibaroLoading || veraLoading || zipatoLoading)
                     return;
                 Intent activity = new Intent(MainActivity.this, DevicesActivity.class);
+                startActivity(activity);
+            }
+        });
+
+        ScenesActivity.mainActivity = this;
+
+        Button scenesBtn = findViewById(R.id.scenesButton);
+        scenesBtn.setOnClickListener(new OnClickListener() {
+            public void onClick(View v) {
+                if (isLoading || ttsLoading || homeyLoading || fibaroLoading || veraLoading || zipatoLoading)
+                    return;
+                Intent activity = new Intent(MainActivity.this, ScenesActivity.class);
                 startActivity(activity);
             }
         });
@@ -276,7 +288,7 @@ public class MainActivity extends Activity {
 
     public void buttonOff() {
         try {
-            Thread.sleep(100);
+            Thread.sleep(200);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -534,17 +546,13 @@ public class MainActivity extends Activity {
 
             @Override
             protected void onPostExecute(String result) {
+                if (result != null)
+                    activity.speak(result);
                 if (activity.recognizer instanceof YandexRecognizer) {
-                    if (YandexRecognizer.continuousMode && result != null)
-                        activity.recognizer.stopListening();
-                    if (result != null)
-                        activity.speak(result);
-                    if (result == null || !YandexRecognizer.continuousMode)
-                        activity.buttonOff();
+                    if (result != null || !YandexRecognizer.continuousMode)
+                       activity.buttonOff();
                 } else {
-                    if (result != null)
-                        activity.speak(result);
-                    else
+                    if (result == null)
                         activity.speak(activity.getString(R.string.repeat));
                     activity.buttonOff();
                 }
