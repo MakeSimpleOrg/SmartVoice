@@ -26,7 +26,7 @@
     <string name="open">Открываю</string>
     <string name="percent">процентов</string>
     <string name="scene_launched">Выполняю</string>
-    <string name="voice">Голос</string>
+    <string name="voice">Голосовые настройки</string>
     <string name="HomeyServerAddress">Адрес сервера</string>
     <string name="FibaroServerAddress">Адрес сервера</string>
     <string name="FibaroLogin">Логин</string>
@@ -43,6 +43,12 @@
     <string name="PocketSphinxSensitivity">Чувствительность (1–100)</string>
     <string name="OfflineRecognition">Распознавание оффлайн</string>
     <string name="VoiceResponses">Озвучивание ответов</string>
+    <string name="DeviceEnabled">Устройство активно</string>
+    <string name="SceneEnabled">Сцена активна</string>
+    <string name="Alias">Алиас</string>
+    <string name="OriginalName">Ориганальное имя</string>
+    <string name="RoomName">Название комнаты</string>
+    <string name="Activate">Активировать</string>
 
     <string-array name="VoiceActivationEntries">
         <item>None</item>

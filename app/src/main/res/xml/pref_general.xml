@@ -1,6 +1,6 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <PreferenceCategory android:title="Homey">
+    <PreferenceScreen android:title="Homey">
         <CheckBoxPreference
             android:defaultValue="false"
             android:key="homey_enabled"
@@ -16,8 +16,8 @@
             android:selectAllOnFocus="true"
             android:singleLine="true"
             android:title="Bearer Token" />
-    </PreferenceCategory>
-    <PreferenceCategory android:title="Fibaro">
+    </PreferenceScreen>
+    <PreferenceScreen android:title="Fibaro">
         <CheckBoxPreference
             android:defaultValue="false"
             android:key="fibaro_enabled"
@@ -41,8 +41,8 @@
             android:selectAllOnFocus="true"
             android:singleLine="true"
             android:title="@string/FibaroPassword" />
-    </PreferenceCategory>
-    <PreferenceCategory android:title="Vera">
+    </PreferenceScreen>
+    <PreferenceScreen android:title="Vera">
         <CheckBoxPreference
             android:defaultValue="false"
             android:key="vera_enabled"
@@ -52,8 +52,8 @@
             android:selectAllOnFocus="true"
             android:singleLine="true"
             android:title="@string/VeraServerAddress" />
-    </PreferenceCategory>
-    <PreferenceCategory android:title="Zipato">
+    </PreferenceScreen>
+    <PreferenceScreen android:title="Zipato">
         <CheckBoxPreference
             android:defaultValue="false"
             android:key="zipato_enabled"
@@ -78,8 +78,8 @@
             android:selectAllOnFocus="true"
             android:singleLine="true"
             android:title="@string/ZipatoPassword" />
-    </PreferenceCategory>
-    <PreferenceCategory android:title="@string/voice">
+    </PreferenceScreen>
+    <PreferenceScreen android:title="@string/voice">
         <ListPreference
             android:defaultValue="None"
             android:entries="@array/VoiceActivationEntries"
@@ -92,49 +92,49 @@
             android:entryValues="@array/VoiceRecognitionValues"
             android:key="voiceRecognizerType"
             android:title="@string/VoiceRecognition" />
-    </PreferenceCategory>
-    <PreferenceCategory android:title="Snowboy">
-        <ListPreference
-            android:defaultValue="Alexa"
-            android:entries="@array/KeyPhraseEntries"
-            android:entryValues="@array/KeyPhraseValues"
-            android:key="SnowboyKeyPhrase"
-            android:title="@string/SnowboyKeyPhrase" />
-        <EditTextPreference
-            android:defaultValue="60"
-            android:inputType="numberDecimal"
-            android:key="SnowboySensitivity"
-            android:selectAllOnFocus="true"
-            android:singleLine="true"
-            android:title="@string/SnowboySensitivity" />
-    </PreferenceCategory>
-    <PreferenceCategory android:title="PocketSphinx">
-        <EditTextPreference
-            android:autoText="true"
-            android:defaultValue="@string/defaultKeyPhrase"
-            android:inputType="text"
-            android:key="PocketSphinxKeyPhrase"
-            android:maxLines="1"
-            android:selectAllOnFocus="true"
-            android:singleLine="true"
-            android:title="@string/PocketSphinxKeyPhrase" />
-        <EditTextPreference
-            android:defaultValue="95"
-            android:inputType="numberDecimal"
-            android:key="PocketSphinxSensitivity"
-            android:selectAllOnFocus="true"
-            android:singleLine="true"
-            android:title="@string/PocketSphinxSensitivity" />
-    </PreferenceCategory>
-    <PreferenceCategory android:title="Google">
-        <CheckBoxPreference
-            android:defaultValue="false"
-            android:key="offline_recognition"
-            android:title="@string/OfflineRecognition" />
-        <CheckBoxPreference
-            android:defaultValue="false"
-            android:key="tts_enabled"
-            android:title="@string/VoiceResponses" />
-    </PreferenceCategory>
+        <PreferenceCategory android:title="Snowboy">
+            <ListPreference
+                android:defaultValue="Alexa"
+                android:entries="@array/KeyPhraseEntries"
+                android:entryValues="@array/KeyPhraseValues"
+                android:key="SnowboyKeyPhrase"
+                android:title="@string/SnowboyKeyPhrase" />
+            <EditTextPreference
+                android:defaultValue="60"
+                android:inputType="numberDecimal"
+                android:key="SnowboySensitivity"
+                android:selectAllOnFocus="true"
+                android:singleLine="true"
+                android:title="@string/SnowboySensitivity" />
+        </PreferenceCategory>
+        <PreferenceCategory android:title="PocketSphinx">
+            <EditTextPreference
+                android:autoText="true"
+                android:defaultValue="@string/defaultKeyPhrase"
+                android:inputType="text"
+                android:key="PocketSphinxKeyPhrase"
+                android:maxLines="1"
+                android:selectAllOnFocus="true"
+                android:singleLine="true"
+                android:title="@string/PocketSphinxKeyPhrase" />
+            <EditTextPreference
+                android:defaultValue="95"
+                android:inputType="numberDecimal"
+                android:key="PocketSphinxSensitivity"
+                android:selectAllOnFocus="true"
+                android:singleLine="true"
+                android:title="@string/PocketSphinxSensitivity" />
+        </PreferenceCategory>
+        <PreferenceCategory android:title="Google">
+            <CheckBoxPreference
+                android:defaultValue="false"
+                android:key="offline_recognition"
+                android:title="@string/OfflineRecognition" />
+            <CheckBoxPreference
+                android:defaultValue="false"
+                android:key="tts_enabled"
+                android:title="@string/VoiceResponses" />
+        </PreferenceCategory>
+    </PreferenceScreen>
 
 </PreferenceScreen>

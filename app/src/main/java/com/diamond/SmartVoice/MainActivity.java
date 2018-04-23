@@ -525,13 +525,13 @@ public class MainActivity extends Activity {
                 String result = null;
                 try {
                     if (activity.pref.getBoolean("homey_enabled", false) && activity.HomeyController != null)
-                        result = activity.HomeyController.process(params);
+                        result = activity.HomeyController.process(params, activity.pref);
                     if (result == null && activity.pref.getBoolean("fibaro_enabled", false) && activity.FibaroController != null)
-                        result = activity.FibaroController.process(params);
+                        result = activity.FibaroController.process(params, activity.pref);
                     if (result == null && activity.pref.getBoolean("vera_enabled", false) && activity.VeraController != null)
-                        result = activity.VeraController.process(params);
+                        result = activity.VeraController.process(params, activity.pref);
                     if (result == null && activity.pref.getBoolean("zipato_enabled", false) && activity.ZipatoController != null)
-                        result = activity.ZipatoController.process(params);
+                        result = activity.ZipatoController.process(params, activity.pref);
                     if (result != null && activity.recognizer instanceof YandexRecognizer) {
                         if (!activity.pref.getBoolean("tts_enabled", false))
                             Utils.dong.start();

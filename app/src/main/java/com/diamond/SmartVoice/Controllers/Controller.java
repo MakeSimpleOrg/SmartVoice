@@ -1,5 +1,6 @@
 package com.diamond.SmartVoice.Controllers;
 
+import android.content.SharedPreferences;
 import android.util.Log;
 
 import com.diamond.SmartVoice.AI;
@@ -208,11 +209,11 @@ public abstract class Controller {
 
     public abstract void runScene(UScene s);
 
-    public String process(String[] requests) {
-        UDevice[] devices = AI.getDevices(getDevices(), requests);
+    public String process(String[] requests, SharedPreferences pref) {
+        UDevice[] devices = AI.getDevices(getDevices(), requests, pref);
         if (devices != null)
             return processDevices(devices);
-        UScene[] scenes = AI.getScenes(getScenes(), requests);
+        UScene[] scenes = AI.getScenes(getScenes(), requests, pref);
         if (scenes != null)
             return processScenes(scenes);
         return null;

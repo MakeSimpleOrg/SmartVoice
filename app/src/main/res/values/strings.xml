@@ -26,7 +26,7 @@
     <string name="open">Open</string>
     <string name="percent">percent</string>
     <string name="scene_launched">Scene launched</string>
-    <string name="voice">Voice</string>
+    <string name="voice">Voice Settings</string>
     <string name="HomeyServerAddress">Server Address</string>
     <string name="FibaroServerAddress">Server Address</string>
     <string name="FibaroLogin">Login</string>
@@ -43,6 +43,12 @@
     <string name="PocketSphinxSensitivity">Sensitivity (1–100)</string>
     <string name="OfflineRecognition">Offline Recognition</string>
     <string name="VoiceResponses">Voice Responses</string>
+    <string name="DeviceEnabled">Device enabled</string>
+    <string name="SceneEnabled">Scene enabled</string>
+    <string name="Alias">Alias</string>
+    <string name="OriginalName">Original name</string>
+    <string name="RoomName">Room name</string>
+    <string name="Activate">Activate</string>
 
     <string-array name="VoiceActivationEntries">
         <item>None</item>

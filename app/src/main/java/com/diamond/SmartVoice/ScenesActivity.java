@@ -1,7 +1,9 @@
 package com.diamond.SmartVoice;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.os.Bundle;
+import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceCategory;
@@ -40,20 +42,52 @@ public class ScenesActivity extends PreferenceActivity {
     }
 
     private void list(String controllerName, Controller controller) {
-        PreferenceScreen preferenceScreen = getPreferenceScreen();
+        PreferenceScreen sceneList = getPreferenceScreen();
+        Context context = sceneList.getContext();
 
-        PreferenceCategory preferenceCategory = new PreferenceCategory(preferenceScreen.getContext());
-        preferenceCategory.setTitle(controllerName);
-        preferenceScreen.addPreference(preferenceCategory);
+        PreferenceCategory controllerCat = new PreferenceCategory(sceneList.getContext());
+        controllerCat.setTitle(controllerName);
+        sceneList.addPreference(controllerCat);
 
         if (controller.getVisibleScenesCount() > 0) {
             for (UScene s : controller.getScenes())
                 if (s.isVisible() && s.getName() != null) {
-                    Preference preference = new Preference(preferenceScreen.getContext());
-                    preference.setTitle(s.getName());
-                    if (s.getRoomName() != null)
-                        preference.setSummary(s.getRoomName());
-                    preferenceCategory.addPreference(preference);
+                    PreferenceScreen scene = getPreferenceManager().createPreferenceScreen(context);
+                    scene.setTitle(s.getName());
+                    scene.setSummary(s.getRoomName());
+                    sceneList.addPreference(scene);
+
+                    Preference pref = new CheckBoxPreference(context);
+                    pref.setKey("scene_enabled_" + s.getId());
+                    pref.setDefaultValue(Boolean.TRUE);
+                    pref.setTitle(R.string.SceneEnabled);
+                    scene.addPreference(pref);
+
+                    pref = new Preference(context);
+                    pref.setTitle(getString(R.string.Alias));
+                    pref.setSummary(s.ai_name);
+                    scene.addPreference(pref);
+
+                    pref = new Preference(context);
+                    pref.setTitle(getString(R.string.OriginalName));
+                    pref.setSummary(s.getName());
+                    scene.addPreference(pref);
+
+                    pref = new Preference(context);
+                    pref.setTitle(getString(R.string.RoomName));
+                    pref.setSummary(s.getRoomName());
+                    scene.addPreference(pref);
+
+                    pref = new Preference(context);
+                    pref.setTitle("Id");
+                    pref.setSummary(s.getId());
+                    scene.addPreference(pref);
+
+                    pref = new Preference(context);
+                    pref.setTitle(getString(R.string.Activate));
+                    pref.setSummary(s.ai_name);
+                    pref.setOnPreferenceClickListener(sBindPreferenceChangeListener);
+                    scene.addPreference(pref);
                 }
         }
     }

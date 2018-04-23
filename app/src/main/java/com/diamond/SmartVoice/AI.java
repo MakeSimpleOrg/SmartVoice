@@ -1,5 +1,6 @@
 package com.diamond.SmartVoice;
 
+import android.content.SharedPreferences;
 import android.util.Log;
 
 import com.diamond.SmartVoice.Controllers.Capability;
@@ -81,83 +82,84 @@ public class AI {
         return str.trim();
     }
 
-    private static UDevice[] findDevices(UDevice[] devices, String[] strs, int accuracy) {
+    private static UDevice[] findDevices(UDevice[] devices, String[] strs, int accuracy, SharedPreferences pref) {
         ArrayList<UDevice> list = new ArrayList<>();
         String dim = null;
         d1:
-        for (UDevice d : devices) {
-            d.ai_flag = 0;
-            dim = d.getCapabilities().get(Capability.dim);
-            for (String str : strs) {
-                str = replaceMistakes(str);
-                if (matches(d.ai_name, str, accuracy)) {
-                    list.add(d);
-                    continue d1;
-                } else {
-                    if (str.contains("%") || str.contains("процент") || str.contains("яркость") || str.contains("percent") || str.contains("brightness")) {
-                        if (dim != null && matchesOnOffDim(d.ai_name, str, accuracy)) {
-                            Log.w(TAG, "яркость: " + str);
-                            String str2 = str.replaceAll(" %", "");
-                            str2 = str2.replaceAll("%", "");
-                            String[] words = str2.split(" ");
-                            for (String word : words) {
-                                if (Character.isDigit(word.charAt(0))) {
-                                    try {
-                                        d.ai_value = String.valueOf(Integer.parseInt(word));
-                                        d.ai_flag = 3;
-                                        list.add(d);
-                                        continue d1;
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
+        for (UDevice d : devices)
+            if (pref.getBoolean("device_enabled_" + d.getId(), true)) {
+                d.ai_flag = 0;
+                dim = d.getCapabilities().get(Capability.dim);
+                for (String str : strs) {
+                    str = replaceMistakes(str);
+                    if (matches(d.ai_name, str, accuracy)) {
+                        list.add(d);
+                        continue d1;
+                    } else {
+                        if (str.contains("%") || str.contains("процент") || str.contains("яркость") || str.contains("percent") || str.contains("brightness")) {
+                            if (dim != null && matchesOnOffDim(d.ai_name, str, accuracy)) {
+                                String str2 = str.replaceAll(" %", "");
+                                str2 = str2.replaceAll("%", "");
+                                String[] words = str2.split(" ");
+                                for (String word : words) {
+                                    if (Character.isDigit(word.charAt(0))) {
+                                        try {
+                                            d.ai_value = String.valueOf(Integer.parseInt(word));
+                                            d.ai_flag = 3;
+                                            list.add(d);
+                                            continue d1;
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                        }
                                     }
                                 }
                             }
-                        }
-                    } else if (str.contains("включи") || str.contains("выключи") || str.contains("открой") || str.contains("закрой") || str.contains("switch") || str.contains("turn") || str.contains("open") || str.contains("close")) {
-                        if (matchesOnOffDim(d.ai_name, str, accuracy)) {
-                            list.add(d);
-                            if (str.contains("включи") || str.contains("закрой") || str.contains(" on") || str.contains("close"))
-                                d.ai_flag = 1;
-                            else if (str.contains("выключи") || str.contains("открой") || str.contains(" off") || str.contains("open"))
-                                d.ai_flag = 2;
-                            continue d1;
+                        } else if (str.contains("включи") || str.contains("выключи") || str.contains("открой") || str.contains("закрой") || str.contains("switch") || str.contains("turn") || str.contains("open") || str.contains("close")) {
+                            if (matchesOnOffDim(d.ai_name, str, accuracy)) {
+                                list.add(d);
+                                if (str.contains("включи") || str.contains("закрой") || str.contains(" on") || str.contains("close"))
+                                    d.ai_flag = 1;
+                                else if (str.contains("выключи") || str.contains("открой") || str.contains(" off") || str.contains("open"))
+                                    d.ai_flag = 2;
+                                continue d1;
+                            }
                         }
                     }
                 }
             }
-        }
         return list.isEmpty() ? null : list.toArray(new UDevice[list.size()]);
     }
 
-    private static UScene[] findScenes(UScene[] scenes, String[] strs, int accuracy) {
+    private static UScene[] findScenes(UScene[] scenes, String[] strs, int accuracy, SharedPreferences pref) {
         ArrayList<UScene> list = new ArrayList<>();
         d1:
         for (UScene s : scenes)
-            for (String str : strs) {
-                str = str.toLowerCase(Locale.getDefault()).trim();
-                if (matches(s.ai_name, str, accuracy)) {
-                    list.add(s);
-                    continue d1;
+            if (pref.getBoolean("scene_enabled_" + s.getId(), true))
+                for (String str : strs) {
+                    str = str.toLowerCase(Locale.getDefault()).trim();
+                    if (matches(s.ai_name, str, accuracy)) {
+                        list.add(s);
+                        continue d1;
+                    }
                 }
-            }
         return list.isEmpty() ? null : list.toArray(new UScene[list.size()]);
     }
 
-    public static UDevice[] getDevices(UDevice[] devices, String[] strs) {
-        UDevice[] result = findDevices(devices, strs, 5);
+    public static UDevice[] getDevices(UDevice[] devices, String[] strs, SharedPreferences pref) {
+        UDevice[] result = findDevices(devices, strs, 5, pref);
         if (result == null)
-            result = findDevices(devices, strs, 4);
+            result = findDevices(devices, strs, 4, pref);
         if (result == null)
-            result = findDevices(devices, strs, 3);
+            result = findDevices(devices, strs, 3, pref);
         return result;
     }
 
-    public static UScene[] getScenes(UScene[] scenes, String[] strs) {
-        UScene[] result = findScenes(scenes, strs, 5);
+    public static UScene[] getScenes(UScene[] scenes, String[] strs, SharedPreferences pref) {
+        UScene[] result = findScenes(scenes, strs, 5, pref);
         if (result == null)
-            result = findScenes(scenes, strs, 4);
+            result = findScenes(scenes, strs, 4, pref);
         if (result == null)
-            result = findScenes(scenes, strs, 3);
+            result = findScenes(scenes, strs, 3, pref);
         return result;
     }
 
