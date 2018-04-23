@@ -45,10 +45,12 @@
     <string name="VoiceResponses">Озвучивание ответов</string>
     <string name="DeviceEnabled">Устройство активно</string>
     <string name="SceneEnabled">Сцена активна</string>
-    <string name="Alias">Алиас</string>
-    <string name="OriginalName">Ориганальное имя</string>
+    <string name="VoiceCommand">Голосовая команда</string>
+    <string name="Alias">Алиасы (через запятую)</string>
+    <string name="OriginalName">Оригинальное имя</string>
     <string name="RoomName">Название комнаты</string>
-    <string name="Activate">Активировать</string>
+    <string name="ActivateDevice">Активировать утройство</string>
+    <string name="RunScene">Запустить сцену</string>
 
     <string-array name="VoiceActivationEntries">
         <item>None</item>

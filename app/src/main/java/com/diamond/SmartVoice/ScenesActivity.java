@@ -4,9 +4,11 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
+import android.preference.EditTextPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceCategory;
+import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 
 import com.diamond.SmartVoice.Controllers.Controller;
@@ -64,8 +66,18 @@ public class ScenesActivity extends PreferenceActivity {
                     scene.addPreference(pref);
 
                     pref = new Preference(context);
-                    pref.setTitle(getString(R.string.Alias));
+                    pref.setTitle(getString(R.string.VoiceCommand));
                     pref.setSummary(s.ai_name);
+                    scene.addPreference(pref);
+
+                    pref = new EditTextPreference(context);
+                    pref.setKey("scene_alias_" + s.getId());
+                    pref.setTitle(getString(R.string.Alias));
+                    String alias = PreferenceManager.getDefaultSharedPreferences(this).getString(pref.getKey(), null);
+                    if (alias == null)
+                        alias = "";
+                    pref.setSummary(alias);
+                    pref.setOnPreferenceChangeListener(changeRefreshListener);
                     scene.addPreference(pref);
 
                     pref = new Preference(context);
@@ -84,7 +96,7 @@ public class ScenesActivity extends PreferenceActivity {
                     scene.addPreference(pref);
 
                     pref = new Preference(context);
-                    pref.setTitle(getString(R.string.Activate));
+                    pref.setTitle(getString(R.string.RunScene));
                     pref.setSummary(s.ai_name);
                     pref.setOnPreferenceClickListener(sBindPreferenceChangeListener);
                     scene.addPreference(pref);
@@ -102,14 +114,27 @@ public class ScenesActivity extends PreferenceActivity {
         public boolean onPreferenceClick(Preference preference) {
             String name = preference.getTitle().toString();
             MainActivity.process(new String[]{name}, mainActivity);
-
             new Timer().schedule(new TimerTask() {
                 @Override
                 public void run() {
                     reload();
                 }
             }, 1000);
+            return true;
+        }
+    };
 
+    private Preference.OnPreferenceChangeListener changeRefreshListener = new Preference.OnPreferenceChangeListener() {
+        @Override
+        public boolean onPreferenceChange(Preference preference, Object value) {
+            preference.setSummary(value.toString());
+            preference.getEditor().apply();
+            new Timer().schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    reload();
+                }
+            }, 500);
             return true;
         }
     };

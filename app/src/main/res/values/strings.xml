@@ -45,10 +45,12 @@
     <string name="VoiceResponses">Voice Responses</string>
     <string name="DeviceEnabled">Device enabled</string>
     <string name="SceneEnabled">Scene enabled</string>
-    <string name="Alias">Alias</string>
+    <string name="VoiceCommand">Voice command</string>
+    <string name="Alias">Alias (separated by commas)</string>
     <string name="OriginalName">Original name</string>
     <string name="RoomName">Room name</string>
-    <string name="Activate">Activate</string>
+    <string name="ActivateDevice">Activate device</string>
+    <string name="RunScene">Run scene</string>
 
     <string-array name="VoiceActivationEntries">
         <item>None</item>

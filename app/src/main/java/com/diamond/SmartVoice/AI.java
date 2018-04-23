@@ -1,6 +1,7 @@
 package com.diamond.SmartVoice;
 
 import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.diamond.SmartVoice.Controllers.Capability;
@@ -16,6 +17,32 @@ import java.util.Locale;
  */
 public class AI {
     private static final String TAG = AI.class.getSimpleName();
+
+    private static boolean matches_s(UScene s, String s2, int accuracy, SharedPreferences pref) {
+        if (matches(s.ai_name, s2, accuracy))
+            return true;
+        String alias = pref.getString("scene_alias_" + s.getId(), null);
+        if (alias == null || alias.isEmpty())
+            return false;
+        String[] aliases = alias.split(",");
+        for (String a : aliases)
+            if (matches(a.trim(), s2, accuracy))
+                return true;
+        return false;
+    }
+
+    private static boolean matches_d(UDevice d, String s2, int accuracy, SharedPreferences pref) {
+        if (matches(d.ai_name, s2, accuracy))
+            return true;
+        String alias = pref.getString("device_alias_" + d.getId(), null);
+        if (alias == null || alias.isEmpty())
+            return false;
+        String[] aliases = alias.split(",");
+        for (String a : aliases)
+            if (matches(a.trim(), s2, accuracy))
+                return true;
+        return false;
+    }
 
     private static boolean matches(String s1, String s2, int accuracy) {
         if (s1.equalsIgnoreCase(s2))
@@ -33,6 +60,19 @@ public class AI {
         }
         Log.w(TAG, "совпадение: " + Arrays.toString(split1) + ", оригинал: " + s1 + ", " + s2 + ", точность: " + accuracy);
         return true;
+    }
+
+    private static boolean matchesOnOffDim_d(UDevice d, String strarg, int accuracy, SharedPreferences pref) {
+        if (matchesOnOffDim(d.ai_name, strarg, accuracy))
+            return true;
+        String alias = pref.getString("device_alias_" + d.getId(), null);
+        if (alias == null || alias.isEmpty())
+            return false;
+        String[] aliases = alias.split(",");
+        for (String a : aliases)
+            if (matchesOnOffDim(a.trim(), strarg, accuracy))
+                return true;
+        return false;
     }
 
     private static boolean matchesOnOffDim(String name, String strarg, int accuracy) {
@@ -59,6 +99,7 @@ public class AI {
         str = str.replaceAll(" near ", " ");
         str = str.replaceAll(" the ", " ");
         str = str.replaceAll(" to ", " ");
+        str = str.replaceAll(" for ", " ");
         str = str.replaceAll(" percent ", " ");
         str = str.replaceAll(" percents ", " ");
         str = str.replaceAll(" brightness ", " ");
@@ -92,12 +133,12 @@ public class AI {
                 dim = d.getCapabilities().get(Capability.dim);
                 for (String str : strs) {
                     str = replaceMistakes(str);
-                    if (matches(d.ai_name, str, accuracy)) {
+                    if (matches_d(d, str, accuracy, pref)) {
                         list.add(d);
                         continue d1;
                     } else {
                         if (str.contains("%") || str.contains("процент") || str.contains("яркость") || str.contains("percent") || str.contains("brightness")) {
-                            if (dim != null && matchesOnOffDim(d.ai_name, str, accuracy)) {
+                            if (dim != null && matchesOnOffDim_d(d, str, accuracy, pref)) {
                                 String str2 = str.replaceAll(" %", "");
                                 str2 = str2.replaceAll("%", "");
                                 String[] words = str2.split(" ");
@@ -115,7 +156,7 @@ public class AI {
                                 }
                             }
                         } else if (str.contains("включи") || str.contains("выключи") || str.contains("открой") || str.contains("закрой") || str.contains("switch") || str.contains("turn") || str.contains("open") || str.contains("close")) {
-                            if (matchesOnOffDim(d.ai_name, str, accuracy)) {
+                            if (matchesOnOffDim_d(d, str, accuracy, pref)) {
                                 list.add(d);
                                 if (str.contains("включи") || str.contains("закрой") || str.contains(" on") || str.contains("close"))
                                     d.ai_flag = 1;
@@ -137,7 +178,7 @@ public class AI {
             if (pref.getBoolean("scene_enabled_" + s.getId(), true))
                 for (String str : strs) {
                     str = str.toLowerCase(Locale.getDefault()).trim();
-                    if (matches(s.ai_name, str, accuracy)) {
+                    if (matches_s(s, str, accuracy, pref)) {
                         list.add(s);
                         continue d1;
                     }

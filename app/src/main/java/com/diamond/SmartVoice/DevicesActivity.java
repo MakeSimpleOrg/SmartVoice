@@ -4,17 +4,17 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
+import android.preference.EditTextPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceCategory;
+import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
-import android.util.AttributeSet;
 
 import com.diamond.SmartVoice.Controllers.Capability;
 import com.diamond.SmartVoice.Controllers.Controller;
 import com.diamond.SmartVoice.Controllers.UDevice;
 import com.diamond.SmartVoice.Controllers.URoom;
-import com.diamond.SmartVoice.Controllers.UScene;
 
 import java.util.Map;
 import java.util.Timer;
@@ -74,8 +74,18 @@ public class DevicesActivity extends PreferenceActivity {
                             device.addPreference(pref);
 
                             pref = new Preference(context);
-                            pref.setTitle(getString(R.string.Alias));
+                            pref.setTitle(getString(R.string.VoiceCommand));
                             pref.setSummary(d.ai_name);
+                            device.addPreference(pref);
+
+                            pref = new EditTextPreference(context);
+                            pref.setKey("device_alias_" + d.getId());
+                            pref.setTitle(getString(R.string.Alias));
+                            String alias = PreferenceManager.getDefaultSharedPreferences(this).getString(pref.getKey(), null);
+                            if (alias == null)
+                                alias = "";
+                            pref.setSummary(alias);
+                            pref.setOnPreferenceChangeListener(changeRefreshListener);
                             device.addPreference(pref);
 
                             pref = new Preference(context);
@@ -101,9 +111,9 @@ public class DevicesActivity extends PreferenceActivity {
                             }
 
                             pref = new Preference(context);
-                            pref.setTitle(getString(R.string.Activate));
+                            pref.setTitle(getString(R.string.ActivateDevice));
                             pref.setSummary(d.ai_name);
-                            pref.setOnPreferenceClickListener(sBindPreferenceChangeListener);
+                            pref.setOnPreferenceClickListener(activateListener);
                             device.addPreference(pref);
                         }
                 }
@@ -115,19 +125,32 @@ public class DevicesActivity extends PreferenceActivity {
         return false;
     }
 
-    private Preference.OnPreferenceClickListener sBindPreferenceChangeListener = new Preference.OnPreferenceClickListener() {
+    private Preference.OnPreferenceClickListener activateListener = new Preference.OnPreferenceClickListener() {
         @Override
         public boolean onPreferenceClick(Preference preference) {
             String name = preference.getSummary().toString();
             MainActivity.process(new String[]{name}, mainActivity);
-
             new Timer().schedule(new TimerTask() {
                 @Override
                 public void run() {
                     reload();
                 }
             }, 1000);
+            return true;
+        }
+    };
 
+    private Preference.OnPreferenceChangeListener changeRefreshListener = new Preference.OnPreferenceChangeListener() {
+        @Override
+        public boolean onPreferenceChange(Preference preference, Object value) {
+            preference.setSummary(value.toString());
+            preference.getEditor().apply();
+            new Timer().schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    reload();
+                }
+            }, 500);
             return true;
         }
     };
