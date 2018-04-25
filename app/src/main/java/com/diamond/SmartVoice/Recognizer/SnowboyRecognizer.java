@@ -20,7 +20,8 @@ public class SnowboyRecognizer extends AbstractRecognizer {
 
     public SnowboyRecognizer(MainActivity context) {
         this.mContext = context;
-        recordingThread = new RecordingThread(new ResultListener(), "alexa.umdl", "" + (Integer.parseInt(context.pref.getString("SnowboySensitivity", "60")) * 1f / 100f));
+        String model = context.pref.getString("SnowboyKeyPhrase", "Alexa").toLowerCase();
+        recordingThread = new RecordingThread(new ResultListener(), model + ".umdl", "" + (Integer.parseInt(context.pref.getString("SnowboySensitivity", "60")) * 1f / 100f));
     }
 
     public void startListening() {

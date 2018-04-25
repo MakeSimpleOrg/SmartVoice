@@ -65,6 +65,7 @@ public class GoogleRecognizer extends AbstractRecognizer implements RecognitionL
         String errorMessage = getErrorText(errorCode);
         if (errorCode != SpeechRecognizer.ERROR_CLIENT) {
             Log.w(TAG, "FAILED " + errorMessage);
+            mContext.show(errorMessage);
             recognizer.stopListening();
             mContext.buttonOff();
         }
@@ -98,12 +99,11 @@ public class GoogleRecognizer extends AbstractRecognizer implements RecognitionL
         Log.w(TAG, "onResults");
 
         recognizer.stopListening();
-
         ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
         if (matches != null)
             MainActivity.process(matches.toArray(new String[matches.size()]), mContext);
         else {
-            mContext.speak("Повтори!");
+            //mContext.speak("Повтори!");
             mContext.buttonOff();
         }
     }

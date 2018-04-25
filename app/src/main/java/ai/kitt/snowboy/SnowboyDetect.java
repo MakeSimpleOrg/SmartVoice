@@ -36,7 +36,6 @@ public class SnowboyDetect {
   }
 
   public SnowboyDetect(String resource_filename, String model_str) {
-
     this(snowboyJNI.new_SnowboyDetect(resource_filename, model_str), true);
   }
 

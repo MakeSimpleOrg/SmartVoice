@@ -13,14 +13,19 @@ import com.diamond.SmartVoice.Controllers.Zipato.json.AttributesFull;
 import com.diamond.SmartVoice.Controllers.Zipato.json.Device;
 import com.diamond.SmartVoice.Controllers.Zipato.json.Init;
 import com.diamond.SmartVoice.Controllers.Zipato.json.Room;
+import com.diamond.SmartVoice.Controllers.Zipato.json.Scene;
 import com.diamond.SmartVoice.MainActivity;
 import com.google.gson.Gson;
 import com.rollbar.android.Rollbar;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 
 /**
  * @author Dmitriy Ponomarev
@@ -98,7 +103,7 @@ public class Zipato extends Controller {
             }
         }
 
-        if (jsessionid != null)
+        if (jsessionid != null) {
             try {
                 result = request("/zipato-web/v2/attributes/full?full=true", "JSESSIONID=" + jsessionid);
 
@@ -136,7 +141,7 @@ public class Zipato extends Controller {
                                         d.addCapability(Capability.measure_temperature, d.getValue());
                                         break;
                                     case "meter.light":
-                                        d.addCapability(Capability.measure_light, d.getValue());
+                                        d.addCapability(Capability.measure_light, String.valueOf((int) Float.parseFloat(d.getValue())));
                                         break;
                                     default:
                                         continue;
@@ -151,7 +156,7 @@ public class Zipato extends Controller {
                                             if (a.name.toLowerCase().contains("temperature"))
                                                 d.addCapability(Capability.measure_temperature, d.getValue());
                                             else if (a.name.toLowerCase().contains("luminance"))
-                                                d.addCapability(Capability.measure_temperature, d.getValue());
+                                                d.addCapability(Capability.measure_temperature, String.valueOf((int) Float.parseFloat(d.getValue())));
                                         break;
                                     case "com.zipato.cluster.Gauge":
                                         if (a.name != null && a.name.toLowerCase().contains("temperature"))
@@ -187,6 +192,43 @@ public class Zipato extends Controller {
                 Rollbar.instance().error(e);
             }
 
+            result = request("/zipato-web/rest/scenes/", "JSESSIONID=" + jsessionid);
+
+            JSONObject obj = null;
+            try {
+                obj = new JSONObject(result);
+            } catch (JSONException e) {
+                e.printStackTrace();
+                Rollbar.instance().error(e, result);
+            }
+
+            Iterator<String> it;
+            String id;
+            Scene s;
+            if (obj != null) {
+                all_scenes = new Scene[obj.length()];
+                int i = 0;
+                it = obj.keys();
+                while (it.hasNext()) {
+                    id = it.next();
+                    if (id != null) {
+                        try {
+                            s = gson.fromJson(obj.getString(id), Scene.class);
+                            s.setId(id);
+                            if (s.isVisible()) {
+                                s.ai_name = s.getName();
+                                if (clearNames)
+                                    s.ai_name = AI.replaceTrash(s.ai_name);
+                            }
+                            all_scenes[i++] = s;
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            Rollbar.instance().error(e, result);
+                        }
+                    }
+                }
+            }
+        }
         if (all_rooms == null)
             all_rooms = new Room[0];
         if (all_devices == null)
@@ -212,12 +254,12 @@ public class Zipato extends Controller {
 
     @Override
     public void turnDeviceOn(UDevice d) {
-        sendJSON("/zipato-web/v2/attributes/" + d.getId() + "/value", "{\"value\": true}");
+        sendJSON("/zipato-web/v2/attributes/" + d.getId() + "/value", "{\"value\": true}", jsessionid == null ? null : ("JSESSIONID=" + jsessionid));
     }
 
     @Override
     public void turnDeviceOff(UDevice d) {
-        sendJSON("/zipato-web/v2/attributes/" + d.getId() + "/value", "{\"value\": false}");
+        sendJSON("/zipato-web/v2/attributes/" + d.getId() + "/value", "{\"value\": false}", jsessionid == null ? null : ("JSESSIONID=" + jsessionid));
     }
 
     @Override
@@ -242,7 +284,7 @@ public class Zipato extends Controller {
 
     @Override
     public void setDimLevel(UDevice d, String level) {
-        sendJSON("/zipato-web/v2/attributes/" + d.getId() + "/value", "{\"value\": " + level + "}");
+        sendJSON("/zipato-web/v2/attributes/" + d.getId() + "/value", "{\"value\": " + level + "}", jsessionid == null ? null : ("JSESSIONID=" + jsessionid));
     }
 
     @Override
@@ -257,6 +299,6 @@ public class Zipato extends Controller {
 
     @Override
     public void runScene(UScene s) {
-        // TODO
+        sendCommand("/zipato-web/rest/scenes/" + s.getId() + "/run", jsessionid == null ? null : ("JSESSIONID=" + jsessionid));
     }
 }

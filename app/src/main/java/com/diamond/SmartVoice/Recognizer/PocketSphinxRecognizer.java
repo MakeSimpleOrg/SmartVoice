@@ -48,7 +48,7 @@ public class PocketSphinxRecognizer extends AbstractRecognizer {
             mContext.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    Toast.makeText(mContext, "Failed to init recognizer ", Toast.LENGTH_SHORT).show();
+                    mContext.show("Failed to init recognizer ");
                 }
             });
         }

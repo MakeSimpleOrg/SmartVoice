@@ -70,7 +70,12 @@ public abstract class Controller {
         return result;
     }
 
-    protected void sendCommand(final String request) {
+    protected void sendCommand(final String request)
+    {
+        sendCommand(request, null);
+    }
+
+    protected void sendCommand(final String request, final String cookie) {
         Log.w(TAG, "Command: " + request);
         new Thread(new Runnable() {
             @Override
@@ -83,6 +88,8 @@ public abstract class Controller {
                         conn.setRequestProperty("Authorization", "Basic " + auth);
                     else if (bearer != null)
                         conn.setRequestProperty("Authorization", "Bearer " + bearer);
+                    if (cookie != null)
+                        conn.setRequestProperty("Cookie", cookie);
                     conn.setConnectTimeout(10000);
                     conn.getResponseMessage();
                 } catch (SocketTimeoutException e) {
@@ -98,7 +105,12 @@ public abstract class Controller {
         }).start();
     }
 
-    protected void sendJSON(final String request, final String json) {
+    protected void sendJSON(final String request, final String json)
+    {
+        sendJSON(request, json, null);
+    }
+
+    protected void sendJSON(final String request, final String json, final String cookie) {
         Log.w(TAG, "Json: " + json);
         new Thread(new Runnable() {
             @Override
@@ -108,6 +120,8 @@ public abstract class Controller {
                     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                     conn.setConnectTimeout(10000);
                     conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                    if (cookie != null)
+                        conn.setRequestProperty("Cookie", cookie);
                     conn.setDoOutput(true);
                     conn.setDoInput(true);
                     conn.setRequestMethod("PUT");
@@ -211,11 +225,15 @@ public abstract class Controller {
 
     public String process(String[] requests, SharedPreferences pref) {
         UDevice[] devices = AI.getDevices(getDevices(), requests, pref);
-        if (devices != null)
+        if (devices != null) {
+            mainActivity.show("Распознано: " + devices[0].ai_name);
             return processDevices(devices);
+        }
         UScene[] scenes = AI.getScenes(getScenes(), requests, pref);
-        if (scenes != null)
+        if (scenes != null) {
+            mainActivity.show("Распознано: " + scenes[0].ai_name);
             return processScenes(scenes);
+        }
         return null;
     }
 

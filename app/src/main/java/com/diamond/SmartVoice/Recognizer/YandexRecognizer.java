@@ -5,6 +5,8 @@ import android.util.Log;
 
 import com.diamond.SmartVoice.MainActivity;
 
+import java.util.Arrays;
+
 import ru.yandex.speechkit.Error;
 import ru.yandex.speechkit.Recognition;
 import ru.yandex.speechkit.RecognitionHypothesis;
@@ -100,8 +102,9 @@ public class YandexRecognizer extends AbstractRecognizer implements RecognizerLi
     @Override
     public void onPartialResults(Recognizer recognizer, Recognition recognition, boolean b) {
         if (continuousMode && SpeechDetected) {
-            //Log.w(TAG, "Partial results " + b + " " + recognition.getBestResultText());
+            Log.w(TAG, "Partial results " + b + " " + recognition.getBestResultText());
             PartialResults = recognition.getHypotheses();
+            mContext.showSpeak(recognition.getBestResultText());
         }
     }
 

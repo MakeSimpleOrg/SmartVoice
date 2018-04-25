@@ -41,7 +41,13 @@ public class Vera extends Controller {
 
     private void updateData() {
         String result = request("/data_request?id=sdata&output_format=json", null);
-        Sdata data = result == null ? null : gson.fromJson(result, Sdata.class);
+        Sdata data = null;
+        try {
+            data = result == null ? null : gson.fromJson(result, Sdata.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Rollbar.instance().error(e, result);
+        }
         if (data != null)
             try {
                 all_rooms = new Room[data.getRooms().size()];

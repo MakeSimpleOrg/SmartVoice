@@ -112,7 +112,7 @@ public class ScenesActivity extends PreferenceActivity {
     private Preference.OnPreferenceClickListener sBindPreferenceChangeListener = new Preference.OnPreferenceClickListener() {
         @Override
         public boolean onPreferenceClick(Preference preference) {
-            String name = preference.getTitle().toString();
+            String name = preference.getSummary().toString();
             MainActivity.process(new String[]{name}, mainActivity);
             new Timer().schedule(new TimerTask() {
                 @Override

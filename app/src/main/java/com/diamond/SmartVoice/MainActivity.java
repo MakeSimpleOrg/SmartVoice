@@ -1,6 +1,7 @@
 package com.diamond.SmartVoice;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -20,6 +21,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.diamond.SmartVoice.Controllers.Fibaro.Fibaro;
@@ -65,6 +67,8 @@ public class MainActivity extends Activity {
     private boolean recognizerLoading = false;
 
     private View progressBar;
+    private TextView textView;
+    private TextView speakView;
 
     public String PocketSphinxKeyPhrase;
     public boolean offline_recognition = false;
@@ -106,6 +110,9 @@ public class MainActivity extends Activity {
 
         progressBar = findViewById(R.id.progressBar);
         progressBar.setVisibility(View.VISIBLE);
+
+        textView = findViewById(R.id.text_view_id);
+        speakView = findViewById(R.id.speak_view_id);
 
         MicView = findViewById(R.id.mic);
         MicView.setOnTouchListener(new View.OnTouchListener() {
@@ -394,7 +401,7 @@ public class MainActivity extends Activity {
                 if (activity.HomeyController == null)
                     activity.show("Homey: " + activity.getString(R.string.controler_not_found) + " " + activity.pref.getString("homey_server_ip", ""));
                 else
-                    activity.show("Homey: " + activity.getString(R.string.found) + " " + controller.getVisibleRoomsCount() + " " + activity.getString(R.string.found_rooms_and) + " " + controller.getVisibleDevicesCount() + " " + activity.getString(R.string.found_devices));
+                    activity.show("Homey: " + controller.getVisibleRoomsCount() + " " + activity.getString(R.string.found_rooms_and) + " " + controller.getVisibleDevicesCount() + " " + activity.getString(R.string.found_devices_and) + " " + controller.getVisibleScenesCount() + " " + activity.getString(R.string.found_scene));
                 activity.homeyLoading = false;
                 if (!activity.isLoading())
                     activity.progressBar.setVisibility(View.INVISIBLE);
@@ -425,7 +432,7 @@ public class MainActivity extends Activity {
                 if (activity.FibaroController == null)
                     activity.show("Fibaro: " + activity.getString(R.string.controler_not_found) + " " + activity.pref.getString("fibaro_server_ip", ""));
                 else
-                    activity.show("Fibaro: " + activity.getString(R.string.found) + " " + controller.getVisibleRoomsCount() + " " + activity.getString(R.string.found_rooms) + " " + controller.getVisibleDevicesCount() + " " + activity.getString(R.string.found_devices_and) + " " + controller.getVisibleScenesCount() + " " + activity.getString(R.string.found_scene));
+                    activity.show("Fibaro: " + controller.getVisibleRoomsCount() + " " + activity.getString(R.string.found_rooms) + " " + controller.getVisibleDevicesCount() + " " + activity.getString(R.string.found_devices_and) + " " + controller.getVisibleScenesCount() + " " + activity.getString(R.string.found_scene));
                 activity.fibaroLoading = false;
                 if (!activity.isLoading())
                     activity.progressBar.setVisibility(View.INVISIBLE);
@@ -456,7 +463,7 @@ public class MainActivity extends Activity {
                 if (activity.VeraController == null) {
                     activity.show("Vera: " + activity.getString(R.string.controler_not_found) + " " + activity.pref.getString("vera_server_ip", ""));
                 } else {
-                    activity.show("Vera: " + activity.getString(R.string.found) + " " + controller.getVisibleRoomsCount() + " " + activity.getString(R.string.found_rooms) + " " + controller.getVisibleDevicesCount() + " " + activity.getString(R.string.found_devices_and) + " " + controller.getVisibleScenesCount() + " " + activity.getString(R.string.found_scene));
+                    activity.show("Vera: " + controller.getVisibleRoomsCount() + " " + activity.getString(R.string.found_rooms) + " " + controller.getVisibleDevicesCount() + " " + activity.getString(R.string.found_devices_and) + " " + controller.getVisibleScenesCount() + " " + activity.getString(R.string.found_scene));
                 }
                 activity.veraLoading = false;
                 if (!activity.isLoading())
@@ -488,7 +495,7 @@ public class MainActivity extends Activity {
                 if (activity.ZipatoController == null) {
                     activity.show("Zipato: " + activity.getString(R.string.controler_not_found) + " " + activity.pref.getString("zipato_server_ip", ""));
                 } else {
-                    activity.show("Zipato: " + activity.getString(R.string.found) + " " + controller.getVisibleRoomsCount() + " " + activity.getString(R.string.found_rooms) + " " + controller.getVisibleDevicesCount() + " " + activity.getString(R.string.found_devices_and) + " " + controller.getVisibleScenesCount() + " " + activity.getString(R.string.found_scene));
+                    activity.show("Zipato: " + controller.getVisibleRoomsCount() + " " + activity.getString(R.string.found_rooms) + " " + controller.getVisibleDevicesCount() + " " + activity.getString(R.string.found_devices_and) + " " + controller.getVisibleScenesCount() + " " + activity.getString(R.string.found_scene));
                 }
                 activity.zipatoLoading = false;
                 if (!activity.isLoading())
@@ -503,8 +510,14 @@ public class MainActivity extends Activity {
         @Override
         public void handleMessage(Message message) {
             lastKeyPhrase = System.currentTimeMillis();
-            if (keyPhraseRecognizer != null)
+            if (keyPhraseRecognizer != null) {
                 keyPhraseRecognizer.stopListening();
+                try {
+                    Thread.sleep(200);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
             if (recognizer != null)
                 recognizer.startListening();
             buttonOn();
@@ -519,7 +532,10 @@ public class MainActivity extends Activity {
         new AsyncTask<String, Void, String>() {
             @Override
             protected String doInBackground(String... params) {
-                Log.w(TAG, activity.getString(R.string.you_say) + Arrays.toString(params));
+                String words = Arrays.toString(params);
+                Log.w(TAG, activity.getString(R.string.you_say) + words);
+                activity.showSpeak(words);
+
                 if (!activity.pref.getBoolean("homey_enabled", false) && !activity.pref.getBoolean("fibaro_enabled", false) && !activity.pref.getBoolean("vera_enabled", false) && !activity.pref.getBoolean("zipato_enabled", false) || activity.HomeyController == null && activity.FibaroController == null && activity.VeraController == null && activity.ZipatoController == null)
                     return activity.getString(R.string.nothing_to_manage);
                 String result = null;
@@ -550,10 +566,10 @@ public class MainActivity extends Activity {
                     activity.speak(result);
                 if (activity.recognizer instanceof YandexRecognizer) {
                     if (result != null || !YandexRecognizer.continuousMode)
-                       activity.buttonOff();
+                        activity.buttonOff();
                 } else {
-                    if (result == null)
-                        activity.speak(activity.getString(R.string.repeat));
+                    //if (result == null)
+                    //    activity.speak(activity.getString(R.string.repeat));
                     activity.buttonOff();
                 }
             }
@@ -567,7 +583,7 @@ public class MainActivity extends Activity {
     public void speak(String text, boolean screen) {
         try {
             if (screen)
-                Toast.makeText(MainActivity.this, text, Toast.LENGTH_LONG).show();
+                show(text);
         } catch (Exception e) {
             e.printStackTrace();
             Rollbar.instance().error(e);
@@ -582,7 +598,6 @@ public class MainActivity extends Activity {
                     params.putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME, 1f);
                     textToSpeech.speak(text, TextToSpeech.QUEUE_ADD, params, UUID.randomUUID().toString());
                 } else {
-                    Toast.makeText(MainActivity.this, "speak", Toast.LENGTH_SHORT).show();
                     HashMap<String, String> params = new HashMap<String, String>();
                     params.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, UUID.randomUUID().toString());
                     params.put(TextToSpeech.Engine.KEY_PARAM_STREAM, String.valueOf(AudioManager.STREAM_MUSIC));
@@ -598,13 +613,35 @@ public class MainActivity extends Activity {
         }
     }
 
-    public void show(String text) {
-        try {
-            Toast.makeText(MainActivity.this, text, Toast.LENGTH_LONG).show();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        Log.w(TAG, text);
+    @SuppressLint("SetTextI18n")
+    public void showSpeak(final String text) {
+        MainActivity.this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    speakView.setText(text);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                Log.w(TAG, text);
+            }
+        });
+    }
+
+    @SuppressLint("SetTextI18n")
+    public void show(final String text) {
+        MainActivity.this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    //Toast.makeText(MainActivity.this, text, Toast.LENGTH_LONG).show();
+                    textView.setText(text + "\n" + textView.getText());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                Log.w(TAG, text);
+            }
+        });
     }
 
     @Override
