@@ -51,6 +51,7 @@
     <string name="RoomName">Room name</string>
     <string name="ActivateDevice">Activate device</string>
     <string name="RunScene">Run scene</string>
+    <string name="IncorrectUrl">Incorrect Url</string>
 
     <string-array name="VoiceActivationEntries">
         <item>None</item>

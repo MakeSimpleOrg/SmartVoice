@@ -549,9 +549,9 @@ public class MainActivity extends Activity {
                     if (result == null && activity.pref.getBoolean("zipato_enabled", false) && activity.ZipatoController != null)
                         result = activity.ZipatoController.process(params, activity.pref);
                     if (result != null && activity.recognizer instanceof YandexRecognizer) {
+                        activity.recognizer.stopListening();
                         if (!activity.pref.getBoolean("tts_enabled", false))
                             Utils.dong.start();
-                        activity.recognizer.stopListening();
                     }
                 } catch (Exception e) {
                     e.printStackTrace();

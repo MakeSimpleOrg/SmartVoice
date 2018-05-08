@@ -58,7 +58,11 @@ public abstract class Controller {
             br.close();
             result = buffer.toString();
             conn.disconnect();
-        } catch (SocketTimeoutException e) {
+        } catch (Exception e) {
+            Log.w(TAG, "Error while send request: " + request);
+        }
+        /*
+        catch (SocketTimeoutException e) {
             e.printStackTrace();
         } catch (NoRouteToHostException e) {
             e.printStackTrace();
@@ -67,11 +71,11 @@ public abstract class Controller {
             e.printStackTrace();
             Rollbar.instance().error(e);
         }
+        */
         return result;
     }
 
-    protected void sendCommand(final String request)
-    {
+    protected void sendCommand(final String request) {
         sendCommand(request, null);
     }
 
@@ -92,21 +96,25 @@ public abstract class Controller {
                         conn.setRequestProperty("Cookie", cookie);
                     conn.setConnectTimeout(10000);
                     conn.getResponseMessage();
-                } catch (SocketTimeoutException e) {
+                } catch (Exception e) {
+                    Log.w(TAG, "Error while get getJson: " + request);
+                }
+                /*
+                catch (SocketTimeoutException e) {
                     e.printStackTrace();
                 } catch (NoRouteToHostException e) {
                     e.printStackTrace();
                 } catch (IOException e) {
                     Log.w(TAG, "Error while get getJson: " + request);
-                    e.printStackTrace();
-                    Rollbar.instance().error(e);
+                    //e.printStackTrace();
+                    //Rollbar.instance().error(e);
                 }
+                */
             }
         }).start();
     }
 
-    protected void sendJSON(final String request, final String json)
-    {
+    protected void sendJSON(final String request, final String json) {
         sendJSON(request, json, null);
     }
 
@@ -143,7 +151,11 @@ public abstract class Controller {
                     Log.w(TAG, "Result: " + buffer.toString());
 
                     conn.disconnect();
-                } catch (SocketTimeoutException e) {
+                } catch (Exception e) {
+                    Log.w(TAG, "Error while get getJson: " + request);
+                }
+                /*
+                catch (SocketTimeoutException e) {
                     e.printStackTrace();
                 } catch (NoRouteToHostException e) {
                     e.printStackTrace();
@@ -152,6 +164,7 @@ public abstract class Controller {
                     e.printStackTrace();
                     Rollbar.instance().error(e);
                 }
+                */
             }
         }).start();
     }

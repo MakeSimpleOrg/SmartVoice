@@ -43,7 +43,7 @@ public class YandexRecognizer extends AbstractRecognizer implements RecognizerLi
     }
 
     public void startListening() {
-        if(continuousMode)
+        if (continuousMode)
             lastSpeech = System.currentTimeMillis();
         createAndStartRecognizer();
     }
@@ -60,8 +60,10 @@ public class YandexRecognizer extends AbstractRecognizer implements RecognizerLi
     @Override
     public void onSpeechDetected(Recognizer recognizer) {
         Log.w(TAG, "Speech detected");
-        if (continuousMode)
+        if (continuousMode) {
             SpeechDetected = true;
+            lastWords = null;
+        }
     }
 
     @Override
@@ -93,18 +95,29 @@ public class YandexRecognizer extends AbstractRecognizer implements RecognizerLi
     @Override
     public void onPowerUpdated(Recognizer recognizer, float power) {
         //Log.w(TAG, "power: " + power);
-        if (continuousMode && System.currentTimeMillis() - lastSpeech > 10000) {
+        if (continuousMode && System.currentTimeMillis() - lastSpeech > 5000) {
             resetRecognizer();
             mContext.buttonOff();
         }
     }
 
+    private String lastWords;
+
     @Override
     public void onPartialResults(Recognizer recognizer, Recognition recognition, boolean b) {
         if (continuousMode && SpeechDetected) {
-            Log.w(TAG, "Partial results " + b + " " + recognition.getBestResultText());
+            lastSpeech = System.currentTimeMillis();
             PartialResults = recognition.getHypotheses();
-            mContext.showSpeak(recognition.getBestResultText());
+            String result = recognition.getBestResultText();
+            if (result != null && !result.isEmpty() && !result.equals(lastWords)) {
+                lastWords = result;
+                Log.w(TAG, "Partial results " + b + " " + recognition.getBestResultText());
+                mContext.showSpeak(result);
+                if (b && result.trim().split(" ").length > 1) {
+                    PartialResults = null;
+                    MainActivity.process(new String[]{result}, mContext);
+                }
+            }
         }
     }
 
@@ -141,7 +154,7 @@ public class YandexRecognizer extends AbstractRecognizer implements RecognizerLi
             return;
         if (ContextCompat.checkSelfPermission(mContext, RECORD_AUDIO) == PERMISSION_GRANTED) {
             resetRecognizer();
-            recognizer = Recognizer.create(Recognizer.Language.RUSSIAN, Recognizer.Model.QUERIES, this, continuousMode);
+            recognizer = Recognizer.create(Recognizer.Language.RUSSIAN, Recognizer.Model.NOTES, this, continuousMode);
             recognizer.start();
         }
     }

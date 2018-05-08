@@ -51,6 +51,7 @@
     <string name="RoomName">Название комнаты</string>
     <string name="ActivateDevice">Активировать утройство</string>
     <string name="RunScene">Запустить сцену</string>
+    <string name="IncorrectUrl">Неправильный адрес</string>
 
     <string-array name="VoiceActivationEntries">
         <item>None</item>

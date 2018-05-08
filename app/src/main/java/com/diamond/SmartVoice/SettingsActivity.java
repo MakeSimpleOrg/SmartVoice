@@ -8,6 +8,8 @@ import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
+import android.util.Patterns;
+import android.widget.Toast;
 
 import com.diamond.SmartVoice.OAuth.WebViewActivity;
 
@@ -58,6 +60,12 @@ public class SettingsActivity extends PreferenceActivity {
         @Override
         public boolean onPreferenceChange(Preference preference, Object value) {
             SharedPreferences pref = preference.getSharedPreferences();
+
+            if ((preference.getKey().equals("fibaro_server_ip") || preference.getKey().equals("vera_server_ip") || preference.getKey().equals("zipato_server_ip") || preference.getKey().equals("homey_server_ip")) && !Patterns.WEB_URL.matcher(value.toString()).matches()) {
+                Toast.makeText(getApplicationContext(), R.string.IncorrectUrl, Toast.LENGTH_SHORT).show();
+                return false;
+            }
+
             if (preference.getKey().equals("fibaro_enabled") && (Boolean) value && !pref.getString("fibaro_server_ip", "").isEmpty() && !pref.getString("fibaro_server_login", "").isEmpty() && !pref.getString("fibaro_server_password", "").isEmpty())
                 MainActivity.setupFibaro(mainActivity);
             else if (preference.getKey().equals("vera_enabled") && (Boolean) value && !pref.getString("vera_server_ip", "").isEmpty())
@@ -143,8 +151,7 @@ public class SettingsActivity extends PreferenceActivity {
         setSummary(preference, PreferenceManager.getDefaultSharedPreferences(this).getString(preference.getKey(), ""));
     }
 
-    private static void setSummary(Preference preference, String summary)
-    {
+    private static void setSummary(Preference preference, String summary) {
         if (preference instanceof ListPreference) {
             ListPreference listPreference = (ListPreference) preference;
             int index = listPreference.findIndexOfValue(summary);
@@ -152,7 +159,7 @@ public class SettingsActivity extends PreferenceActivity {
         } else
             preference.setSummary(summary);
         preference.getEditor().apply();
-        System.out.println(preference.getKey() + " summary: " + summary);
+        //System.out.println(preference.getKey() + " summary: " + summary);
     }
 
     @Override
