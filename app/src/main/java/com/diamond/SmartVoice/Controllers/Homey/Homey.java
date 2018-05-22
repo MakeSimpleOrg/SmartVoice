@@ -68,7 +68,7 @@ public class Homey extends Controller {
                     if (key != null) {
                         try {
                             all_rooms[i++] = gson.fromJson(zones.getString(key), Room.class);
-                        } catch (JSONException e) {
+                        } catch (Exception e) {
                             e.printStackTrace();
                             Rollbar.instance().error(e, result);
                         }
@@ -85,7 +85,7 @@ public class Homey extends Controller {
             try {
                 if (result != null)
                     devices = new JSONObject(result).getJSONObject("result");
-            } catch (JSONException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
                 Rollbar.instance().error(e, result);
             }
@@ -103,7 +103,7 @@ public class Homey extends Controller {
                     if (key != null) {
                         try {
                             all_devices[i++] = gson.fromJson(devices.getString(key), Device.class);
-                        } catch (JSONException e) {
+                        } catch (Exception e) {
                             e.printStackTrace();
                             Rollbar.instance().error(e, result);
                         }

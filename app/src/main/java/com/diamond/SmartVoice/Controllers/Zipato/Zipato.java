@@ -84,7 +84,12 @@ public class Zipato extends Controller {
             try {
                 result = request("/zipato-web/v2/user/init", null);
                 System.out.println(result);
-                init = gson.fromJson(result, Init.class);
+                try {
+                    init = gson.fromJson(result, Init.class);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Rollbar.instance().error(e, result);
+                }
                 if (init != null) {
                     String sha1 = Build_Sha1(password);
                     if (sha1 != null)
@@ -221,7 +226,7 @@ public class Zipato extends Controller {
                                     s.ai_name = AI.replaceTrash(s.ai_name);
                             }
                             all_scenes[i++] = s;
-                        } catch (JSONException e) {
+                        } catch (Exception e) {
                             e.printStackTrace();
                             Rollbar.instance().error(e, result);
                         }
