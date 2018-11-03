@@ -112,6 +112,8 @@ public class Zipato extends Controller {
     }
 
     public void updateData() {
+        Room[] loaded_rooms = null;
+        Device[] loaded_devices = null;
         if (jsessionid != null) {
             try {
                 JSONArray result = getJson("/zipato-web/v2/attributes/full?full=true", "JSESSIONID=" + jsessionid, JSONArray.class);
@@ -188,33 +190,40 @@ public class Zipato extends Controller {
                                 devices.add(d);
                         }
 
-                    all_rooms = new Room[rooms.size()];
+                    loaded_rooms = new Room[rooms.size()];
                     int i = 0;
                     for (Room r : rooms.values())
-                        all_rooms[i++] = r;
-                    all_devices = new Device[devices.size()];
+                        loaded_rooms[i++] = r;
+                    loaded_devices = new Device[devices.size()];
                     i = 0;
                     for (Device d : devices)
-                        all_devices[i++] = d;
+                        loaded_devices[i++] = d;
                 }
             } catch (Exception e) {
                 e.printStackTrace();
                 Rollbar.instance().error(e);
             }
         }
-        if (all_rooms == null)
+
+        if (loaded_rooms == null && all_rooms == null)
             all_rooms = new Room[0];
-        if (all_devices == null)
+        else if (loaded_rooms != null)
+            all_rooms = loaded_rooms;
+
+        if (loaded_devices == null && all_devices == null)
             all_devices = new Device[0];
+        else if (loaded_devices != null)
+            all_devices = loaded_devices;
     }
 
     private void updateScenes() {
+        Scene[] loaded_scenes = null;
         JSONObject obj = getJson("/zipato-web/rest/scenes/", "JSESSIONID=" + jsessionid, JSONObject.class);
         Iterator<String> it;
         String id;
         Scene s;
         if (obj != null) {
-            all_scenes = new Scene[obj.length()];
+            loaded_scenes = new Scene[obj.length()];
             int i = 0;
             it = obj.keys();
             while (it.hasNext()) {
@@ -228,7 +237,7 @@ public class Zipato extends Controller {
                             if (clearNames)
                                 s.ai_name = AI.replaceTrash(s.ai_name);
                         }
-                        all_scenes[i++] = s;
+                        loaded_scenes[i++] = s;
                     } catch (Exception e) {
                         e.printStackTrace();
                         Rollbar.instance().error(e, obj.toString());
@@ -236,8 +245,11 @@ public class Zipato extends Controller {
                 }
             }
         }
-        if (all_scenes == null)
+
+        if (loaded_scenes == null && all_scenes == null)
             all_scenes = new UScene[0];
+        else if (loaded_scenes != null)
+            all_scenes = loaded_scenes;
     }
 
     @Override

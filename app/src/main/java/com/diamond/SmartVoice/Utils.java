@@ -38,6 +38,8 @@ public class Utils {
             } catch (IOException e) {
                 Log.e(TAG, "Playing ding sound error", e);
             }
+            catch (IllegalStateException e)
+            { /*  */ }
         } catch (Exception e) {
             e.printStackTrace();
         }

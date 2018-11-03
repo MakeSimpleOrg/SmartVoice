@@ -53,6 +53,7 @@
     <string name="RunScene">Run scene</string>
     <string name="IncorrectUrl">Incorrect Url</string>
     <string name="Polling">Polling interval</string>
+    <string name="Recognized">Recognized</string>
 
     <string-array name="VoiceActivationEntries">
         <item>None</item>

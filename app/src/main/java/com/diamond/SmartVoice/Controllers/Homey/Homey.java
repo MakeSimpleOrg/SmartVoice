@@ -48,11 +48,13 @@ public class Homey extends Controller {
     }
 
     private void updateRooms() {
+        Room[] loaded_rooms = null;
         try {
             JSONObject zones = getJson("/api/manager/zones/zone", null, JSONObject.class);
-            if (zones != null) {
+            if (zones != null)
                 zones = zones.getJSONObject("result");
-                all_rooms = new Room[zones.length()];
+            if (zones != null) {
+                loaded_rooms = new Room[zones.length()];
                 int i = 0;
                 Iterator<String> it = zones.keys();
                 String key;
@@ -60,41 +62,51 @@ public class Homey extends Controller {
                     key = it.next();
                     if (key != null) {
                         try {
-                            all_rooms[i++] = gson.fromJson(zones.getString(key), Room.class);
+                            loaded_rooms[i++] = gson.fromJson(zones.getString(key), Room.class);
                         } catch (Exception e) {
                             e.printStackTrace();
                             Rollbar.instance().error(e, zones.toString());
                         }
                     }
                 }
-            }
 
-            if (clearNames)
-                for (Room r : all_rooms)
-                    r.setName(AI.replaceTrash(r.getName()));
+                if (clearNames)
+                    for (Room r : loaded_rooms)
+                        r.setName(AI.replaceTrash(r.getName()));
+            }
         } catch (Exception e) {
             e.printStackTrace();
             Rollbar.instance().error(e);
         }
+
+        if (loaded_rooms == null && all_rooms == null)
+            all_rooms = new Room[0];
+        else if (loaded_rooms != null)
+            all_rooms = loaded_rooms;
     }
 
     public void updateData() {
+        Device[] loaded_devices = null;
+        Scene[] loaded_scenes = null;
+
         try {
             JSONObject devices = getJson("/api/manager/devices/device", null, JSONObject.class);
-            //System.out.println(devices.toString());
+            if (devices != null)
+                devices = devices.getJSONObject("result");
+
             ArrayList<Scene> scenes = new ArrayList<>();
             Iterator<String> it;
             String key;
             if (devices != null) {
-                devices = devices.getJSONObject("result");
-                all_devices = new Device[devices.length()];
+                //System.out.println(devices.toString());
+                loaded_devices = new Device[devices.length()];
                 int i = 0;
                 it = devices.keys();
                 while (it.hasNext()) {
                     key = it.next();
                     if (key != null) {
                         try {
-                            all_devices[i++] = gson.fromJson(devices.getString(key), Device.class);
+                            loaded_devices[i++] = gson.fromJson(devices.getString(key), Device.class);
                         } catch (Exception e) {
                             e.printStackTrace();
                             Rollbar.instance().error(e, devices.toString());
@@ -102,7 +114,7 @@ public class Homey extends Controller {
                     }
                 }
 
-                for (Device d : all_devices) {
+                for (Device d : loaded_devices) {
                     d.ai_name = d.getName();
                     if (clearNames)
                         d.ai_name = AI.replaceTrash(d.ai_name);
@@ -170,18 +182,21 @@ public class Homey extends Controller {
                 }
             }
 
-            all_scenes = scenes.isEmpty() ? new Scene[0] : scenes.toArray(new Scene[0]);
+            loaded_scenes = scenes.isEmpty() ? new Scene[0] : scenes.toArray(new Scene[0]);
         } catch (Exception e) {
             e.printStackTrace();
             Rollbar.instance().error(e);
         }
 
-        if (all_rooms == null)
-            all_rooms = new Room[0];
-        if (all_devices == null)
+        if (loaded_devices == null && all_devices == null)
             all_devices = new Device[0];
-        if (all_scenes == null)
+        else if (loaded_devices != null)
+            all_devices = loaded_devices;
+
+        if (loaded_scenes == null && all_scenes == null)
             all_scenes = new Scene[0];
+        else if (loaded_scenes != null)
+            all_scenes = loaded_scenes;
 
         // System.out.println("Devices: " + all_devices.length);
     }

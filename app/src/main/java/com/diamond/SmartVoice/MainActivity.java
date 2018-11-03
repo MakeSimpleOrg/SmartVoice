@@ -294,22 +294,22 @@ public class MainActivity extends Activity {
                             long time = System.currentTimeMillis();
                             if (HomeyController != null && isHomeyEnabled()) {
                                 HomeyController.updateData();
-                                System.out.println("Homey poll time: " + (System.currentTimeMillis() - time));
+                                Log.d(TAG, "Homey poll time: " + (System.currentTimeMillis() - time));
                             }
                             time = System.currentTimeMillis();
                             if (FibaroController != null && isFibaroEnabled()) {
                                 FibaroController.updateData();
-                                System.out.println("Fibaro poll time: " + (System.currentTimeMillis() - time));
+                                Log.d(TAG, "Fibaro poll time: " + (System.currentTimeMillis() - time));
                                 time = System.currentTimeMillis();
                             }
                             if (VeraController != null && isVeraEnabled()) {
                                 VeraController.updateData();
-                                System.out.println("Vera poll time: " + (System.currentTimeMillis() - time));
+                                Log.d(TAG, "Vera poll time: " + (System.currentTimeMillis() - time));
                                 time = System.currentTimeMillis();
                             }
                             if (ZipatoController != null && isZipatoEnabled()) {
                                 ZipatoController.updateData();
-                                System.out.println("Zipato poll time: " + (System.currentTimeMillis() - time));
+                                Log.d(TAG, "Zipato poll time: " + (System.currentTimeMillis() - time));
                                 time = System.currentTimeMillis();
                             }
                         }

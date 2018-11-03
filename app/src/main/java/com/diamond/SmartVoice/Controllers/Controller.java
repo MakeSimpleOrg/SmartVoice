@@ -162,6 +162,8 @@ public abstract class Controller {
                     os.write(json.getBytes("UTF-8"));
                     os.close();
 
+                    String result = new String(ByteStreams.toByteArray(conn.getInputStream()));
+
                     /*
                     BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
                     StringBuilder buffer = new StringBuilder();
@@ -169,9 +171,9 @@ public abstract class Controller {
                     while ((line = br.readLine()) != null)
                         buffer.append(line).append("\n");
                     br.close();
-
-                    Log.d(TAG, "Result: " + buffer.toString());
                     */
+
+                    Log.d(TAG, "Result: " + result);
 
                     conn.disconnect();
                 } catch (Exception e) {
@@ -220,9 +222,10 @@ public abstract class Controller {
     public int getVisibleDevicesCount() {
         int c = 0;
         if (getDevices() != null)
-            for (UDevice u : getDevices())
+            for (UDevice u : getDevices()) {
                 if (u.isVisible())
                     c++;
+            }
         return c;
     }
 
@@ -258,12 +261,12 @@ public abstract class Controller {
     public String process(String[] requests, SharedPreferences pref) {
         UDevice[] devices = AI.getDevices(getDevices(), requests, pref);
         if (devices != null) {
-            mainActivity.show("Распознано: " + devices[0].ai_name);
+            mainActivity.show(mainActivity.getString(R.string.Recognized) + ": " + devices[0].ai_name);
             return processDevices(devices);
         }
         UScene[] scenes = AI.getScenes(getScenes(), requests, pref);
         if (scenes != null) {
-            mainActivity.show("Распознано: " + scenes[0].ai_name);
+            mainActivity.show(mainActivity.getString(R.string.Recognized) + ": " + scenes[0].ai_name);
             return processScenes(scenes);
         }
         return null;
@@ -275,7 +278,7 @@ public abstract class Controller {
         String text = mainActivity.getString(R.string.error);
         ArrayList<UDevice> list = new ArrayList<>();
         for (UDevice u : devices) {
-            Log.d(TAG, "найдено: " + u.getId() + " " + u.ai_name);
+            Log.d(TAG, mainActivity.getString(R.string.Recognized) + ": " + u.getId() + " " + u.ai_name);
             if (u.getCapabilities() != null) {
                 String onoff = u.getCapabilities().get(Capability.onoff);
                 String openclose = u.getCapabilities().get(Capability.openclose);

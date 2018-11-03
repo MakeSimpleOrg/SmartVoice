@@ -39,31 +39,38 @@ public class Fibaro extends Controller {
     }
 
     private void updateRooms() {
+        Room[] loaded_rooms = null;
         JSONArray jO = getJson("/api/rooms", null, JSONArray.class);
         try {
             try {
-                all_rooms = jO == null ? new Room[0] : gson.fromJson(jO.toString(), Room[].class);
+                loaded_rooms = jO == null ? new Room[0] : gson.fromJson(jO.toString(), Room[].class);
             } catch (Exception e) {
                 e.printStackTrace();
                 System.out.println(jO.toString());
                 Rollbar.instance().error(e, jO.toString());
             }
-            if (clearNames)
-                for (Room r : all_rooms)
+            if (clearNames && loaded_rooms != null)
+                for (Room r : loaded_rooms)
                     r.setName(AI.replaceTrash(r.getName()));
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println(jO.toString());
             Rollbar.instance().error(e);
         }
+        if (loaded_rooms == null && all_rooms == null)
+            all_rooms = new Room[0];
+        else if (loaded_rooms != null)
+            all_rooms = loaded_rooms;
     }
 
     public void updateData() {
+        Device[] loaded_devices = null;
+        Scene[] loaded_scenes = null;
         try {
             JSONArray jA = getJson("/api/devices?enabled=true&visible=true", null, JSONArray.class);
             try {
                 if (jA == null)
-                    all_devices = new Device[0];
+                    loaded_devices = new Device[0];
                 else {
                     //JSONArray json = new JSONArray(Utils.getStringFromFile(new File(Utils.assetDir, "gson.txt"))); // для тестов
                     //all_devices = result == null ? new Device[0] : gson.fromJson(result, Device[].class);
@@ -76,13 +83,14 @@ public class Fibaro extends Controller {
                             Rollbar.instance().error(e, jA.getJSONObject(i).toString());
                         }
                     }
-                    all_devices = devices.toArray(new Device[0]);
+                    loaded_devices = devices.toArray(new Device[0]);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
                 Rollbar.instance().error(e, jA.toString());
             }
-            for (Device d : all_devices) {
+            if(loaded_devices != null)
+            for (Device d : loaded_devices) {
                 if (d.getProperties().getUserDescription() != null && !d.getProperties().getUserDescription().isEmpty())
                     d.ai_name = d.getProperties().getUserDescription();
                 else
@@ -184,15 +192,15 @@ public class Fibaro extends Controller {
                 }
             }
 
-            //result = request("/api/scenes?enabled=true&visible=true", null);
             JSONArray jO = getJson("/api/scenes?enabled=true&visible=true", null, JSONArray.class);
             try {
-                all_scenes = jO == null ? new Scene[0] : gson.fromJson(jO.toString(), Scene[].class);
+                loaded_scenes = jO == null ? new Scene[0] : gson.fromJson(jO.toString(), Scene[].class);
             } catch (Exception e) {
                 e.printStackTrace();
                 Rollbar.instance().error(e, jO.toString());
             }
-            for (Scene s : all_scenes)
+            if(loaded_scenes != null)
+            for (Scene s : loaded_scenes)
                 if (s.isVisible()) {
                     if (s.getLiliStartCommand() != null && !s.getLiliStartCommand().isEmpty())
                         s.ai_name = s.getLiliStartCommand().toLowerCase(Locale.getDefault()).trim();
@@ -209,12 +217,15 @@ public class Fibaro extends Controller {
             Rollbar.instance().error(e);
         }
 
-        if (all_rooms == null)
-            all_rooms = new Room[0];
-        if (all_devices == null)
+        if (loaded_devices == null && all_devices == null)
             all_devices = new Device[0];
-        if (all_scenes == null)
+        else if (loaded_devices != null)
+            all_devices = loaded_devices;
+
+        if (loaded_scenes == null && all_scenes == null)
             all_scenes = new Scene[0];
+        else if (loaded_scenes != null)
+            all_scenes = loaded_scenes;
     }
 
     @Override

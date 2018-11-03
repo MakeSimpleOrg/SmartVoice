@@ -53,6 +53,7 @@
     <string name="RunScene">Запустить сцену</string>
     <string name="IncorrectUrl">Неправильный адрес</string>
     <string name="Polling">Интервал опроса</string>
+    <string name="Recognized">Распознано</string>
 
     <string-array name="VoiceActivationEntries">
         <item>None</item>

@@ -39,6 +39,9 @@ public class Vera extends Controller {
     }
 
     public void updateData() {
+        Room[] loaded_rooms = null;
+        Device[] loaded_devices = null;
+        Scene[] loaded_scenes = null;
         String result = request("/data_request?id=sdata&output_format=json", null);
         Sdata data = null;
         try {
@@ -49,26 +52,26 @@ public class Vera extends Controller {
         }
         if (data != null)
             try {
-                all_rooms = new Room[data.getRooms().size()];
-                all_devices = new Device[data.getDevices().size()];
-                all_scenes = new Scene[data.getScenes().size()];
+                loaded_rooms = new Room[data.getRooms().size()];
+                loaded_devices = new Device[data.getDevices().size()];
+                loaded_scenes = new Scene[data.getScenes().size()];
 
                 int i = 0;
                 for (Room r : data.getRooms())
-                    all_rooms[i++] = r;
+                    loaded_rooms[i++] = r;
 
                 if (clearNames)
-                    for (Room r : all_rooms)
+                    for (Room r : loaded_rooms)
                         r.setName(AI.replaceTrash(r.getName()));
 
                 i = 0;
                 for (Device d : data.getDevices()) {
-                    all_devices[i++] = d;
+                    loaded_devices[i++] = d;
                     d.ai_name = d.getName();
                     if (clearNames)
                         d.ai_name = AI.replaceTrash(d.ai_name);
 
-                    for (Room r : all_rooms)
+                    for (Room r : loaded_rooms)
                         if (r.getId().equals(d.getRoomID()))
                             d.setRoomName(r.getName());
 
@@ -116,11 +119,11 @@ public class Vera extends Controller {
                 i = 0;
                 for (Scene s : data.getScenes())
                     if (s.isVisible()) {
-                        all_scenes[i++] = s;
+                        loaded_scenes[i++] = s;
                         s.ai_name = s.getName();
                         if (clearNames)
                             s.ai_name = AI.replaceTrash(s.ai_name);
-                        for (Room r : all_rooms)
+                        for (Room r : loaded_rooms)
                             if (r.getId().equals(s.getRoomID()))
                                 s.setRoomName(r.getName());
                     }
@@ -129,14 +132,21 @@ public class Vera extends Controller {
                 Rollbar.instance().error(e);
             }
 
-        if (all_rooms == null)
+        if (loaded_rooms == null && all_rooms == null)
             all_rooms = new Room[0];
-        if (all_devices == null)
-            all_devices = new Device[0];
-        if (all_scenes == null)
-            all_scenes = new Scene[0];
-    }
+        else if (loaded_rooms != null)
+            all_rooms = loaded_rooms;
 
+        if (loaded_devices == null && all_devices == null)
+            all_devices = new Device[0];
+        else if (loaded_devices != null)
+            all_devices = loaded_devices;
+
+        if (loaded_scenes == null && all_scenes == null)
+            all_scenes = new Scene[0];
+        else if (loaded_scenes != null)
+            all_scenes = loaded_scenes;
+    }
 
     @Override
     public URoom[] getRooms() {
