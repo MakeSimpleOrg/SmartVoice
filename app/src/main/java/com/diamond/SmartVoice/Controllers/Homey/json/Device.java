@@ -1,15 +1,14 @@
 package com.diamond.SmartVoice.Controllers.Homey.json;
 
-import com.diamond.SmartVoice.Controllers.Capability;
 import com.diamond.SmartVoice.Controllers.UDevice;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.gson.JsonElement;
 import com.google.gson.annotations.SerializedName;
-
-import java.util.List;
 
 /**
  * @author Dmitriy Ponomarev
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Device extends UDevice {
     private String roomName;
 
@@ -19,41 +18,41 @@ public class Device extends UDevice {
     @SerializedName("name")
     private String name;
 
-    @SerializedName("driver")
-    private Object driver; // TODO
+    //@SerializedName("driver")
+    //private Object driver; // TODO
 
     @SerializedName("zone")
     private Room zone;
 
-    @SerializedName("data")
-    private Object data; // TODO
+    //@SerializedName("data")
+    //private Object data; // TODO
 
-    @SerializedName("icon")
-    private String icon;
+    //@SerializedName("icon")
+    //private String icon;
 
     @SerializedName("settings")
     private Settings settings;
 
-    @SerializedName("class")
-    private String getclass;
+    //@SerializedName("class")
+    //private String getclass;
 
-    @SerializedName("capabilities")
-    private Object capabilities; // TODO
+    //@SerializedName("capabilities")
+    //private Object capabilities; // TODO
 
-    @SerializedName("capabilitiesArray")
-    public List<Capability> capabilitiesArray;
+    //@SerializedName("capabilitiesArray")
+    //public List<Capability> capabilitiesArray;
 
-    @SerializedName("capabilitiesOptions")
-    private Object capabilitiesOptions; // TODO
+    //@SerializedName("capabilitiesOptions")
+    //private Object capabilitiesOptions; // TODO
 
-    @SerializedName("flags")
-    private Object flags; // TODO
+    //@SerializedName("flags")
+    //private Object flags; // TODO
 
-    @SerializedName("mobile")
-    private Object mobile; // TODO
+    //@SerializedName("mobile")
+    //private Object mobile; // TODO
 
-    @SerializedName("order")
-    private int order;
+    //@SerializedName("order")
+    //private int order;
 
     @SerializedName("online")
     private boolean online;
@@ -61,8 +60,8 @@ public class Device extends UDevice {
     @SerializedName("state")
     public JsonElement state;
 
-    @SerializedName("lastUpdated")
-    private Object lastUpdated; // TODO
+    //@SerializedName("lastUpdated")
+    //private Object lastUpdated; // TODO
 
     @SerializedName("available")
     private boolean available;

@@ -22,7 +22,6 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.diamond.SmartVoice.Controllers.Fibaro.Fibaro;
 import com.diamond.SmartVoice.Controllers.Homey.Homey;
@@ -218,7 +217,7 @@ public class MainActivity extends Activity {
             public void run() {
                 while (isLoading()) {
                     try {
-                        Thread.sleep(100);
+                        Thread.sleep(10);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                         Rollbar.instance().error(e);
@@ -251,7 +250,7 @@ public class MainActivity extends Activity {
             }
         }).start();
 
-        if (pref.getBoolean("homey_enabled", false) && !pref.getString("homey_server_ip", "").isEmpty() && !pref.getString("homey_bearer", "").isEmpty())
+        if (isHomeyEnabled())
             new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -259,7 +258,7 @@ public class MainActivity extends Activity {
                 }
             }).start();
 
-        if (pref.getBoolean("fibaro_enabled", false) && !pref.getString("fibaro_server_ip", "").isEmpty() && !pref.getString("fibaro_server_login", "").isEmpty() && !pref.getString("fibaro_server_password", "").isEmpty())
+        if (isFibaroEnabled())
             new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -267,7 +266,7 @@ public class MainActivity extends Activity {
                 }
             }).start();
 
-        if (pref.getBoolean("vera_enabled", false) && !pref.getString("vera_server_ip", "").isEmpty())
+        if (isVeraEnabled())
             new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -275,13 +274,67 @@ public class MainActivity extends Activity {
                 }
             }).start();
 
-        if (pref.getBoolean("zipato_enabled", false) && !pref.getString("zipato_server_ip", "my.zipato.com:443").isEmpty() && !pref.getString("zipato_server_login", "").isEmpty() && !pref.getString("zipato_server_password", "").isEmpty())
+        if (isZipatoEnabled())
             new Thread(new Runnable() {
                 @Override
                 public void run() {
                     setupZipato(MainActivity.this);
                 }
             }).start();
+
+        if (Integer.parseInt(pref.getString("polling", "300")) > 0)
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        int polling = Integer.parseInt(pref.getString("polling", "300"));
+                        while (polling > 0) {
+                            Thread.sleep(polling * 1000);
+                            polling = Integer.parseInt(pref.getString("polling", "300"));
+                            long time = System.currentTimeMillis();
+                            if (HomeyController != null && isHomeyEnabled()) {
+                                HomeyController.updateData();
+                                System.out.println("Homey poll time: " + (System.currentTimeMillis() - time));
+                            }
+                            time = System.currentTimeMillis();
+                            if (FibaroController != null && isFibaroEnabled()) {
+                                FibaroController.updateData();
+                                System.out.println("Fibaro poll time: " + (System.currentTimeMillis() - time));
+                                time = System.currentTimeMillis();
+                            }
+                            if (VeraController != null && isVeraEnabled()) {
+                                VeraController.updateData();
+                                System.out.println("Vera poll time: " + (System.currentTimeMillis() - time));
+                                time = System.currentTimeMillis();
+                            }
+                            if (ZipatoController != null && isZipatoEnabled()) {
+                                ZipatoController.updateData();
+                                System.out.println("Zipato poll time: " + (System.currentTimeMillis() - time));
+                                time = System.currentTimeMillis();
+                            }
+                        }
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                        Rollbar.instance().error(e);
+                    }
+                }
+            }).start();
+    }
+
+    private boolean isHomeyEnabled() {
+        return pref.getBoolean("homey_enabled", false) && !pref.getString("homey_server_ip", "").isEmpty() && !pref.getString("homey_bearer", "").isEmpty();
+    }
+
+    private boolean isFibaroEnabled() {
+        return pref.getBoolean("fibaro_enabled", false) && !pref.getString("fibaro_server_ip", "").isEmpty() && !pref.getString("fibaro_server_login", "").isEmpty() && !pref.getString("fibaro_server_password", "").isEmpty();
+    }
+
+    private boolean isVeraEnabled() {
+        return pref.getBoolean("vera_enabled", false) && !pref.getString("vera_server_ip", "").isEmpty();
+    }
+
+    private boolean isZipatoEnabled() {
+        return pref.getBoolean("zipato_enabled", false) && !pref.getString("zipato_server_ip", "my.zipato.com:443").isEmpty() && !pref.getString("zipato_server_login", "").isEmpty() && !pref.getString("zipato_server_password", "").isEmpty();
     }
 
     private boolean isLoading() {
@@ -460,11 +513,10 @@ public class MainActivity extends Activity {
             @Override
             protected void onPostExecute(Vera controller) {
                 activity.VeraController = controller;
-                if (activity.VeraController == null) {
+                if (activity.VeraController == null)
                     activity.show("Vera: " + activity.getString(R.string.controler_not_found) + " " + activity.pref.getString("vera_server_ip", ""));
-                } else {
+                else
                     activity.show("Vera: " + controller.getVisibleRoomsCount() + " " + activity.getString(R.string.found_rooms) + " " + controller.getVisibleDevicesCount() + " " + activity.getString(R.string.found_devices_and) + " " + controller.getVisibleScenesCount() + " " + activity.getString(R.string.found_scene));
-                }
                 activity.veraLoading = false;
                 if (!activity.isLoading())
                     activity.progressBar.setVisibility(View.INVISIBLE);
@@ -492,11 +544,10 @@ public class MainActivity extends Activity {
             @Override
             protected void onPostExecute(Zipato controller) {
                 activity.ZipatoController = controller;
-                if (activity.ZipatoController == null) {
+                if (activity.ZipatoController == null)
                     activity.show("Zipato: " + activity.getString(R.string.controler_not_found) + " " + activity.pref.getString("zipato_server_ip", ""));
-                } else {
+                else
                     activity.show("Zipato: " + controller.getVisibleRoomsCount() + " " + activity.getString(R.string.found_rooms) + " " + controller.getVisibleDevicesCount() + " " + activity.getString(R.string.found_devices_and) + " " + controller.getVisibleScenesCount() + " " + activity.getString(R.string.found_scene));
-                }
                 activity.zipatoLoading = false;
                 if (!activity.isLoading())
                     activity.progressBar.setVisibility(View.INVISIBLE);
@@ -535,7 +586,6 @@ public class MainActivity extends Activity {
                 String words = Arrays.toString(params);
                 Log.w(TAG, activity.getString(R.string.you_say) + words);
                 activity.showSpeak(words);
-
                 if (!activity.pref.getBoolean("homey_enabled", false) && !activity.pref.getBoolean("fibaro_enabled", false) && !activity.pref.getBoolean("vera_enabled", false) && !activity.pref.getBoolean("zipato_enabled", false) || activity.HomeyController == null && activity.FibaroController == null && activity.VeraController == null && activity.ZipatoController == null)
                     return activity.getString(R.string.nothing_to_manage);
                 String result = null;
@@ -568,8 +618,8 @@ public class MainActivity extends Activity {
                     if (result != null || !YandexRecognizer.continuousMode)
                         activity.buttonOff();
                 } else {
-                    //if (result == null)
-                    //    activity.speak(activity.getString(R.string.repeat));
+                    if (result == null)
+                        activity.speak(activity.getString(R.string.repeat));
                     activity.buttonOff();
                 }
             }

@@ -12,8 +12,6 @@ import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 
 import com.diamond.SmartVoice.Controllers.Controller;
-import com.diamond.SmartVoice.Controllers.UDevice;
-import com.diamond.SmartVoice.Controllers.URoom;
 import com.diamond.SmartVoice.Controllers.UScene;
 
 import java.util.Timer;

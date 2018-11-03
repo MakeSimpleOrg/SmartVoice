@@ -1,7 +1,6 @@
 package com.diamond.SmartVoice;
 
 import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.diamond.SmartVoice.Controllers.Capability;

@@ -43,6 +43,7 @@ public class SettingsActivity extends PreferenceActivity {
         bindPreferenceSummaryToValue("SnowboySensitivity");
         bindPreferenceSummaryToValue("PocketSphinxKeyPhrase");
         bindPreferenceSummaryToValue("PocketSphinxSensitivity");
+        bindPreferenceSummaryToValue("polling");
 
         findPreference("homey_enabled").setOnPreferenceChangeListener(sBindPreferenceChangeListener);
         findPreference("fibaro_enabled").setOnPreferenceChangeListener(sBindPreferenceChangeListener);

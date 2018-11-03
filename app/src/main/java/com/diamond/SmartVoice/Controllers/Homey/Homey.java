@@ -15,7 +15,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.rollbar.android.Rollbar;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -44,21 +43,15 @@ public class Homey extends Controller {
         bearer = activity.pref.getString("homey_bearer", "");
         clearNames = true; // TODO config
         gson = new GsonBuilder().serializeNulls().create();
+        updateRooms();
         updateData();
     }
 
-    private void updateData() {
+    private void updateRooms() {
         try {
-            String result = request("/api/manager/zones/zone", null);
-            JSONObject zones = null;
-            try {
-                if (result != null)
-                    zones = new JSONObject(result).getJSONObject("result");
-            } catch (JSONException e) {
-                e.printStackTrace();
-                Rollbar.instance().error(e);
-            }
+            JSONObject zones = getJson("/api/manager/zones/zone", null, JSONObject.class);
             if (zones != null) {
+                zones = zones.getJSONObject("result");
                 all_rooms = new Room[zones.length()];
                 int i = 0;
                 Iterator<String> it = zones.keys();
@@ -70,7 +63,7 @@ public class Homey extends Controller {
                             all_rooms[i++] = gson.fromJson(zones.getString(key), Room.class);
                         } catch (Exception e) {
                             e.printStackTrace();
-                            Rollbar.instance().error(e, result);
+                            Rollbar.instance().error(e, zones.toString());
                         }
                     }
                 }
@@ -79,22 +72,21 @@ public class Homey extends Controller {
             if (clearNames)
                 for (Room r : all_rooms)
                     r.setName(AI.replaceTrash(r.getName()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            Rollbar.instance().error(e);
+        }
+    }
 
-            result = request("/api/manager/devices/device", null);
-            JSONObject devices = null;
-            try {
-                if (result != null)
-                    devices = new JSONObject(result).getJSONObject("result");
-            } catch (Exception e) {
-                e.printStackTrace();
-                Rollbar.instance().error(e, result);
-            }
-
+    public void updateData() {
+        try {
+            JSONObject devices = getJson("/api/manager/devices/device", null, JSONObject.class);
+            //System.out.println(devices.toString());
             ArrayList<Scene> scenes = new ArrayList<>();
-
             Iterator<String> it;
             String key;
             if (devices != null) {
+                devices = devices.getJSONObject("result");
                 all_devices = new Device[devices.length()];
                 int i = 0;
                 it = devices.keys();
@@ -105,7 +97,7 @@ public class Homey extends Controller {
                             all_devices[i++] = gson.fromJson(devices.getString(key), Device.class);
                         } catch (Exception e) {
                             e.printStackTrace();
-                            Rollbar.instance().error(e, result);
+                            Rollbar.instance().error(e, devices.toString());
                         }
                     }
                 }
@@ -191,7 +183,7 @@ public class Homey extends Controller {
         if (all_scenes == null)
             all_scenes = new Scene[0];
 
-        System.out.println("Devices: " + all_devices.length);
+        // System.out.println("Devices: " + all_devices.length);
     }
 
     @Override

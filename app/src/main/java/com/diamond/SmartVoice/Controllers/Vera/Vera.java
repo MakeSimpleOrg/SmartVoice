@@ -16,7 +16,6 @@ import com.diamond.SmartVoice.MainActivity;
 import com.google.gson.Gson;
 import com.rollbar.android.Rollbar;
 
-import java.io.IOException;
 import java.util.Locale;
 
 /**
@@ -39,7 +38,7 @@ public class Vera extends Controller {
         updateData();
     }
 
-    private void updateData() {
+    public void updateData() {
         String result = request("/data_request?id=sdata&output_format=json", null);
         Sdata data = null;
         try {

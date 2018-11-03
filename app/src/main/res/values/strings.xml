@@ -16,7 +16,7 @@
     <string name="found_scene">scenes</string>
     <string name="you_say">You said:</string>
     <string name="nothing_to_manage">Nothing to manage</string>
-    <string name="repeat">Repeate!</string>
+    <string name="repeat">Please repeate</string>
     <string name="devices">Devices</string>
     <string name="scenes">Scenes</string>
     <string name="error">Error</string>
@@ -52,6 +52,7 @@
     <string name="ActivateDevice">Activate device</string>
     <string name="RunScene">Run scene</string>
     <string name="IncorrectUrl">Incorrect Url</string>
+    <string name="Polling">Polling interval</string>
 
     <string-array name="VoiceActivationEntries">
         <item>None</item>

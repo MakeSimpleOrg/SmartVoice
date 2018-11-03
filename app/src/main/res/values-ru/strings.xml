@@ -16,7 +16,7 @@
     <string name="found_scene">сцен</string>
     <string name="you_say">Вы сказали:</string>
     <string name="nothing_to_manage">Нечем управлять</string>
-    <string name="repeat">Повтори!</string>
+    <string name="repeat">Пожалуйста, повтори</string>
     <string name="devices">Устройства</string>
     <string name="scenes">Сцены</string>
     <string name="error">Ошибка</string>
@@ -52,6 +52,7 @@
     <string name="ActivateDevice">Активировать утройство</string>
     <string name="RunScene">Запустить сцену</string>
     <string name="IncorrectUrl">Неправильный адрес</string>
+    <string name="Polling">Интервал опроса</string>
 
     <string-array name="VoiceActivationEntries">
         <item>None</item>

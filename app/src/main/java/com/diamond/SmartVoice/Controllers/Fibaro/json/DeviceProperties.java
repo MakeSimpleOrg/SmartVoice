@@ -163,7 +163,7 @@ public class DeviceProperties {
     private String zwaveRegion;
 
     @SerializedName("zwaveVersion")
-    private double zwaveVersion;
+    private String zwaveVersion;
 
     public String getBatteryLevel() {
         return batteryLevel;

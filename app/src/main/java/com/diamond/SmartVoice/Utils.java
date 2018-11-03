@@ -26,7 +26,7 @@ public class Utils {
     public static MediaPlayer ding = new MediaPlayer();
     public static MediaPlayer dong = new MediaPlayer();
 
-    public static void load(MainActivity context) {
+    static void load(MainActivity context) {
         try {
             Assets assets = new Assets(context);
             assetDir = assets.syncAssets();

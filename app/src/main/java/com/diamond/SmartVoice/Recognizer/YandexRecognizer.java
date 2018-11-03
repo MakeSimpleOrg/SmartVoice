@@ -5,8 +5,6 @@ import android.util.Log;
 
 import com.diamond.SmartVoice.MainActivity;
 
-import java.util.Arrays;
-
 import ru.yandex.speechkit.Error;
 import ru.yandex.speechkit.Recognition;
 import ru.yandex.speechkit.RecognitionHypothesis;

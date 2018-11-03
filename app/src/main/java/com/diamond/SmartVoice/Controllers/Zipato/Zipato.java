@@ -18,7 +18,7 @@ import com.diamond.SmartVoice.MainActivity;
 import com.google.gson.Gson;
 import com.rollbar.android.Rollbar;
 
-import org.json.JSONException;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.security.MessageDigest;
@@ -50,6 +50,8 @@ public class Zipato extends Controller {
         password = activity.pref.getString("zipato_server_password", "");
         clearNames = true; // TODO config
         gson = new Gson();
+        initSession();
+        updateScenes();
         updateData();
     }
 
@@ -76,14 +78,14 @@ public class Zipato extends Controller {
         return buf.toString().toLowerCase();
     }
 
-    private void updateData() {
+    private void initSession() {
         String result = null;
         Init init = null;
         if (jsessionid == null) {
             String token = null;
             try {
                 result = request("/zipato-web/v2/user/init", null);
-                System.out.println(result);
+                //System.out.println(result);
                 try {
                     init = gson.fromJson(result, Init.class);
                 } catch (Exception e) {
@@ -107,15 +109,17 @@ public class Zipato extends Controller {
                     jsessionid = init.jsessionid;
             }
         }
+    }
 
+    public void updateData() {
         if (jsessionid != null) {
             try {
-                result = request("/zipato-web/v2/attributes/full?full=true", "JSESSIONID=" + jsessionid);
+                JSONArray result = getJson("/zipato-web/v2/attributes/full?full=true", "JSESSIONID=" + jsessionid, JSONArray.class);
 
                 @SuppressLint("UseSparseArrays") HashMap<Integer, Room> rooms = new HashMap<>();
-                ArrayList<Device> devices = new ArrayList<>();
-                if (result != null) {
-                    // Для тестов
+                ArrayList<Device> devices = new ArrayList<>(result.length());
+
+                // Для тестов
                     /*
                     try {
                         result = Utils.getStringFromFile(new File(Utils.assetDir, "gson.txt"));
@@ -124,66 +128,66 @@ public class Zipato extends Controller {
                     }
                     */
 
-                    AttributesFull[] all = null;
-                    try {
-                        all = gson.fromJson(result, AttributesFull[].class);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        Rollbar.instance().error(e, result);
+                AttributesFull[] all = null;
+                try {
+                    all = gson.fromJson(result.toString(), AttributesFull[].class);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Rollbar.instance().error(e, result.toString());
+                }
+
+                if (all != null)
+                    for (AttributesFull a : all) {
+                        Device d = new Device();
+                        if (a.value != null)
+                            d.setValue(a.value.value);
+                        if (a.uiType != null && a.uiType.endpointType != null)
+                            switch (a.uiType.endpointType) {
+                                case "actuator.onoff":
+                                    d.addCapability(Capability.onoff, d.getValue() == null || d.getValue().equals("false") || d.getValue().equals("0") ? "0" : "1");
+                                    break;
+                                case "meter.temperature":
+                                    d.addCapability(Capability.measure_temperature, d.getValue());
+                                    break;
+                                case "meter.light":
+                                    d.addCapability(Capability.measure_light, String.valueOf((int) Float.parseFloat(d.getValue())));
+                                    break;
+                                default:
+                                    continue;
+                            }
+                        else if (a.definition != null && a.definition.cluster != null)
+                            switch (a.definition.cluster) {
+                                case "com.zipato.cluster.OnOff":
+                                    d.addCapability(Capability.onoff, d.getValue() == null || d.getValue().equals("false") || d.getValue().equals("0") ? "0" : "1");
+                                    break;
+                                case "com.zipato.cluster.MultiLvlSensor":
+                                    if (a.name != null)
+                                        if (a.name.toLowerCase().contains("temperature"))
+                                            d.addCapability(Capability.measure_temperature, d.getValue());
+                                        else if (a.name.toLowerCase().contains("luminance"))
+                                            d.addCapability(Capability.measure_temperature, String.valueOf((int) Float.parseFloat(d.getValue())));
+                                    break;
+                                case "com.zipato.cluster.Gauge":
+                                    if (a.name != null && a.name.toLowerCase().contains("temperature"))
+                                        d.addCapability(Capability.measure_temperature, d.getValue());
+                                default:
+                                    continue;
+                            }
+
+                        d.setId(a.uuid);
+                        d.setName(AI.replaceTrash(a.name));
+                        if (a.room != null) {
+                            a.room.setName(AI.replaceTrash(a.room.getName()));
+                            rooms.put(a.room.id, a.room);
+                            d.setRoomName(a.room.getName());
+                        } else d.setRoomName("");
+
+                        d.ai_name = d.getRoomName() + " " + d.getName();
+
+                        if (d.getCapabilities().size() > 0)
+                            devices.add(d);
                     }
 
-                    if (all != null)
-                        for (AttributesFull a : all) {
-                            Device d = new Device();
-                            if (a.value != null)
-                                d.setValue(a.value.value);
-                            if (a.uiType != null && a.uiType.endpointType != null)
-                                switch (a.uiType.endpointType) {
-                                    case "actuator.onoff":
-                                        d.addCapability(Capability.onoff, d.getValue() == null || d.getValue().equals("false") || d.getValue().equals("0") ? "0" : "1");
-                                        break;
-                                    case "meter.temperature":
-                                        d.addCapability(Capability.measure_temperature, d.getValue());
-                                        break;
-                                    case "meter.light":
-                                        d.addCapability(Capability.measure_light, String.valueOf((int) Float.parseFloat(d.getValue())));
-                                        break;
-                                    default:
-                                        continue;
-                                }
-                            else if (a.definition != null && a.definition.cluster != null)
-                                switch (a.definition.cluster) {
-                                    case "com.zipato.cluster.OnOff":
-                                        d.addCapability(Capability.onoff, d.getValue() == null || d.getValue().equals("false") || d.getValue().equals("0") ? "0" : "1");
-                                        break;
-                                    case "com.zipato.cluster.MultiLvlSensor":
-                                        if (a.name != null)
-                                            if (a.name.toLowerCase().contains("temperature"))
-                                                d.addCapability(Capability.measure_temperature, d.getValue());
-                                            else if (a.name.toLowerCase().contains("luminance"))
-                                                d.addCapability(Capability.measure_temperature, String.valueOf((int) Float.parseFloat(d.getValue())));
-                                        break;
-                                    case "com.zipato.cluster.Gauge":
-                                        if (a.name != null && a.name.toLowerCase().contains("temperature"))
-                                            d.addCapability(Capability.measure_temperature, d.getValue());
-                                    default:
-                                        continue;
-                                }
-
-                            d.setId(a.uuid);
-                            d.setName(AI.replaceTrash(a.name));
-                            if (a.room != null) {
-                                a.room.setName(AI.replaceTrash(a.room.getName()));
-                                rooms.put(a.room.id, a.room);
-                                d.setRoomName(a.room.getName());
-                            } else d.setRoomName("");
-
-                            d.ai_name = d.getRoomName() + " " + d.getName();
-
-                            if (d.getCapabilities().size() > 0)
-                                devices.add(d);
-                        }
-                }
                 all_rooms = new Room[rooms.size()];
                 int i = 0;
                 for (Room r : rooms.values())
@@ -197,47 +201,43 @@ public class Zipato extends Controller {
                 Rollbar.instance().error(e);
             }
 
-            result = request("/zipato-web/rest/scenes/", "JSESSIONID=" + jsessionid);
 
-            JSONObject obj = null;
-            try {
-                obj = new JSONObject(result);
-            } catch (JSONException e) {
-                e.printStackTrace();
-                Rollbar.instance().error(e, result);
-            }
-
-            Iterator<String> it;
-            String id;
-            Scene s;
-            if (obj != null) {
-                all_scenes = new Scene[obj.length()];
-                int i = 0;
-                it = obj.keys();
-                while (it.hasNext()) {
-                    id = it.next();
-                    if (id != null) {
-                        try {
-                            s = gson.fromJson(obj.getString(id), Scene.class);
-                            s.setId(id);
-                            if (s.isVisible()) {
-                                s.ai_name = s.getName();
-                                if (clearNames)
-                                    s.ai_name = AI.replaceTrash(s.ai_name);
-                            }
-                            all_scenes[i++] = s;
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            Rollbar.instance().error(e, result);
-                        }
-                    }
-                }
-            }
         }
         if (all_rooms == null)
             all_rooms = new Room[0];
         if (all_devices == null)
             all_devices = new Device[0];
+    }
+
+    private void updateScenes()
+    {
+        JSONObject obj = getJson("/zipato-web/rest/scenes/", "JSESSIONID=" + jsessionid, JSONObject.class);
+        Iterator<String> it;
+        String id;
+        Scene s;
+        if (obj != null) {
+            all_scenes = new Scene[obj.length()];
+            int i = 0;
+            it = obj.keys();
+            while (it.hasNext()) {
+                id = it.next();
+                if (id != null) {
+                    try {
+                        s = gson.fromJson(obj.getString(id), Scene.class);
+                        s.setId(id);
+                        if (s.isVisible()) {
+                            s.ai_name = s.getName();
+                            if (clearNames)
+                                s.ai_name = AI.replaceTrash(s.ai_name);
+                        }
+                        all_scenes[i++] = s;
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        Rollbar.instance().error(e, obj.toString());
+                    }
+                }
+            }
+        }
         if (all_scenes == null)
             all_scenes = new UScene[0];
     }

@@ -136,5 +136,12 @@
                 android:title="@string/VoiceResponses" />
         </PreferenceCategory>
     </PreferenceScreen>
+    <EditTextPreference
+        android:defaultValue="300"
+        android:inputType="numberDecimal"
+        android:key="polling"
+        android:maxLines="1"
+        android:singleLine="true"
+        android:title="@string/Polling" />
 
 </PreferenceScreen>

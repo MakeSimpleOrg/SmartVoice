@@ -6,16 +6,14 @@ import android.util.Log;
 import com.diamond.SmartVoice.AI;
 import com.diamond.SmartVoice.MainActivity;
 import com.diamond.SmartVoice.R;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsonorg.JsonOrgModule;
+import com.google.common.io.ByteStreams;
 import com.google.gson.Gson;
-import com.rollbar.android.Rollbar;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.net.NoRouteToHostException;
-import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.ArrayList;
 
@@ -27,6 +25,8 @@ public abstract class Controller {
 
     protected MainActivity mainActivity;
 
+    private static ObjectMapper mapper = new ObjectMapper().registerModule(new JsonOrgModule()).disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+
     protected Gson gson;
     protected String host;
     protected String host_ext;
@@ -36,10 +36,11 @@ public abstract class Controller {
 
     protected String request(String request, String cookie) {
         String result = null;
+        HttpURLConnection conn = null;
         try {
             URL url = host_ext != null ? new URL("https://" + host_ext + request) : new URL("http://" + host + request);
             Log.d(TAG, "Sending request: " + url);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
             if (auth != null)
                 conn.setRequestProperty("Authorization", "Basic " + auth);
@@ -50,28 +51,50 @@ public abstract class Controller {
                 conn.setRequestProperty("Cookie", cookie);
             conn.setConnectTimeout(10000);
             conn.connect();
-            BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            StringBuilder buffer = new StringBuilder();
-            String line;
-            while ((line = br.readLine()) != null)
-                buffer.append(line).append("\n");
-            br.close();
-            result = buffer.toString();
+            result = new String(ByteStreams.toByteArray(conn.getInputStream()));
             conn.disconnect();
         } catch (Exception e) {
             Log.w(TAG, "Error while send request: " + request);
+        } finally {
+            if (conn != null)
+                try {
+                    conn.disconnect();
+                } catch (Exception e) {
+                    Log.w(TAG, "Cannot close connection: " + e);
+                }
         }
-        /*
-        catch (SocketTimeoutException e) {
-            e.printStackTrace();
-        } catch (NoRouteToHostException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            Log.w(TAG, "Error while send request: " + request);
-            e.printStackTrace();
-            Rollbar.instance().error(e);
+        return result;
+    }
+
+    protected <T> T getJson(String request, String cookie, Class<T> c) {
+        T result = null;
+        HttpURLConnection conn = null;
+        try {
+            URL url = host_ext != null ? new URL("https://" + host_ext + request) : new URL("http://" + host + request);
+            Log.d(TAG, "Sending request: " + url);
+            conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            if (auth != null)
+                conn.setRequestProperty("Authorization", "Basic " + auth);
+            else if (bearer != null)
+                conn.setRequestProperty("Authorization", "Bearer " + bearer);
+            conn.setRequestProperty("Content-Type", "application/json;charset=utf-8");
+            if (cookie != null)
+                conn.setRequestProperty("Cookie", cookie);
+            conn.setConnectTimeout(10000);
+            conn.connect();
+            result = mapper.readValue(conn.getInputStream(), c);
+            conn.disconnect();
+        } catch (Exception e) {
+            Log.w(TAG, "Error while send request: " + request, e);
+        } finally {
+            if (conn != null)
+                try {
+                    conn.disconnect();
+                } catch (Exception e) {
+                    Log.w(TAG, "Cannot close connection: " + e);
+                }
         }
-        */
         return result;
     }
 
@@ -80,13 +103,14 @@ public abstract class Controller {
     }
 
     protected void sendCommand(final String request, final String cookie) {
-        Log.w(TAG, "Command: " + request);
+        Log.d(TAG, "Command: " + request);
         new Thread(new Runnable() {
             @Override
             public void run() {
+                HttpURLConnection conn = null;
                 try {
                     URL url = host_ext != null ? new URL("https://" + host_ext + request) : new URL("http://" + host + request);
-                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    conn = (HttpURLConnection) url.openConnection();
                     conn.setRequestMethod("GET");
                     if (auth != null)
                         conn.setRequestProperty("Authorization", "Basic " + auth);
@@ -98,18 +122,14 @@ public abstract class Controller {
                     conn.getResponseMessage();
                 } catch (Exception e) {
                     Log.w(TAG, "Error while get getJson: " + request);
+                } finally {
+                    if (conn != null)
+                        try {
+                            conn.disconnect();
+                        } catch (Exception e) {
+                            Log.w(TAG, "Cannot close connection: " + e);
+                        }
                 }
-                /*
-                catch (SocketTimeoutException e) {
-                    e.printStackTrace();
-                } catch (NoRouteToHostException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    Log.w(TAG, "Error while get getJson: " + request);
-                    //e.printStackTrace();
-                    //Rollbar.instance().error(e);
-                }
-                */
             }
         }).start();
     }
@@ -119,13 +139,14 @@ public abstract class Controller {
     }
 
     protected void sendJSON(final String request, final String json, final String cookie) {
-        Log.w(TAG, "Json: " + json);
+        Log.d(TAG, "Json: " + json);
         new Thread(new Runnable() {
             @Override
             public void run() {
+                HttpURLConnection conn = null;
                 try {
                     URL url = host_ext != null ? new URL("https://" + host_ext + request) : new URL("http://" + host + request);
-                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    conn = (HttpURLConnection) url.openConnection();
                     conn.setConnectTimeout(10000);
                     conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
                     if (cookie != null)
@@ -141,6 +162,7 @@ public abstract class Controller {
                     os.write(json.getBytes("UTF-8"));
                     os.close();
 
+                    /*
                     BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
                     StringBuilder buffer = new StringBuilder();
                     String line;
@@ -148,23 +170,20 @@ public abstract class Controller {
                         buffer.append(line).append("\n");
                     br.close();
 
-                    Log.w(TAG, "Result: " + buffer.toString());
+                    Log.d(TAG, "Result: " + buffer.toString());
+                    */
 
                     conn.disconnect();
                 } catch (Exception e) {
                     Log.w(TAG, "Error while get getJson: " + request);
+                } finally {
+                    if (conn != null)
+                        try {
+                            conn.disconnect();
+                        } catch (Exception e) {
+                            Log.w(TAG, "Cannot close connection: " + e);
+                        }
                 }
-                /*
-                catch (SocketTimeoutException e) {
-                    e.printStackTrace();
-                } catch (NoRouteToHostException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    Log.w(TAG, "Error while get getJson: " + request);
-                    e.printStackTrace();
-                    Rollbar.instance().error(e);
-                }
-                */
             }
         }).start();
     }
@@ -256,7 +275,7 @@ public abstract class Controller {
         String text = mainActivity.getString(R.string.error);
         ArrayList<UDevice> list = new ArrayList<>();
         for (UDevice u : devices) {
-            Log.w(TAG, "найдено: " + u.getId() + " " + u.ai_name);
+            Log.d(TAG, "найдено: " + u.getId() + " " + u.ai_name);
             if (u.getCapabilities() != null) {
                 String onoff = u.getCapabilities().get(Capability.onoff);
                 String openclose = u.getCapabilities().get(Capability.openclose);

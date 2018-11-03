@@ -1,7 +1,5 @@
 package com.diamond.SmartVoice.Controllers.Fibaro;
 
-import android.graphics.Color;
-
 import com.diamond.SmartVoice.AI;
 import com.diamond.SmartVoice.Controllers.Capability;
 import com.diamond.SmartVoice.Controllers.Controller;
@@ -15,6 +13,9 @@ import com.diamond.SmartVoice.MainActivity;
 import com.google.gson.Gson;
 import com.rollbar.android.Rollbar;
 
+import org.json.JSONArray;
+
+import java.util.ArrayList;
 import java.util.Locale;
 
 /**
@@ -33,27 +34,53 @@ public class Fibaro extends Controller {
         auth = android.util.Base64.encodeToString((activity.pref.getString("fibaro_server_login", "") + ":" + activity.pref.getString("fibaro_server_password", "")).getBytes(), android.util.Base64.DEFAULT);
         clearNames = true; // TODO config
         gson = new Gson();
+        updateRooms();
         updateData();
     }
 
-    private void updateData() {
+    private void updateRooms() {
+        JSONArray jO = getJson("/api/rooms", null, JSONArray.class);
         try {
-            String result = request("/api/rooms", null);
             try {
-                all_rooms = result == null ? new Room[0] : gson.fromJson(result, Room[].class);
+                all_rooms = jO == null ? new Room[0] : gson.fromJson(jO.toString(), Room[].class);
             } catch (Exception e) {
                 e.printStackTrace();
-                Rollbar.instance().error(e, result);
+                System.out.println(jO.toString());
+                Rollbar.instance().error(e, jO.toString());
             }
             if (clearNames)
                 for (Room r : all_rooms)
                     r.setName(AI.replaceTrash(r.getName()));
-            result = request("/api/devices?enabled=true&visible=true", null);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println(jO.toString());
+            Rollbar.instance().error(e);
+        }
+    }
+
+    public void updateData() {
+        try {
+            JSONArray jA = getJson("/api/devices?enabled=true&visible=true", null, JSONArray.class);
             try {
-                all_devices = result == null ? new Device[0] : gson.fromJson(result, Device[].class);
+                if (jA == null)
+                    all_devices = new Device[0];
+                else {
+                    //JSONArray json = new JSONArray(Utils.getStringFromFile(new File(Utils.assetDir, "gson.txt"))); // для тестов
+                    //all_devices = result == null ? new Device[0] : gson.fromJson(result, Device[].class);
+                    ArrayList<Device> devices = new ArrayList<>();
+                    for (int i = 0; i < jA.length(); i++) {
+                        try {
+                            devices.add(gson.fromJson(jA.getJSONObject(i).toString(), Device.class));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            Rollbar.instance().error(e, jA.getJSONObject(i).toString());
+                        }
+                    }
+                    all_devices = devices.toArray(new Device[0]);
+                }
             } catch (Exception e) {
                 e.printStackTrace();
-                Rollbar.instance().error(e, result);
+                Rollbar.instance().error(e, jA.toString());
             }
             for (Device d : all_devices) {
                 if (d.getProperties().getUserDescription() != null && !d.getProperties().getUserDescription().isEmpty())
@@ -157,12 +184,13 @@ public class Fibaro extends Controller {
                 }
             }
 
-            result = request("/api/scenes?enabled=true&visible=true", null);
+            //result = request("/api/scenes?enabled=true&visible=true", null);
+            JSONArray jO = getJson("/api/scenes?enabled=true&visible=true", null, JSONArray.class);
             try {
-                all_scenes = result == null ? new Scene[0] : gson.fromJson(result, Scene[].class);
+                all_scenes = jO == null ? new Scene[0] : gson.fromJson(jO.toString(), Scene[].class);
             } catch (Exception e) {
                 e.printStackTrace();
-                Rollbar.instance().error(e, result);
+                Rollbar.instance().error(e, jO.toString());
             }
             for (Scene s : all_scenes)
                 if (s.isVisible()) {
