@@ -8,7 +8,7 @@
         android:layout_height="wrap_content"
         android:padding="20dip"
         android:paddingTop="35dp"
-        android:text="@string/login" />
+        android:text="@string/Login" />
 
     <WebView
         android:id="@+id/webview"

@@ -14,6 +14,9 @@ import java.io.OutputStream;
 import java.nio.charset.Charset;
 
 import edu.cmu.pocketsphinx.Assets;
+import ru.yandex.speechkit.Emotion;
+import ru.yandex.speechkit.Language;
+import ru.yandex.speechkit.Voice;
 
 /**
  * @author Dmitriy Ponomarev
@@ -37,9 +40,7 @@ public class Utils {
                 dong.prepare();
             } catch (IOException e) {
                 Log.e(TAG, "Playing ding sound error", e);
-            }
-            catch (IllegalStateException e)
-            { /*  */ }
+            } catch (IllegalStateException e) { /*  */ }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -101,5 +102,49 @@ public class Utils {
                     throw new IOException("Directory '" + parent + "' could not be created");
         }
         return new FileOutputStream(file, false);
+    }
+
+    public static Language getYandexLanguage(String lang) {
+        switch (lang) {
+            case "English":
+                return Language.ENGLISH;
+            case "Russian":
+                return Language.RUSSIAN;
+            case "Turkish":
+                return Language.TURKISH;
+            case "Ukrainian":
+                return Language.UKRAINIAN;
+        }
+        return Language.ENGLISH;
+    }
+
+    public static Voice getYandexVoice(String voice) {
+        switch (voice) {
+            case "Alyss":
+                return Voice.ALYSS;
+            case "Ermil":
+                return Voice.ERMIL;
+            case "Jane":
+                return Voice.JANE;
+            case "Oksana":
+                return Voice.OKSANA;
+            case "Omazh":
+                return Voice.OMAZH;
+            case "Zahar":
+                return Voice.ZAHAR;
+        }
+        return Voice.ALYSS;
+    }
+
+    public static Emotion getYandexEmotion(String emotion) {
+        switch (emotion) {
+            case "Good":
+                return Emotion.GOOD;
+            case "Evil":
+                return Emotion.EVIL;
+            case "Neutral":
+                return Emotion.NEUTRAL;
+        }
+        return Emotion.GOOD;
     }
 }

@@ -8,7 +8,7 @@
         <EditTextPreference
             android:inputType="textUri"
             android:key="homey_server_ip"
-            android:title="@string/HomeyServerAddress" />
+            android:title="@string/ServerAddress" />
         <EditTextPreference
             android:inputType="textNoSuggestions|textVisiblePassword"
             android:key="homey_bearer"
@@ -25,14 +25,14 @@
         <EditTextPreference
             android:inputType="textUri"
             android:key="fibaro_server_ip"
-            android:title="@string/FibaroServerAddress" />
+            android:title="@string/ServerAddress" />
         <EditTextPreference
             android:inputType="textNoSuggestions|textVisiblePassword"
             android:key="fibaro_server_login"
             android:maxLines="1"
             android:selectAllOnFocus="true"
             android:singleLine="true"
-            android:title="@string/FibaroLogin" />
+            android:title="@string/Login" />
         <EditTextPreference
             android:inputType="textPassword"
             android:key="fibaro_server_password"
@@ -40,7 +40,7 @@
             android:password="true"
             android:selectAllOnFocus="true"
             android:singleLine="true"
-            android:title="@string/FibaroPassword" />
+            android:title="@string/Password" />
     </PreferenceScreen>
     <PreferenceScreen android:title="Vera">
         <CheckBoxPreference
@@ -51,7 +51,7 @@
             android:key="vera_server_ip"
             android:selectAllOnFocus="true"
             android:singleLine="true"
-            android:title="@string/VeraServerAddress" />
+            android:title="@string/ServerAddress" />
     </PreferenceScreen>
     <PreferenceScreen android:title="Zipato">
         <CheckBoxPreference
@@ -62,14 +62,14 @@
             android:defaultValue="my.zipato.com:443"
             android:inputType="textUri"
             android:key="zipato_server_ip"
-            android:title="@string/ZipatoServerAddress" />
+            android:title="@string/ServerAddress" />
         <EditTextPreference
             android:inputType="textNoSuggestions|textVisiblePassword"
             android:key="zipato_server_login"
             android:maxLines="1"
             android:selectAllOnFocus="true"
             android:singleLine="true"
-            android:title="@string/ZipatoLogin" />
+            android:title="@string/Login" />
         <EditTextPreference
             android:inputType="textPassword"
             android:key="zipato_server_password"
@@ -77,9 +77,15 @@
             android:password="true"
             android:selectAllOnFocus="true"
             android:singleLine="true"
-            android:title="@string/ZipatoPassword" />
+            android:title="@string/Password" />
     </PreferenceScreen>
-    <PreferenceScreen android:title="@string/voice">
+    <PreferenceScreen android:title="@string/VoiceSettings">
+        <ListPreference
+            android:defaultValue="None"
+            android:entries="@array/VocalizerEntries"
+            android:entryValues="@array/VocalizerValues"
+            android:key="vocalizerType"
+            android:title="@string/Vocalizer" />
         <ListPreference
             android:defaultValue="None"
             android:entries="@array/VoiceActivationEntries"
@@ -98,14 +104,14 @@
                 android:entries="@array/KeyPhraseEntries"
                 android:entryValues="@array/KeyPhraseValues"
                 android:key="SnowboyKeyPhrase"
-                android:title="@string/SnowboyKeyPhrase" />
+                android:title="@string/KeyPhrase" />
             <EditTextPreference
                 android:defaultValue="60"
                 android:inputType="numberDecimal"
                 android:key="SnowboySensitivity"
                 android:selectAllOnFocus="true"
                 android:singleLine="true"
-                android:title="@string/SnowboySensitivity" />
+                android:title="@string/Sensitivity" />
         </PreferenceCategory>
         <PreferenceCategory android:title="PocketSphinx">
             <EditTextPreference
@@ -116,24 +122,61 @@
                 android:maxLines="1"
                 android:selectAllOnFocus="true"
                 android:singleLine="true"
-                android:title="@string/PocketSphinxKeyPhrase" />
+                android:title="@string/KeyPhrase" />
             <EditTextPreference
                 android:defaultValue="95"
                 android:inputType="numberDecimal"
                 android:key="PocketSphinxSensitivity"
                 android:selectAllOnFocus="true"
                 android:singleLine="true"
-                android:title="@string/PocketSphinxSensitivity" />
+                android:title="@string/Sensitivity" />
         </PreferenceCategory>
         <PreferenceCategory android:title="Google">
+            <EditTextPreference
+                android:autoText="true"
+                android:defaultValue="@string/defaultGoogleKeyPhrase"
+                android:inputType="text"
+                android:key="GoogleKeyPhrase"
+                android:maxLines="1"
+                android:selectAllOnFocus="true"
+                android:singleLine="true"
+                android:title="@string/KeyPhrase" />
             <CheckBoxPreference
                 android:defaultValue="false"
                 android:key="offline_recognition"
                 android:title="@string/OfflineRecognition" />
-            <CheckBoxPreference
-                android:defaultValue="false"
-                android:key="tts_enabled"
-                android:title="@string/VoiceResponses" />
+        </PreferenceCategory>
+        <PreferenceCategory android:title="Yandex">
+            <ListPreference
+                android:defaultValue="Model1"
+                android:entries="@array/YandexKeyPhraseEntries"
+                android:entryValues="@array/YandexKeyPhraseValues"
+                android:key="YandexKeyPhrase"
+                android:title="@string/KeyPhrase" />
+            <ListPreference
+                android:defaultValue="Alyss"
+                android:entries="@array/YandexVoiceEntries"
+                android:entryValues="@array/YandexVoiceValues"
+                android:key="YandexVoice"
+                android:title="@string/Voice" />
+            <ListPreference
+                android:defaultValue="Good"
+                android:entries="@array/YandexEmotionEntries"
+                android:entryValues="@array/YandexEmotionValues"
+                android:key="YandexEmotion"
+                android:title="@string/Emotion" />
+            <ListPreference
+                android:defaultValue="English"
+                android:entries="@array/YandexLangEntries"
+                android:entryValues="@array/YandexLangValues"
+                android:key="YandexSpeechLang"
+                android:title="@string/SpeechLanguage" />
+            <ListPreference
+                android:defaultValue="English"
+                android:entries="@array/YandexLangEntries"
+                android:entryValues="@array/YandexLangValues"
+                android:key="YandexRecognizerLang"
+                android:title="@string/RecognitionLanguage" />
         </PreferenceCategory>
     </PreferenceScreen>
     <EditTextPreference

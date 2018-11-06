@@ -18,7 +18,7 @@ android {
     useLibrary 'org.apache.http.legacy'
     defaultConfig {
         applicationId "com.diamond.SmartVoice"
-        minSdkVersion 14
+        minSdkVersion 16
         maxSdkVersion 27
         targetSdkVersion 27
         versionName 'v1.3.3'
@@ -39,20 +39,23 @@ android {
 
 repositories {
     maven { url "https://maven.google.com" }
+    maven { url 'https://jitpack.io' }
     jcenter()
 }
 
 dependencies {
     implementation project(':aars')
+    implementation 'com.android.support:support-v4:27.1.1'
     implementation 'com.google.code.gson:gson:2.8.5'
     implementation 'net.smartam.leeloo:oauth2-client:0.1'
     implementation 'net.smartam.leeloo:oauth2-common:0.1'
-    implementation('com.rollbar:rollbar-android:1.0.0@aar'){transitive=true}
-    implementation "com.yandex.android:speechkit:2.5.0"
+    implementation('com.rollbar:rollbar-android:1.0.0@aar') { transitive = true }
     implementation 'com.google.guava:guava:26.0-android'
     implementation 'com.fasterxml.jackson.core:jackson-core:2.9.7'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-json-org:2.9.0'
     implementation 'com.android.support.constraint:constraint-layout:1.1.3'
+    implementation 'com.android.support.constraint:constraint-layout:1.1.3'
+    implementation 'com.yandex.android:speechkit:3.12.2'
 }
 
 ant.importBuild 'assets.xml'

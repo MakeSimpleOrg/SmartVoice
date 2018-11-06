@@ -150,7 +150,7 @@ public class DevicesActivity extends PreferenceActivity {
                 public void run() {
                     reload();
                 }
-            }, 500);
+            }, 1000);
             return true;
         }
     };

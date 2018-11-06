@@ -1,0 +1,12 @@
+<eps> 0
+!SIL 1
+<NOISE> 2
+<SPOKEN_NOISE> 3
+<UNK> 4
+sil_word 5
+алекса 6
+отменить 7
+поехали 8
+#0 9
+<s> 10
+</s> 11

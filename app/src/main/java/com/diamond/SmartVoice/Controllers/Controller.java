@@ -12,10 +12,13 @@ import com.fasterxml.jackson.datatype.jsonorg.JsonOrgModule;
 import com.google.common.io.ByteStreams;
 import com.google.gson.Gson;
 
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+
+import javax.net.ssl.SSLProtocolException;
 
 /**
  * @author Dmitriy Ponomarev
@@ -37,6 +40,7 @@ public abstract class Controller {
     protected String request(String request, String cookie) {
         String result = null;
         HttpURLConnection conn = null;
+        InputStream is = null;
         try {
             URL url = host_ext != null ? new URL("https://" + host_ext + request) : new URL("http://" + host + request);
             Log.d(TAG, "Sending request: " + url);
@@ -51,9 +55,9 @@ public abstract class Controller {
                 conn.setRequestProperty("Cookie", cookie);
             conn.setConnectTimeout(10000);
             conn.connect();
-            result = new String(ByteStreams.toByteArray(conn.getInputStream()));
-            conn.disconnect();
-        } catch (Exception e) {
+            is = conn.getInputStream();
+            result = new String(ByteStreams.toByteArray(is));
+        } catch (SSLProtocolException e) { /**/ } catch (Exception e) {
             Log.w(TAG, "Error while send request: " + request);
         } finally {
             if (conn != null)
@@ -69,6 +73,7 @@ public abstract class Controller {
     protected <T> T getJson(String request, String cookie, Class<T> c) {
         T result = null;
         HttpURLConnection conn = null;
+        InputStream is = null;
         try {
             URL url = host_ext != null ? new URL("https://" + host_ext + request) : new URL("http://" + host + request);
             Log.d(TAG, "Sending request: " + url);
@@ -83,17 +88,19 @@ public abstract class Controller {
                 conn.setRequestProperty("Cookie", cookie);
             conn.setConnectTimeout(10000);
             conn.connect();
-            result = mapper.readValue(conn.getInputStream(), c);
-            conn.disconnect();
-        } catch (Exception e) {
+            is = conn.getInputStream();
+            result = mapper.readValue(is, c);
+        } catch (SSLProtocolException e) { /**/ } catch (Exception e) {
             Log.w(TAG, "Error while send request: " + request, e);
         } finally {
+            if (is != null)
+                try {
+                    is.close();
+                } catch (Exception e) { /**/ }
             if (conn != null)
                 try {
                     conn.disconnect();
-                } catch (Exception e) {
-                    Log.w(TAG, "Cannot close connection: " + e);
-                }
+                } catch (Exception e) { /**/ }
         }
         return result;
     }
@@ -108,6 +115,7 @@ public abstract class Controller {
             @Override
             public void run() {
                 HttpURLConnection conn = null;
+                InputStream is = null;
                 try {
                     URL url = host_ext != null ? new URL("https://" + host_ext + request) : new URL("http://" + host + request);
                     conn = (HttpURLConnection) url.openConnection();
@@ -119,16 +127,18 @@ public abstract class Controller {
                     if (cookie != null)
                         conn.setRequestProperty("Cookie", cookie);
                     conn.setConnectTimeout(10000);
-                    conn.getResponseMessage();
-                } catch (Exception e) {
+                    is = conn.getInputStream();
+                } catch (SSLProtocolException e) { /**/ } catch (Exception e) {
                     Log.w(TAG, "Error while get getJson: " + request);
                 } finally {
+                    if (is != null)
+                        try {
+                            is.close();
+                        } catch (Exception e) { /**/ }
                     if (conn != null)
                         try {
                             conn.disconnect();
-                        } catch (Exception e) {
-                            Log.w(TAG, "Cannot close connection: " + e);
-                        }
+                        } catch (Exception e) { /**/ }
                 }
             }
         }).start();
@@ -144,6 +154,8 @@ public abstract class Controller {
             @Override
             public void run() {
                 HttpURLConnection conn = null;
+                InputStream is = null;
+                OutputStream os = null;
                 try {
                     URL url = host_ext != null ? new URL("https://" + host_ext + request) : new URL("http://" + host + request);
                     conn = (HttpURLConnection) url.openConnection();
@@ -158,33 +170,24 @@ public abstract class Controller {
                         conn.setRequestProperty("Authorization", "Basic " + auth);
                     else if (bearer != null)
                         conn.setRequestProperty("Authorization", "Bearer " + bearer);
-                    OutputStream os = conn.getOutputStream();
+                    os = conn.getOutputStream();
                     os.write(json.getBytes("UTF-8"));
-                    os.close();
-
-                    String result = new String(ByteStreams.toByteArray(conn.getInputStream()));
-
-                    /*
-                    BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                    StringBuilder buffer = new StringBuilder();
-                    String line;
-                    while ((line = br.readLine()) != null)
-                        buffer.append(line).append("\n");
-                    br.close();
-                    */
-
-                    Log.d(TAG, "Result: " + result);
-
-                    conn.disconnect();
-                } catch (Exception e) {
+                    is = conn.getInputStream();
+                } catch (SSLProtocolException e) { /**/ } catch (Exception e) {
                     Log.w(TAG, "Error while get getJson: " + request);
                 } finally {
+                    if (os != null)
+                        try {
+                            os.close();
+                        } catch (Exception e) { /**/ }
+                    if (is != null)
+                        try {
+                            is.close();
+                        } catch (Exception e) { /**/ }
                     if (conn != null)
                         try {
                             conn.disconnect();
-                        } catch (Exception e) {
-                            Log.w(TAG, "Cannot close connection: " + e);
-                        }
+                        } catch (Exception e) { /**/ }
                 }
             }
         }).start();

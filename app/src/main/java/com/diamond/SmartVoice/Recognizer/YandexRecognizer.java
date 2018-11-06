@@ -1,16 +1,21 @@
 package com.diamond.SmartVoice.Recognizer;
 
+import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
 import com.diamond.SmartVoice.MainActivity;
+import com.diamond.SmartVoice.Utils;
 
 import ru.yandex.speechkit.Error;
+import ru.yandex.speechkit.Language;
+import ru.yandex.speechkit.OnlineModel;
+import ru.yandex.speechkit.OnlineRecognizer;
 import ru.yandex.speechkit.Recognition;
 import ru.yandex.speechkit.RecognitionHypothesis;
 import ru.yandex.speechkit.Recognizer;
 import ru.yandex.speechkit.RecognizerListener;
-import ru.yandex.speechkit.SpeechKit;
+import ru.yandex.speechkit.Track;
 
 import static android.Manifest.permission.RECORD_AUDIO;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
@@ -21,15 +26,13 @@ import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 public class YandexRecognizer extends AbstractRecognizer implements RecognizerListener {
     private static final String TAG = YandexRecognizer.class.getSimpleName();
 
-    private static final String API_KEY = "0b9f1c33-9350-4413-a7ad-2e9565bcfec5";
-
-    private Recognizer recognizer;
+    private OnlineRecognizer recognizer;
 
     private MainActivity mContext;
 
     private RecognitionHypothesis[] PartialResults;
 
-    private boolean SpeechDetected;
+    private boolean SpeechDetected, Result;
 
     private long lastSpeech;
 
@@ -37,13 +40,28 @@ public class YandexRecognizer extends AbstractRecognizer implements RecognizerLi
 
     public YandexRecognizer(MainActivity context) {
         this.mContext = context;
-        SpeechKit.getInstance().configure(mContext, API_KEY);
+        Language lang = Utils.getYandexLanguage(context.pref.getString("YandexRecognizerLang", "None"));
+
+        Log.w(TAG, "Start Recognizer, lang: " + lang + ", p: " + context.pref.getString("YandexRecognizerLang", "None"));
+        recognizer = new OnlineRecognizer.Builder(lang, OnlineModel.NOTES, this)
+                .setDisableAntimat(false)
+                .setEnablePunctuation(false)
+                .build();
+        recognizer.prepare();
     }
 
     public void startListening() {
+        Utils.ding.start();
+        Result = false;
         if (continuousMode)
             lastSpeech = System.currentTimeMillis();
-        createAndStartRecognizer();
+        if (mContext == null)
+            return;
+        if (ContextCompat.checkSelfPermission(mContext, RECORD_AUDIO) == PERMISSION_GRANTED) {
+            SpeechDetected = false;
+            PartialResults = null;
+            recognizer.startRecording();
+        }
     }
 
     public void stopListening() {
@@ -51,13 +69,12 @@ public class YandexRecognizer extends AbstractRecognizer implements RecognizerLi
     }
 
     @Override
-    public void onRecordingBegin(Recognizer recognizer) {
+    public void onRecordingBegin(@NonNull Recognizer recognizer) {
         Log.w(TAG, "Recording begin");
     }
 
     @Override
-    public void onSpeechDetected(Recognizer recognizer) {
-        Log.w(TAG, "Speech detected");
+    public void onSpeechDetected(@NonNull Recognizer recognizer) {
         if (continuousMode) {
             SpeechDetected = true;
             lastWords = null;
@@ -65,7 +82,7 @@ public class YandexRecognizer extends AbstractRecognizer implements RecognizerLi
     }
 
     @Override
-    public void onSpeechEnds(Recognizer recognizer) {
+    public void onSpeechEnds(@NonNull Recognizer recognizer) {
         Log.w(TAG, "Speech ends");
         if (continuousMode) {
             SpeechDetected = false;
@@ -82,17 +99,16 @@ public class YandexRecognizer extends AbstractRecognizer implements RecognizerLi
     }
 
     @Override
-    public void onRecordingDone(Recognizer recognizer) {
-        Log.w(TAG, "Recording done");
+    public void onRecordingDone(@NonNull Recognizer recognizer) {
     }
 
     @Override
-    public void onSoundDataRecorded(Recognizer recognizer, byte[] bytes) {
+    public void onMusicResults(@NonNull Recognizer recognizer, @NonNull Track track) {
+        Log.w(TAG, "onMusicResults");
     }
 
     @Override
-    public void onPowerUpdated(Recognizer recognizer, float power) {
-        //Log.w(TAG, "power: " + power);
+    public void onPowerUpdated(@NonNull Recognizer recognizer, float power) {
         if (continuousMode && System.currentTimeMillis() - lastSpeech > 5000) {
             resetRecognizer();
             mContext.buttonOff();
@@ -102,12 +118,12 @@ public class YandexRecognizer extends AbstractRecognizer implements RecognizerLi
     private String lastWords;
 
     @Override
-    public void onPartialResults(Recognizer recognizer, Recognition recognition, boolean b) {
+    public void onPartialResults(@NonNull Recognizer recognizer, @NonNull Recognition recognition, boolean b) {
         if (continuousMode && SpeechDetected) {
             lastSpeech = System.currentTimeMillis();
             PartialResults = recognition.getHypotheses();
             String result = recognition.getBestResultText();
-            if (result != null && !result.isEmpty() && !result.equals(lastWords)) {
+            if (!result.isEmpty() && !result.equals(lastWords)) {
                 lastWords = result;
                 Log.w(TAG, "Partial results " + b + " " + recognition.getBestResultText());
                 mContext.showSpeak(result);
@@ -120,47 +136,20 @@ public class YandexRecognizer extends AbstractRecognizer implements RecognizerLi
     }
 
     @Override
-    public void onRecognitionDone(Recognizer recognizer, Recognition recognition) {
+    public void onRecognitionDone(@NonNull Recognizer recognizer) {
         Log.w(TAG, "onRecognitionDone");
         resetRecognizer();
-        RecognitionHypothesis[] hypotheses = recognition.getHypotheses();
-        if (hypotheses == null || hypotheses.length == 0) {
-            mContext.speak("Повтори!");
-            mContext.buttonOff();
-            return;
-        }
-        String[] result = new String[hypotheses.length];
-        for (int i = 0; i < hypotheses.length; i++)
-            result[i] = hypotheses[i].getNormalized();
-        MainActivity.process(result, mContext);
+        mContext.buttonOff();
     }
 
     @Override
-    public void onError(Recognizer recognizer, ru.yandex.speechkit.Error error) {
-        if (error.getCode() == Error.ERROR_CANCELED) {
-            Log.w(TAG, "Cancelled");
-        } else {
-            Log.w(TAG, "Error occurred " + error.getString());
-            resetRecognizer();
-            mContext.speak("Повтори!");
-            mContext.buttonOff();
-        }
-    }
-
-    private void createAndStartRecognizer() {
-        if (mContext == null)
-            return;
-        if (ContextCompat.checkSelfPermission(mContext, RECORD_AUDIO) == PERMISSION_GRANTED) {
-            resetRecognizer();
-            recognizer = Recognizer.create(Recognizer.Language.RUSSIAN, Recognizer.Model.NOTES, this, continuousMode);
-            recognizer.start();
-        }
+    public void onRecognizerError(@NonNull Recognizer recognizer, @NonNull Error error) {
+        Log.w(TAG, "Error occurred " + error.getMessage());
     }
 
     private void resetRecognizer() {
         if (recognizer != null) {
-            recognizer.cancel();
-            recognizer = null;
+            recognizer.stopRecording();
             SpeechDetected = false;
             PartialResults = null;
         }
@@ -168,7 +157,14 @@ public class YandexRecognizer extends AbstractRecognizer implements RecognizerLi
 
     public void destroy() {
         try {
-            resetRecognizer();
+            if (recognizer != null) {
+                recognizer.stopRecording();
+                recognizer.cancel();
+                recognizer.destroy();
+                recognizer = null;
+                SpeechDetected = false;
+                PartialResults = null;
+            }
         } catch (Exception ignored) {
         }
     }

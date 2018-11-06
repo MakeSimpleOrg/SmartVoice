@@ -9,90 +9,90 @@
 package ai.kitt.snowboy;
 
 public class SnowboyVad {
-  private transient long swigCPtr;
-  protected transient boolean swigCMemOwn;
+    private transient long swigCPtr;
+    protected transient boolean swigCMemOwn;
 
-  protected SnowboyVad(long cPtr, boolean cMemoryOwn) {
-    swigCMemOwn = cMemoryOwn;
-    swigCPtr = cPtr;
-  }
-
-  protected static long getCPtr(SnowboyVad obj) {
-    return (obj == null) ? 0 : obj.swigCPtr;
-  }
-
-  protected void finalize() {
-    delete();
-  }
-
-  public synchronized void delete() {
-    if (swigCPtr != 0) {
-      if (swigCMemOwn) {
-        swigCMemOwn = false;
-        snowboyJNI.delete_SnowboyVad(swigCPtr);
-      }
-      swigCPtr = 0;
+    protected SnowboyVad(long cPtr, boolean cMemoryOwn) {
+        swigCMemOwn = cMemoryOwn;
+        swigCPtr = cPtr;
     }
-  }
 
-  public SnowboyVad(String resource_filename) {
-    this(snowboyJNI.new_SnowboyVad(resource_filename), true);
-  }
+    protected static long getCPtr(SnowboyVad obj) {
+        return (obj == null) ? 0 : obj.swigCPtr;
+    }
 
-  public boolean Reset() {
-    return snowboyJNI.SnowboyVad_Reset(swigCPtr, this);
-  }
+    protected void finalize() {
+        delete();
+    }
 
-  public int RunVad(String data, boolean is_end) {
-    return snowboyJNI.SnowboyVad_RunVad__SWIG_0(swigCPtr, this, data, is_end);
-  }
+    public synchronized void delete() {
+        if (swigCPtr != 0) {
+            if (swigCMemOwn) {
+                swigCMemOwn = false;
+                snowboyJNI.delete_SnowboyVad(swigCPtr);
+            }
+            swigCPtr = 0;
+        }
+    }
 
-  public int RunVad(String data) {
-    return snowboyJNI.SnowboyVad_RunVad__SWIG_1(swigCPtr, this, data);
-  }
+    public SnowboyVad(String resource_filename) {
+        this(snowboyJNI.new_SnowboyVad(resource_filename), true);
+    }
 
-  public int RunVad(float[] data, int array_length, boolean is_end) {
-    return snowboyJNI.SnowboyVad_RunVad__SWIG_2(swigCPtr, this, data, array_length, is_end);
-  }
+    public boolean Reset() {
+        return snowboyJNI.SnowboyVad_Reset(swigCPtr, this);
+    }
 
-  public int RunVad(float[] data, int array_length) {
-    return snowboyJNI.SnowboyVad_RunVad__SWIG_3(swigCPtr, this, data, array_length);
-  }
+    public int RunVad(String data, boolean is_end) {
+        return snowboyJNI.SnowboyVad_RunVad__SWIG_0(swigCPtr, this, data, is_end);
+    }
 
-  public int RunVad(short[] data, int array_length, boolean is_end) {
-    return snowboyJNI.SnowboyVad_RunVad__SWIG_4(swigCPtr, this, data, array_length, is_end);
-  }
+    public int RunVad(String data) {
+        return snowboyJNI.SnowboyVad_RunVad__SWIG_1(swigCPtr, this, data);
+    }
 
-  public int RunVad(short[] data, int array_length) {
-    return snowboyJNI.SnowboyVad_RunVad__SWIG_5(swigCPtr, this, data, array_length);
-  }
+    public int RunVad(float[] data, int array_length, boolean is_end) {
+        return snowboyJNI.SnowboyVad_RunVad__SWIG_2(swigCPtr, this, data, array_length, is_end);
+    }
 
-  public int RunVad(int[] data, int array_length, boolean is_end) {
-    return snowboyJNI.SnowboyVad_RunVad__SWIG_6(swigCPtr, this, data, array_length, is_end);
-  }
+    public int RunVad(float[] data, int array_length) {
+        return snowboyJNI.SnowboyVad_RunVad__SWIG_3(swigCPtr, this, data, array_length);
+    }
 
-  public int RunVad(int[] data, int array_length) {
-    return snowboyJNI.SnowboyVad_RunVad__SWIG_7(swigCPtr, this, data, array_length);
-  }
+    public int RunVad(short[] data, int array_length, boolean is_end) {
+        return snowboyJNI.SnowboyVad_RunVad__SWIG_4(swigCPtr, this, data, array_length, is_end);
+    }
 
-  public void SetAudioGain(float audio_gain) {
-    snowboyJNI.SnowboyVad_SetAudioGain(swigCPtr, this, audio_gain);
-  }
+    public int RunVad(short[] data, int array_length) {
+        return snowboyJNI.SnowboyVad_RunVad__SWIG_5(swigCPtr, this, data, array_length);
+    }
 
-  public void ApplyFrontend(boolean apply_frontend) {
-    snowboyJNI.SnowboyVad_ApplyFrontend(swigCPtr, this, apply_frontend);
-  }
+    public int RunVad(int[] data, int array_length, boolean is_end) {
+        return snowboyJNI.SnowboyVad_RunVad__SWIG_6(swigCPtr, this, data, array_length, is_end);
+    }
 
-  public int SampleRate() {
-    return snowboyJNI.SnowboyVad_SampleRate(swigCPtr, this);
-  }
+    public int RunVad(int[] data, int array_length) {
+        return snowboyJNI.SnowboyVad_RunVad__SWIG_7(swigCPtr, this, data, array_length);
+    }
 
-  public int NumChannels() {
-    return snowboyJNI.SnowboyVad_NumChannels(swigCPtr, this);
-  }
+    public void SetAudioGain(float audio_gain) {
+        snowboyJNI.SnowboyVad_SetAudioGain(swigCPtr, this, audio_gain);
+    }
 
-  public int BitsPerSample() {
-    return snowboyJNI.SnowboyVad_BitsPerSample(swigCPtr, this);
-  }
+    public void ApplyFrontend(boolean apply_frontend) {
+        snowboyJNI.SnowboyVad_ApplyFrontend(swigCPtr, this, apply_frontend);
+    }
+
+    public int SampleRate() {
+        return snowboyJNI.SnowboyVad_SampleRate(swigCPtr, this);
+    }
+
+    public int NumChannels() {
+        return snowboyJNI.SnowboyVad_NumChannels(swigCPtr, this);
+    }
+
+    public int BitsPerSample() {
+        return snowboyJNI.SnowboyVad_BitsPerSample(swigCPtr, this);
+    }
 
 }

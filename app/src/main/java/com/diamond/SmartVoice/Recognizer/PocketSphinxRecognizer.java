@@ -32,7 +32,7 @@ public class PocketSphinxRecognizer extends AbstractRecognizer {
             SpeechRecognizerSetup setup = defaultSetup();
             setup.setAcousticModel(new File(Utils.assetDir, "dict"));
             setup.setDictionary(dict);
-            setup.setKeywordThreshold(Float.valueOf("1e-" + (100-Integer.parseInt(context.pref.getString("PocketSphinxSensitivity", "95"))) + "f"));
+            setup.setKeywordThreshold(Float.valueOf("1e-" + (100 - Integer.parseInt(context.pref.getString("PocketSphinxSensitivity", "95"))) + "f"));
             //setup.setBoolean("-remove_noise", false);
             recognizer = setup.getRecognizer();
             recognizer.addListener(new PocketSphinxRecognitionListener());

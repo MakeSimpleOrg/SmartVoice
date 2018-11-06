@@ -89,39 +89,39 @@ public class Fibaro extends Controller {
                 e.printStackTrace();
                 Rollbar.instance().error(e, jA.toString());
             }
-            if(loaded_devices != null)
-            for (Device d : loaded_devices) {
-                if (d.getProperties().getUserDescription() != null && !d.getProperties().getUserDescription().isEmpty())
-                    d.ai_name = d.getProperties().getUserDescription();
-                else
-                    d.ai_name = d.getName();
-                if (clearNames)
-                    d.ai_name = AI.replaceTrash(d.ai_name);
-                for (Room r : all_rooms)
-                    if (r.getId().equals(d.getRoomID()))
-                        d.setRoomName(r.getName());
-                d.ai_name = d.getRoomName() + " " + d.ai_name;
-                d.ai_name = d.ai_name.toLowerCase(Locale.getDefault());
+            if (loaded_devices != null)
+                for (Device d : loaded_devices) {
+                    if (d.getProperties().getUserDescription() != null && !d.getProperties().getUserDescription().isEmpty())
+                        d.ai_name = d.getProperties().getUserDescription();
+                    else
+                        d.ai_name = d.getName();
+                    if (clearNames)
+                        d.ai_name = AI.replaceTrash(d.ai_name);
+                    for (Room r : all_rooms)
+                        if (r.getId().equals(d.getRoomID()))
+                            d.setRoomName(r.getName());
+                    d.ai_name = d.getRoomName() + " " + d.ai_name;
+                    d.ai_name = d.ai_name.toLowerCase(Locale.getDefault());
 
-                switch (d.getType()) {
-                    case "com.fibaro.FGMS001":
-                    case "com.fibaro.motionSensor":
-                    case "com.fibaro.multilevelSensor":
-                    case "com.fibaro.doorSensor":
-                    case "com.fibaro.windowSensor":
-                    case "com.fibaro.FGFS101":
-                    case "com.fibaro.floodSensor":
-                    case "com.fibaro.FGSS001":
-                        break;
-                    case "com.fibaro.FGD212":
-                    case "com.fibaro.multilevelSwitch":
-                        d.addCapability(Capability.onoff, d.getValue().equals("false") || d.getValue().equals("0") ? "0" : "1");
-                        d.addCapability(Capability.dim, d.getValue());
-                        break;
-                    case "com.fibaro.FGRGBW441M":
-                        d.addCapability(Capability.onoff, d.getValue().equals("false") || d.getValue().equals("0") ? "0" : "1");
-                        d.addCapability(Capability.dim, d.getValue());
-                        d.addCapability(Capability.light_rgbw, d.getProperties().getColor());
+                    switch (d.getType()) {
+                        case "com.fibaro.FGMS001":
+                        case "com.fibaro.motionSensor":
+                        case "com.fibaro.multilevelSensor":
+                        case "com.fibaro.doorSensor":
+                        case "com.fibaro.windowSensor":
+                        case "com.fibaro.FGFS101":
+                        case "com.fibaro.floodSensor":
+                        case "com.fibaro.FGSS001":
+                            break;
+                        case "com.fibaro.FGD212":
+                        case "com.fibaro.multilevelSwitch":
+                            d.addCapability(Capability.onoff, d.getValue().equals("false") || d.getValue().equals("0") ? "0" : "1");
+                            d.addCapability(Capability.dim, d.getValue());
+                            break;
+                        case "com.fibaro.FGRGBW441M":
+                            d.addCapability(Capability.onoff, d.getValue().equals("false") || d.getValue().equals("0") ? "0" : "1");
+                            d.addCapability(Capability.dim, d.getValue());
+                            d.addCapability(Capability.light_rgbw, d.getProperties().getColor());
 
                         /*
                         String[] scolor = d.getProperties().getColor().split(",");
@@ -152,45 +152,45 @@ public class Fibaro extends Controller {
                         d.addCapability(Capability.light_hue, String.valueOf(hue));
                         d.addCapability(Capability.light_saturation, String.valueOf(saturation));
                         */
-                        break;
-                    case "com.fibaro.temperatureSensor":
-                        d.addCapability(Capability.measure_temperature, "" + (int) Double.parseDouble(d.getValue()));
-                        break;
-                    case "com.fibaro.humiditySensor":
-                        d.addCapability(Capability.measure_humidity, "" + (int) Double.parseDouble(d.getValue()));
-                        break;
-                    case "com.fibaro.lightSensor":
-                        d.addCapability(Capability.measure_light, "" + (int) Double.parseDouble(d.getValue()));
-                        break;
-                    case "com.fibaro.doorLock":
-                    case "com.fibaro.gerda":
-                        d.addCapability(Capability.openclose, d.getValue().equals("false") || d.getValue().equals("0") ? "close" : "open");
-                        break;
+                            break;
+                        case "com.fibaro.temperatureSensor":
+                            d.addCapability(Capability.measure_temperature, "" + (int) Double.parseDouble(d.getValue()));
+                            break;
+                        case "com.fibaro.humiditySensor":
+                            d.addCapability(Capability.measure_humidity, "" + (int) Double.parseDouble(d.getValue()));
+                            break;
+                        case "com.fibaro.lightSensor":
+                            d.addCapability(Capability.measure_light, "" + (int) Double.parseDouble(d.getValue()));
+                            break;
+                        case "com.fibaro.doorLock":
+                        case "com.fibaro.gerda":
+                            d.addCapability(Capability.openclose, d.getValue().equals("false") || d.getValue().equals("0") ? "close" : "open");
+                            break;
 
-                    case "com.fibaro.colorController":
-                    case "com.fibaro.FGRM222":
-                    case "com.fibaro.FGR221":
-                    case "com.fibaro.binarySwitch":
-                    case "com.fibaro.developer.bxs.virtualBinarySwitch":
-                    case "com.fibaro.FGWP101":
-                    case "com.fibaro.FGWP102":
-                    case "virtual_device":
-                        d.addCapability(Capability.onoff, d.getValue().equals("false") || d.getValue().equals("0") ? "0" : "1");
-                        break;
-                    case "com.fibaro.rollerShutter":
-                        d.addCapability(Capability.windowcoverings_state, d.getValue().equals("false") || d.getValue().equals("0") ? "up" : "down");
-                        break;
-                }
+                        case "com.fibaro.colorController":
+                        case "com.fibaro.FGRM222":
+                        case "com.fibaro.FGR221":
+                        case "com.fibaro.binarySwitch":
+                        case "com.fibaro.developer.bxs.virtualBinarySwitch":
+                        case "com.fibaro.FGWP101":
+                        case "com.fibaro.FGWP102":
+                        case "virtual_device":
+                            d.addCapability(Capability.onoff, d.getValue().equals("false") || d.getValue().equals("0") ? "0" : "1");
+                            break;
+                        case "com.fibaro.rollerShutter":
+                            d.addCapability(Capability.windowcoverings_state, d.getValue().equals("false") || d.getValue().equals("0") ? "up" : "down");
+                            break;
+                    }
 
-                if (d.getProperties() != null && !d.getCapabilities().isEmpty()) {
-                    if (d.getProperties().getBatteryLevel() != null)
-                        d.addCapability(Capability.measure_battery, d.getProperties().getBatteryLevel());
-                    if (d.getProperties().getEnergy() != null)
-                        d.addCapability(Capability.meter_power, d.getProperties().getEnergy());
-                    if (d.getProperties().getPower() != null)
-                        d.addCapability(Capability.measure_power, d.getProperties().getPower());
+                    if (d.getProperties() != null && !d.getCapabilities().isEmpty()) {
+                        if (d.getProperties().getBatteryLevel() != null)
+                            d.addCapability(Capability.measure_battery, d.getProperties().getBatteryLevel());
+                        if (d.getProperties().getEnergy() != null)
+                            d.addCapability(Capability.meter_power, d.getProperties().getEnergy());
+                        if (d.getProperties().getPower() != null)
+                            d.addCapability(Capability.measure_power, d.getProperties().getPower());
+                    }
                 }
-            }
 
             JSONArray jO = getJson("/api/scenes?enabled=true&visible=true", null, JSONArray.class);
             try {
@@ -199,19 +199,19 @@ public class Fibaro extends Controller {
                 e.printStackTrace();
                 Rollbar.instance().error(e, jO.toString());
             }
-            if(loaded_scenes != null)
-            for (Scene s : loaded_scenes)
-                if (s.isVisible()) {
-                    if (s.getLiliStartCommand() != null && !s.getLiliStartCommand().isEmpty())
-                        s.ai_name = s.getLiliStartCommand().toLowerCase(Locale.getDefault()).trim();
-                    else
-                        s.ai_name = s.getName();
-                    if (clearNames)
-                        s.ai_name = AI.replaceTrash(s.ai_name);
-                    for (Room r : all_rooms)
-                        if (r.getId().equals(s.getRoomID()))
-                            s.setRoomName(r.getName());
-                }
+            if (loaded_scenes != null)
+                for (Scene s : loaded_scenes)
+                    if (s.isVisible()) {
+                        if (s.getLiliStartCommand() != null && !s.getLiliStartCommand().isEmpty())
+                            s.ai_name = s.getLiliStartCommand().toLowerCase(Locale.getDefault()).trim();
+                        else
+                            s.ai_name = s.getName();
+                        if (clearNames)
+                            s.ai_name = AI.replaceTrash(s.ai_name);
+                        for (Room r : all_rooms)
+                            if (r.getId().equals(s.getRoomID()))
+                                s.setRoomName(r.getName());
+                    }
         } catch (Exception e) {
             e.printStackTrace();
             Rollbar.instance().error(e);

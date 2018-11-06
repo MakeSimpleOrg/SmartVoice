@@ -22,7 +22,7 @@ public class SnowboyRecognizer extends AbstractRecognizer {
         this.mContext = context;
         String model = context.pref.getString("SnowboyKeyPhrase", "Alexa").toLowerCase();
         String SnowboySensitivity = context.pref.getString("SnowboySensitivity", "60");
-        if(SnowboySensitivity.isEmpty())
+        if (SnowboySensitivity.isEmpty())
             SnowboySensitivity = "60";
         recordingThread = new RecordingThread(new ResultListener(), model + ".umdl", "" + (Integer.parseInt(SnowboySensitivity) * 1f / 100f));
     }

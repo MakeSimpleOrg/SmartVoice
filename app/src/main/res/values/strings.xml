@@ -4,9 +4,13 @@
     <string name="app_name">Smart Voice</string>
     <string name="options">Options</string>
     <string name="defaultKeyPhrase">smart home</string>
+    <string name="defaultGoogleKeyPhrase">Alice</string>
+    <string name="defaultYandexKeyPhrase">Alice</string>
     <string name="empty" />
     <string name="title_activity_get_access_token">GetAccessTokenActivity</string>
-    <string name="login">Login</string>
+    <string name="ServerAddress">Server Address</string>
+    <string name="Login">Login</string>
+    <string name="Password">Password</string>
     <string name="controler_not_found">controller not found! IP:</string>
     <string name="found">Found</string>
     <string name="found_rooms_and">rooms and</string>
@@ -26,23 +30,16 @@
     <string name="open">Open</string>
     <string name="percent">percent</string>
     <string name="scene_launched">Scene launched</string>
-    <string name="voice">Voice Settings</string>
-    <string name="HomeyServerAddress">Server Address</string>
-    <string name="FibaroServerAddress">Server Address</string>
-    <string name="FibaroLogin">Login</string>
-    <string name="FibaroPassword">Password</string>
-    <string name="VeraServerAddress">Server Address</string>
-    <string name="ZipatoServerAddress">Server Address</string>
-    <string name="ZipatoLogin">Login</string>
-    <string name="ZipatoPassword">Password</string>
+    <string name="VoiceSettings">Voice Settings</string>
     <string name="VoiceActivation">Voice Activation</string>
     <string name="VoiceRecognition">Voice Recognition</string>
-    <string name="SnowboyKeyPhrase">Key Phrase</string>
-    <string name="PocketSphinxKeyPhrase">Key Phrase</string>
-    <string name="SnowboySensitivity">Sensitivity (1–100)</string>
-    <string name="PocketSphinxSensitivity">Sensitivity (1–100)</string>
+    <string name="KeyPhrase">Key Phrase</string>
+    <string name="Sensitivity">Sensitivity (1–100)</string>
     <string name="OfflineRecognition">Offline Recognition</string>
-    <string name="VoiceResponses">Voice Responses</string>
+    <string name="RecognitionLanguage">Recognition language</string>
+    <string name="SpeechLanguage">Speech language</string>
+    <string name="Voice">Voice</string>
+    <string name="Emotion">Emotion</string>
     <string name="DeviceEnabled">Device enabled</string>
     <string name="SceneEnabled">Scene enabled</string>
     <string name="VoiceCommand">Voice command</string>
@@ -54,14 +51,30 @@
     <string name="IncorrectUrl">Incorrect Url</string>
     <string name="Polling">Polling interval</string>
     <string name="Recognized">Recognized</string>
+    <string name="Vocalizer">Speech engine</string>
+
+    <string-array name="VocalizerEntries">
+        <item>Disabled</item>
+        <item>Google</item>
+        <item>Yandex</item>
+    </string-array>
+    <string-array name="VocalizerValues">
+        <item>None</item>
+        <item>Google</item>
+        <item>Yandex</item>
+    </string-array>
 
     <string-array name="VoiceActivationEntries">
-        <item>None</item>
+        <item>Disabled</item>
+        <item>Yandex</item>
+        <item>Google (volume muted)</item>
         <item>Snowboy</item>
         <item>PocketSphinx</item>
     </string-array>
     <string-array name="VoiceActivationValues">
         <item>None</item>
+        <item>Yandex</item>
+        <item>Google</item>
         <item>Snowboy</item>
         <item>PocketSphinx</item>
     </string-array>
@@ -80,6 +93,50 @@
     </string-array>
     <string-array name="KeyPhraseValues">
         <item>Alexa</item>
+    </string-array>
+
+    <string-array name="YandexKeyPhraseEntries">
+        <item>Disabled</item>
+    </string-array>
+    <string-array name="YandexKeyPhraseValues">
+        <item>Model1</item>
+    </string-array>
+
+    <string-array name="YandexLangEntries">
+        <item>English</item>
+        <item>Russian</item>
+    </string-array>
+    <string-array name="YandexLangValues">
+        <item>English</item>
+        <item>Russian</item>
+    </string-array>
+
+    <string-array name="YandexVoiceEntries">
+        <item>Alyss</item>
+        <item>Ermil</item>
+        <item>Jane</item>
+        <item>Oksana</item>
+        <item>Omazh</item>
+        <item>Zahar</item>
+    </string-array>
+    <string-array name="YandexVoiceValues">
+        <item>Alyss</item>
+        <item>Ermil</item>
+        <item>Jane</item>
+        <item>Oksana</item>
+        <item>Omazh</item>
+        <item>Zahar</item>
+    </string-array>
+
+    <string-array name="YandexEmotionEntries">
+        <item>Good</item>
+        <item>Evil</item>
+        <item>Neutral</item>
+    </string-array>
+    <string-array name="YandexEmotionValues">
+        <item>Good</item>
+        <item>Evil</item>
+        <item>Neutral</item>
     </string-array>
 
 </resources>

@@ -4,9 +4,13 @@
     <string name="app_name">Smart Voice</string>
     <string name="options">Настройки</string>
     <string name="defaultKeyPhrase">умный дом</string>
+    <string name="defaultGoogleKeyPhrase">Алиса</string>
+    <string name="defaultYandexKeyPhrase">Алиса</string>
     <string name="empty" />
     <string name="title_activity_get_access_token">GetAccessTokenActivity</string>
-    <string name="login">Login</string>
+    <string name="ServerAddress">Адрес сервера</string>
+    <string name="Login">Логин</string>
+    <string name="Password">Пароль</string>
     <string name="controler_not_found">контроллер не найден! IP:</string>
     <string name="found">Найдено</string>
     <string name="found_rooms_and">комнат и</string>
@@ -26,23 +30,16 @@
     <string name="open">Открываю</string>
     <string name="percent">процентов</string>
     <string name="scene_launched">Выполняю</string>
-    <string name="voice">Голосовые настройки</string>
-    <string name="HomeyServerAddress">Адрес сервера</string>
-    <string name="FibaroServerAddress">Адрес сервера</string>
-    <string name="FibaroLogin">Логин</string>
-    <string name="FibaroPassword">Пароль</string>
-    <string name="VeraServerAddress">Адрес сервера</string>
-    <string name="ZipatoServerAddress">Адрес сервера</string>
-    <string name="ZipatoLogin">Логин</string>
-    <string name="ZipatoPassword">Пароль</string>
+    <string name="VoiceSettings">Голосовые настройки</string>
     <string name="VoiceActivation">Активация голосом</string>
     <string name="VoiceRecognition">Распознавание речи</string>
-    <string name="SnowboyKeyPhrase">Активационная фраза</string>
-    <string name="PocketSphinxKeyPhrase">Активационная фраза</string>
-    <string name="SnowboySensitivity">Чувствительность (1–100)</string>
-    <string name="PocketSphinxSensitivity">Чувствительность (1–100)</string>
+    <string name="KeyPhrase">Активационная фраза</string>
+    <string name="Sensitivity">Чувствительность (1–100)</string>
     <string name="OfflineRecognition">Распознавание оффлайн</string>
-    <string name="VoiceResponses">Озвучивание ответов</string>
+    <string name="RecognitionLanguage">Язык распознавания</string>
+    <string name="SpeechLanguage">Язык озвучивания</string>
+    <string name="Voice">Голос</string>
+    <string name="Emotion">Эмоция</string>
     <string name="DeviceEnabled">Устройство активно</string>
     <string name="SceneEnabled">Сцена активна</string>
     <string name="VoiceCommand">Голосовая команда</string>
@@ -54,14 +51,30 @@
     <string name="IncorrectUrl">Неправильный адрес</string>
     <string name="Polling">Интервал опроса</string>
     <string name="Recognized">Распознано</string>
+    <string name="Vocalizer">Озвучивание</string>
+
+    <string-array name="VocalizerEntries">
+        <item>Отключено</item>
+        <item>Google</item>
+        <item>Yandex</item>
+    </string-array>
+    <string-array name="VocalizerValues">
+        <item>None</item>
+        <item>Google</item>
+        <item>Yandex</item>
+    </string-array>
 
     <string-array name="VoiceActivationEntries">
-        <item>None</item>
+        <item>Отключено</item>
+        <item>Yandex</item>
+        <item>Google (приглушает звук)</item>
         <item>Snowboy</item>
         <item>PocketSphinx</item>
     </string-array>
     <string-array name="VoiceActivationValues">
         <item>None</item>
+        <item>Yandex</item>
+        <item>Google</item>
         <item>Snowboy</item>
         <item>PocketSphinx</item>
     </string-array>
@@ -80,6 +93,78 @@
     </string-array>
     <string-array name="KeyPhraseValues">
         <item>Alexa</item>
+    </string-array>
+
+    <string-array name="YandexKeyPhraseEntries">
+        <item>Поехали</item>
+    </string-array>
+    <string-array name="YandexKeyPhraseValues">
+        <item>Model1</item>
+    </string-array>
+
+    <string-array name="YandexLangEntries">
+        <item>English</item>
+        <item>Russian</item>
+    </string-array>
+    <string-array name="YandexLangValues">
+        <item>English</item>
+        <item>Russian</item>
+    </string-array>
+
+    <string-array name="YandexVoiceEntries">
+        <item>Alyss</item>
+        <item>Ermil</item>
+        <item>Jane</item>
+        <item>Oksana</item>
+        <item>Omazh</item>
+        <item>Zahar</item>
+    </string-array>
+    <string-array name="YandexVoiceValues">
+        <item>Alyss</item>
+        <item>Ermil</item>
+        <item>Jane</item>
+        <item>Oksana</item>
+        <item>Omazh</item>
+        <item>Zahar</item>
+    </string-array>
+
+    <string-array name="YandexEmotionEntries">
+        <item>Добрый</item>
+        <item>Злой</item>
+        <item>Нейтральный</item>
+    </string-array>
+    <string-array name="YandexEmotionValues">
+        <item>Good</item>
+        <item>Evil</item>
+        <item>Neutral</item>
+    </string-array>
+
+    <string name="ds_listening">Listening…</string>
+    <string name="ds_internet_not_enabled">Internet is not enabled</string>
+    <string name="ds_mic_permissions_required">Please provide microphone permissions</string>
+    <string name="ds_unknown_error">Unknown error</string>
+    <string name="ds_progress_layout_error">Unable to add speech progress view</string>
+    <string name="ds_confirm">Confirm</string>
+    <string name="ds_retry">Retry</string>
+    <string-array name="droid_speech_errors">
+        <!--ERROR_NETWORK_TIMEOUT = 1-->
+        <!--ERROR_NETWORK = 2-->
+        <!--ERROR_AUDIO = 3-->
+        <!--ERROR_SERVER = 4-->
+        <!--ERROR_CLIENT = 5-->
+        <!--ERROR_SPEECH_TIMEOUT = 6-->
+        <!--ERROR_NO_MATCH = 7-->
+        <!--ERROR_RECOGNIZER_BUSY = 8-->
+        <!--ERROR_INSUFFICIENT_PERMISSIONS = 9-->
+        <item>Network Timeout</item>
+        <item>Network Error</item>
+        <item>Audio Error</item>
+        <item>Server Error</item>
+        <item>Client Error</item>
+        <item>Speech Timeout</item>
+        <item>No match</item>
+        <item>Speech Recognizer busy</item>
+        <item>Insufficient permissions</item>
     </string-array>
 
 </resources>

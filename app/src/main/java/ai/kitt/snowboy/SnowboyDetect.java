@@ -9,110 +9,110 @@
 package ai.kitt.snowboy;
 
 public class SnowboyDetect {
-  private transient long swigCPtr;
-  protected transient boolean swigCMemOwn;
+    private transient long swigCPtr;
+    protected transient boolean swigCMemOwn;
 
-  protected SnowboyDetect(long cPtr, boolean cMemoryOwn) {
-    swigCMemOwn = cMemoryOwn;
-    swigCPtr = cPtr;
-  }
-
-  protected static long getCPtr(SnowboyDetect obj) {
-    return (obj == null) ? 0 : obj.swigCPtr;
-  }
-
-  protected void finalize() {
-    delete();
-  }
-
-  public synchronized void delete() {
-    if (swigCPtr != 0) {
-      if (swigCMemOwn) {
-        swigCMemOwn = false;
-        snowboyJNI.delete_SnowboyDetect(swigCPtr);
-      }
-      swigCPtr = 0;
+    protected SnowboyDetect(long cPtr, boolean cMemoryOwn) {
+        swigCMemOwn = cMemoryOwn;
+        swigCPtr = cPtr;
     }
-  }
 
-  public SnowboyDetect(String resource_filename, String model_str) {
-    this(snowboyJNI.new_SnowboyDetect(resource_filename, model_str), true);
-  }
+    protected static long getCPtr(SnowboyDetect obj) {
+        return (obj == null) ? 0 : obj.swigCPtr;
+    }
 
-  public boolean Reset() {
-    return snowboyJNI.SnowboyDetect_Reset(swigCPtr, this);
-  }
+    protected void finalize() {
+        delete();
+    }
 
-  public int RunDetection(String data, boolean is_end) {
-    return snowboyJNI.SnowboyDetect_RunDetection__SWIG_0(swigCPtr, this, data, is_end);
-  }
+    public synchronized void delete() {
+        if (swigCPtr != 0) {
+            if (swigCMemOwn) {
+                swigCMemOwn = false;
+                snowboyJNI.delete_SnowboyDetect(swigCPtr);
+            }
+            swigCPtr = 0;
+        }
+    }
 
-  public int RunDetection(String data) {
-    return snowboyJNI.SnowboyDetect_RunDetection__SWIG_1(swigCPtr, this, data);
-  }
+    public SnowboyDetect(String resource_filename, String model_str) {
+        this(snowboyJNI.new_SnowboyDetect(resource_filename, model_str), true);
+    }
 
-  public int RunDetection(float[] data, int array_length, boolean is_end) {
-    return snowboyJNI.SnowboyDetect_RunDetection__SWIG_2(swigCPtr, this, data, array_length, is_end);
-  }
+    public boolean Reset() {
+        return snowboyJNI.SnowboyDetect_Reset(swigCPtr, this);
+    }
 
-  public int RunDetection(float[] data, int array_length) {
-    return snowboyJNI.SnowboyDetect_RunDetection__SWIG_3(swigCPtr, this, data, array_length);
-  }
+    public int RunDetection(String data, boolean is_end) {
+        return snowboyJNI.SnowboyDetect_RunDetection__SWIG_0(swigCPtr, this, data, is_end);
+    }
 
-  public int RunDetection(short[] data, int array_length, boolean is_end) {
-    return snowboyJNI.SnowboyDetect_RunDetection__SWIG_4(swigCPtr, this, data, array_length, is_end);
-  }
+    public int RunDetection(String data) {
+        return snowboyJNI.SnowboyDetect_RunDetection__SWIG_1(swigCPtr, this, data);
+    }
 
-  public int RunDetection(short[] data, int array_length) {
-    return snowboyJNI.SnowboyDetect_RunDetection__SWIG_5(swigCPtr, this, data, array_length);
-  }
+    public int RunDetection(float[] data, int array_length, boolean is_end) {
+        return snowboyJNI.SnowboyDetect_RunDetection__SWIG_2(swigCPtr, this, data, array_length, is_end);
+    }
 
-  public int RunDetection(int[] data, int array_length, boolean is_end) {
-    return snowboyJNI.SnowboyDetect_RunDetection__SWIG_6(swigCPtr, this, data, array_length, is_end);
-  }
+    public int RunDetection(float[] data, int array_length) {
+        return snowboyJNI.SnowboyDetect_RunDetection__SWIG_3(swigCPtr, this, data, array_length);
+    }
 
-  public int RunDetection(int[] data, int array_length) {
-    return snowboyJNI.SnowboyDetect_RunDetection__SWIG_7(swigCPtr, this, data, array_length);
-  }
+    public int RunDetection(short[] data, int array_length, boolean is_end) {
+        return snowboyJNI.SnowboyDetect_RunDetection__SWIG_4(swigCPtr, this, data, array_length, is_end);
+    }
 
-  public void SetSensitivity(String sensitivity_str) {
-    snowboyJNI.SnowboyDetect_SetSensitivity(swigCPtr, this, sensitivity_str);
-  }
+    public int RunDetection(short[] data, int array_length) {
+        return snowboyJNI.SnowboyDetect_RunDetection__SWIG_5(swigCPtr, this, data, array_length);
+    }
 
-  public void SetHighSensitivity(String high_sensitivity_str) {
-    snowboyJNI.SnowboyDetect_SetHighSensitivity(swigCPtr, this, high_sensitivity_str);
-  }
+    public int RunDetection(int[] data, int array_length, boolean is_end) {
+        return snowboyJNI.SnowboyDetect_RunDetection__SWIG_6(swigCPtr, this, data, array_length, is_end);
+    }
 
-  public String GetSensitivity() {
-    return snowboyJNI.SnowboyDetect_GetSensitivity(swigCPtr, this);
-  }
+    public int RunDetection(int[] data, int array_length) {
+        return snowboyJNI.SnowboyDetect_RunDetection__SWIG_7(swigCPtr, this, data, array_length);
+    }
 
-  public void SetAudioGain(float audio_gain) {
-    snowboyJNI.SnowboyDetect_SetAudioGain(swigCPtr, this, audio_gain);
-  }
+    public void SetSensitivity(String sensitivity_str) {
+        snowboyJNI.SnowboyDetect_SetSensitivity(swigCPtr, this, sensitivity_str);
+    }
 
-  public void UpdateModel() {
-    snowboyJNI.SnowboyDetect_UpdateModel(swigCPtr, this);
-  }
+    public void SetHighSensitivity(String high_sensitivity_str) {
+        snowboyJNI.SnowboyDetect_SetHighSensitivity(swigCPtr, this, high_sensitivity_str);
+    }
 
-  public int NumHotwords() {
-    return snowboyJNI.SnowboyDetect_NumHotwords(swigCPtr, this);
-  }
+    public String GetSensitivity() {
+        return snowboyJNI.SnowboyDetect_GetSensitivity(swigCPtr, this);
+    }
 
-  public void ApplyFrontend(boolean apply_frontend) {
-    snowboyJNI.SnowboyDetect_ApplyFrontend(swigCPtr, this, apply_frontend);
-  }
+    public void SetAudioGain(float audio_gain) {
+        snowboyJNI.SnowboyDetect_SetAudioGain(swigCPtr, this, audio_gain);
+    }
 
-  public int SampleRate() {
-    return snowboyJNI.SnowboyDetect_SampleRate(swigCPtr, this);
-  }
+    public void UpdateModel() {
+        snowboyJNI.SnowboyDetect_UpdateModel(swigCPtr, this);
+    }
 
-  public int NumChannels() {
-    return snowboyJNI.SnowboyDetect_NumChannels(swigCPtr, this);
-  }
+    public int NumHotwords() {
+        return snowboyJNI.SnowboyDetect_NumHotwords(swigCPtr, this);
+    }
 
-  public int BitsPerSample() {
-    return snowboyJNI.SnowboyDetect_BitsPerSample(swigCPtr, this);
-  }
+    public void ApplyFrontend(boolean apply_frontend) {
+        snowboyJNI.SnowboyDetect_ApplyFrontend(swigCPtr, this, apply_frontend);
+    }
+
+    public int SampleRate() {
+        return snowboyJNI.SnowboyDetect_SampleRate(swigCPtr, this);
+    }
+
+    public int NumChannels() {
+        return snowboyJNI.SnowboyDetect_NumChannels(swigCPtr, this);
+    }
+
+    public int BitsPerSample() {
+        return snowboyJNI.SnowboyDetect_BitsPerSample(swigCPtr, this);
+    }
 
 }

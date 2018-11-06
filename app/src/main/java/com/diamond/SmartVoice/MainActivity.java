@@ -6,15 +6,10 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.media.AudioManager;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
 import android.preference.PreferenceManager;
-import android.speech.tts.TextToSpeech;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -28,16 +23,21 @@ import com.diamond.SmartVoice.Controllers.Homey.Homey;
 import com.diamond.SmartVoice.Controllers.Vera.Vera;
 import com.diamond.SmartVoice.Controllers.Zipato.Zipato;
 import com.diamond.SmartVoice.Recognizer.AbstractRecognizer;
+import com.diamond.SmartVoice.Recognizer.GoogleKeyRecognizer;
 import com.diamond.SmartVoice.Recognizer.GoogleRecognizer;
 import com.diamond.SmartVoice.Recognizer.PocketSphinxRecognizer;
 import com.diamond.SmartVoice.Recognizer.SnowboyRecognizer;
+import com.diamond.SmartVoice.Recognizer.YandexKeyRecognizer;
 import com.diamond.SmartVoice.Recognizer.YandexRecognizer;
+import com.diamond.SmartVoice.Vocalizer.AbstractVocalizer;
+import com.diamond.SmartVoice.Vocalizer.GoogleVocalizer;
+import com.diamond.SmartVoice.Vocalizer.YandexVocalizer;
 import com.rollbar.android.Rollbar;
 
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Locale;
 import java.util.UUID;
+
+import ru.yandex.speechkit.SpeechKit;
 
 /**
  * @author Dmitriy Ponomarev
@@ -45,10 +45,12 @@ import java.util.UUID;
 public class MainActivity extends Activity {
     private static final String TAG = MainActivity.class.getSimpleName();
 
+    private static final String YANDEX_API_KEY = "6d5c4e48-3c78-434e-96a2-2ecea92d8120";
+
     private AbstractRecognizer keyPhraseRecognizer;
     public AbstractRecognizer recognizer;
 
-    private TextToSpeech textToSpeech;
+    private AbstractVocalizer vocalizer;
     private View MicView;
     public SharedPreferences pref;
     public Homey HomeyController;
@@ -105,6 +107,20 @@ public class MainActivity extends Activity {
         } catch (Exception e) {
             e.printStackTrace();
             Rollbar.instance().error(e);
+        }
+
+        String userKey = pref.getString("yandexUserKey", "");
+        String device_uuid = pref.getString("device_uuid", "");
+        if (device_uuid.isEmpty()) {
+            device_uuid = UUID.randomUUID().toString();
+            pref.edit().putString("device_uuid", device_uuid).apply();
+        }
+
+        try {
+            SpeechKit.getInstance().init(this, userKey.isEmpty() ? YANDEX_API_KEY : userKey);
+            SpeechKit.getInstance().setUuid(device_uuid);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         progressBar = findViewById(R.id.progressBar);
@@ -179,14 +195,7 @@ public class MainActivity extends Activity {
 
         progressBar.setVisibility(View.VISIBLE);
 
-        if (!pref.getString("keyRecognizerType", "None").equalsIgnoreCase("None")) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    setupKeyphraseRecognizer();
-                }
-            }).start();
-        }
+        setupKeyphraseRecognizer();
 
         new Thread(new Runnable() {
             @Override
@@ -194,23 +203,13 @@ public class MainActivity extends Activity {
                 MainActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-
-                        if (pref.getString("voiceRecognizerType", "Google").equalsIgnoreCase("Google"))
-                            setupGoogleRecognizer();
-                        else
-                            setupYandexRecognizer();
+                        setupRecognizer();
                     }
                 });
             }
         }).start();
 
-        if (pref.getBoolean("tts_enabled", false))
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    setupTTS();
-                }
-            }).start();
+        setupVocalizer();
 
         new Thread(new Runnable() {
             @Override
@@ -235,8 +234,13 @@ public class MainActivity extends Activity {
 
                 Log.w(TAG, "Start keyPhraseRecognizer");
 
-                if (keyPhraseRecognizer != null)
-                    keyPhraseRecognizer.startListening();
+                MainActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (keyPhraseRecognizer != null)
+                            keyPhraseRecognizer.startListening();
+                    }
+                });
 
                 /*
                 if (pref.getBoolean("tts_enabled", false))
@@ -341,25 +345,9 @@ public class MainActivity extends Activity {
         return ttsLoading || homeyLoading || fibaroLoading || veraLoading || zipatoLoading || recognizerLoading || keyPhraseRecognizerLoading;
     }
 
-    public void buttonOn() {
-        buttonPressed = true;
-        MicView.setBackgroundResource(R.drawable.background_big_mic_green);
-    }
-
-    public void buttonOff() {
-        try {
-            Thread.sleep(200);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        buttonPressed = false;
-        MicView.setBackgroundResource(R.drawable.background_big_mic);
-        if (keyPhraseRecognizer != null)
-            keyPhraseRecognizer.startListening();
-    }
-
     public void setupKeyphraseRecognizer() {
         keyPhraseRecognizerLoading = true;
+        progressBar.setVisibility(View.VISIBLE);
         if (keyPhraseRecognizer != null) {
             keyPhraseRecognizer.destroy();
             keyPhraseRecognizer = null;
@@ -369,66 +357,67 @@ public class MainActivity extends Activity {
                 keyPhraseRecognizer = new SnowboyRecognizer(this);
             else if (pref.getString("keyRecognizerType", "None").equalsIgnoreCase("PocketSphinx"))
                 keyPhraseRecognizer = new PocketSphinxRecognizer(this);
+            else if (pref.getString("keyRecognizerType", "None").equalsIgnoreCase("Yandex"))
+                keyPhraseRecognizer = new YandexKeyRecognizer(this);
+            else if (pref.getString("keyRecognizerType", "None").equalsIgnoreCase("Google"))
+                keyPhraseRecognizer = new GoogleKeyRecognizer(this);
         } catch (Exception e) {
             e.printStackTrace();
             Rollbar.instance().error(e);
         }
         keyPhraseRecognizerLoading = false;
+        if (!isLoading())
+            progressBar.setVisibility(View.INVISIBLE);
     }
 
-    public void setupGoogleRecognizer() {
+    public void setupRecognizer() {
         recognizerLoading = true;
+        progressBar.setVisibility(View.VISIBLE);
         if (recognizer != null) {
-            recognizer.stopListening();
+            recognizer.destroy();
             recognizer = null;
         }
         try {
-            recognizer = new GoogleRecognizer(this);
+            if (pref.getString("voiceRecognizerType", "Google").equalsIgnoreCase("Google"))
+                recognizer = new GoogleRecognizer(this);
+            else
+                recognizer = new YandexRecognizer(this);
         } catch (Exception e) {
             e.printStackTrace();
             Rollbar.instance().error(e);
         }
         recognizerLoading = false;
+        if (!isLoading())
+            progressBar.setVisibility(View.INVISIBLE);
     }
 
-    public void setupYandexRecognizer() {
-        recognizerLoading = true;
-        if (recognizer != null) {
-            recognizer.stopListening();
-            recognizer = null;
-        }
-        try {
-            recognizer = new YandexRecognizer(this);
-        } catch (Exception e) {
-            e.printStackTrace();
-            Rollbar.instance().error(e);
-        }
-        recognizerLoading = false;
-    }
-
-    public void setupTTS() {
+    public void setupVocalizer() {
         ttsLoading = true;
         progressBar.setVisibility(View.VISIBLE);
+        if (vocalizer != null) {
+            vocalizer.destroy();
+            vocalizer = null;
+        }
         try {
-            textToSpeech = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
-                @Override
-                public void onInit(int status) {
-                    if (status == TextToSpeech.ERROR) {
-                        ttsLoading = false;
-                        return;
-                    }
-                    if (textToSpeech.isLanguageAvailable(Locale.getDefault()) == TextToSpeech.LANG_AVAILABLE)
-                        textToSpeech.setLanguage(Locale.getDefault());
-                    ttsLoading = false;
-                    if (!isLoading())
-                        progressBar.setVisibility(View.INVISIBLE);
-                }
-            });
+            if (pref.getString("vocalizerType", "None").equalsIgnoreCase("Google"))
+                vocalizer = new GoogleVocalizer(this);
+            else if (pref.getString("vocalizerType", "None").equalsIgnoreCase("Yandex"))
+                vocalizer = new YandexVocalizer(this);
+            else
+                onVocalizerLoaded();
         } catch (Exception e) {
             e.printStackTrace();
             Rollbar.instance().error(e);
             ttsLoading = false;
+            if (!isLoading())
+                progressBar.setVisibility(View.INVISIBLE);
         }
+    }
+
+    public void onVocalizerLoaded() {
+        ttsLoading = false;
+        if (!isLoading())
+            progressBar.setVisibility(View.INVISIBLE);
     }
 
     public static void setupHomey(final MainActivity activity) {
@@ -555,28 +544,40 @@ public class MainActivity extends Activity {
         }.execute();
     }
 
-    public long lastKeyPhrase;
+    public void buttonOn() {
+        buttonPressed = true;
+        MicView.setBackgroundResource(R.drawable.background_big_mic_green);
+    }
 
-    public Handler OnKeyPhraseHandler = new Handler(Looper.getMainLooper()) {
-        @Override
-        public void handleMessage(Message message) {
-            lastKeyPhrase = System.currentTimeMillis();
-            if (keyPhraseRecognizer != null) {
-                keyPhraseRecognizer.stopListening();
-                try {
-                    Thread.sleep(200);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+    private Handler keyPhraseRecognizerRestart = new Handler();
+
+    public void buttonOff() {
+        keyPhraseRecognizerRestart.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                buttonPressed = false;
+                MicView.setBackgroundResource(R.drawable.background_big_mic);
+                if (keyPhraseRecognizer != null)
+                    keyPhraseRecognizer.startListening();
             }
-            if (recognizer != null)
-                recognizer.startListening();
-            buttonOn();
-        }
-    };
+        }, keyPhraseRecognizer instanceof GoogleKeyRecognizer ? 3000 : 200);
+    }
+
+    private Handler keyPhraseHandler = new Handler();
 
     public void OnKeyPhrase() {
-        OnKeyPhraseHandler.obtainMessage().sendToTarget();
+        if (keyPhraseRecognizer != null && !(keyPhraseRecognizer instanceof GoogleKeyRecognizer))
+            keyPhraseRecognizer.stopListening();
+        keyPhraseHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (keyPhraseRecognizer instanceof GoogleKeyRecognizer)
+                    ((GoogleKeyRecognizer) keyPhraseRecognizer).muteAudio(false);
+                if (recognizer != null)
+                    recognizer.startListening();
+                buttonOn();
+            }
+        }, keyPhraseRecognizer instanceof GoogleKeyRecognizer ? 500 : 200);
     }
 
     public static void process(final String[] variants, final MainActivity activity) {
@@ -639,24 +640,8 @@ public class MainActivity extends Activity {
             Rollbar.instance().error(e);
         }
         try {
-            if (pref.getBoolean("tts_enabled", false)) {
-                if (textToSpeech == null)
-                    return;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    Bundle params = new Bundle();
-                    params.putInt(TextToSpeech.Engine.KEY_PARAM_STREAM, AudioManager.STREAM_MUSIC);
-                    params.putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME, 1f);
-                    textToSpeech.speak(text, TextToSpeech.QUEUE_ADD, params, UUID.randomUUID().toString());
-                } else {
-                    HashMap<String, String> params = new HashMap<String, String>();
-                    params.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, UUID.randomUUID().toString());
-                    params.put(TextToSpeech.Engine.KEY_PARAM_STREAM, String.valueOf(AudioManager.STREAM_MUSIC));
-                    params.put(TextToSpeech.Engine.KEY_PARAM_VOLUME, "1");
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1)
-                        params.put(TextToSpeech.Engine.KEY_FEATURE_NETWORK_SYNTHESIS, "true");
-                    textToSpeech.speak(text, TextToSpeech.QUEUE_ADD, params);
-                }
-            }
+            if (vocalizer != null)
+                vocalizer.speak(text);
         } catch (Exception e) {
             e.printStackTrace();
             Rollbar.instance().error(e);
@@ -684,7 +669,6 @@ public class MainActivity extends Activity {
             @Override
             public void run() {
                 try {
-                    //Toast.makeText(MainActivity.this, text, Toast.LENGTH_LONG).show();
                     textView.setText(text + "\n" + textView.getText());
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -710,8 +694,8 @@ public class MainActivity extends Activity {
             keyPhraseRecognizer.destroy();
         if (recognizer != null)
             recognizer.destroy();
-        if (textToSpeech != null)
-            textToSpeech.shutdown();
+        if (vocalizer != null)
+            vocalizer.destroy();
         Log.w(TAG, "onDestroy");
         super.onDestroy();
     }

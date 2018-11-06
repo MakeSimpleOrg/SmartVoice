@@ -10,3 +10,13 @@ ding.wav
 dong.wav
 snowboy/alexa.umdl
 snowboy/common.res
+yandex/HCLG.cfst
+yandex/HCLG.fst
+yandex/acoustic_model.nnet
+yandex/ali_train_pdf.counts
+yandex/flags.txt
+yandex/lda.mat
+yandex/transition_model.mdl
+yandex/version.xml
+yandex/word_boundaries.txt
+yandex/words.txt

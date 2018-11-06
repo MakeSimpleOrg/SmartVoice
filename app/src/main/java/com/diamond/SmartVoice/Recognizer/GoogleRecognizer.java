@@ -101,7 +101,7 @@ public class GoogleRecognizer extends AbstractRecognizer implements RecognitionL
         recognizer.stopListening();
         ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
         if (matches != null)
-            MainActivity.process(matches.toArray(new String[matches.size()]), mContext);
+            MainActivity.process(matches.toArray(new String[0]), mContext);
         else {
             //mContext.speak("Повтори!");
             mContext.buttonOff();
