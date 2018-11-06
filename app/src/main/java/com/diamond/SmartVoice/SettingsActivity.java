@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
@@ -272,8 +273,10 @@ public class SettingsActivity extends PreferenceActivity {
     }
 
     private void apply(Preference preference, String value) {
-        PreferenceManager.getDefaultSharedPreferences(this).edit().putString(preference.getKey(), value).apply();
-        System.out.println("Changed: " + preference.getKey() + " to: " + value);
+        if (preference instanceof EditTextPreference || preference instanceof ListPreference) {
+            PreferenceManager.getDefaultSharedPreferences(this).edit().putString(preference.getKey(), value).apply();
+            System.out.println("Changed: " + preference.getKey() + " to: " + value);
+        }
     }
 
     @Override
