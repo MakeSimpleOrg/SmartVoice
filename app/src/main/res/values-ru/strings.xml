@@ -8,10 +8,11 @@
     <string name="defaultYandexKeyPhrase">Алиса</string>
     <string name="empty" />
     <string name="title_activity_get_access_token">GetAccessTokenActivity</string>
-    <string name="ServerAddress">Адрес сервера</string>
+    <string name="ServerLocalAddress">Локальный адрес сервера</string>
+    <string name="ServerRemoteAddress">Удаленный адрес сервера</string>
     <string name="Login">Логин</string>
     <string name="Password">Пароль</string>
-    <string name="controler_not_found">контроллер не найден! IP:</string>
+    <string name="controler_not_found">контроллер не найден!</string>
     <string name="found">Найдено</string>
     <string name="found_rooms_and">комнат и</string>
     <string name="found_rooms">комнат,</string>
@@ -44,7 +45,7 @@
     <string name="SceneEnabled">Сцена активна</string>
     <string name="VoiceCommand">Голосовая команда</string>
     <string name="Alias">Алиасы (через запятую)</string>
-    <string name="OriginalName">Оригинальное имя</string>
+    <string name="DeviceName">Название устройства</string>
     <string name="RoomName">Название комнаты</string>
     <string name="ActivateDevice">Активировать утройство</string>
     <string name="RunScene">Запустить сцену</string>
@@ -52,6 +53,7 @@
     <string name="Polling">Интервал опроса</string>
     <string name="Recognized">Распознано</string>
     <string name="Vocalizer">Озвучивание</string>
+    <string name="HomeSSID">SSID домашнего Wi-Fi</string>
 
     <string-array name="VocalizerEntries">
         <item>Отключено</item>

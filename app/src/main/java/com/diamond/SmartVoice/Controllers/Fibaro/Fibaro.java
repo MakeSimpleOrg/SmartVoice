@@ -1,9 +1,13 @@
 package com.diamond.SmartVoice.Controllers.Fibaro;
 
+import android.content.SharedPreferences;
+import android.util.Log;
+
 import com.diamond.SmartVoice.AI;
 import com.diamond.SmartVoice.Controllers.Capability;
 import com.diamond.SmartVoice.Controllers.Controller;
 import com.diamond.SmartVoice.Controllers.Fibaro.json.Device;
+import com.diamond.SmartVoice.Controllers.Fibaro.json.DeviceProperties;
 import com.diamond.SmartVoice.Controllers.Fibaro.json.Room;
 import com.diamond.SmartVoice.Controllers.Fibaro.json.Scene;
 import com.diamond.SmartVoice.Controllers.UDevice;
@@ -14,8 +18,11 @@ import com.google.gson.Gson;
 import com.rollbar.android.Rollbar;
 
 import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Locale;
 
 /**
@@ -29,11 +36,38 @@ public class Fibaro extends Controller {
     private Scene[] all_scenes;
 
     public Fibaro(MainActivity activity) {
+        name = "Fibaro";
         mainActivity = activity;
-        host = activity.pref.getString("fibaro_server_ip", "");
-        auth = android.util.Base64.encodeToString((activity.pref.getString("fibaro_server_login", "") + ":" + activity.pref.getString("fibaro_server_password", "")).getBytes(), android.util.Base64.DEFAULT);
         clearNames = true; // TODO config
         gson = new Gson();
+        mainActivity.pref.registerOnSharedPreferenceChangeListener(new SharedPreferences.OnSharedPreferenceChangeListener() {
+            @Override
+            public void onSharedPreferenceChanged(SharedPreferences pref, String key) {
+                if (!key.equals("fibaro_enabled") || !pref.getBoolean(key, false))
+                    return;
+                if ((!pref.getString("fibaro_server_ip", "").isEmpty() || !pref.getString("fibaro_server_ip_ext", "").isEmpty()) //
+                        && !pref.getString("fibaro_server_login", "").isEmpty() //
+                        && !pref.getString("fibaro_server_password", "").isEmpty())
+                    loadData();
+            }
+        });
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences pref, String key) {
+        if (!key.equals("fibaro_enabled") || !pref.getBoolean(key, false))
+            return;
+        if (!pref.getString("fibaro_server_ip", "").isEmpty() //
+                && !pref.getString("fibaro_server_login", "").isEmpty() //
+                && !pref.getString("fibaro_server_password", "").isEmpty())
+            loadData();
+    }
+
+    @Override
+    public void loadData() {
+        host = mainActivity.pref.getString("fibaro_server_ip", "");
+        host_ext = mainActivity.pref.getString("fibaro_server_ip_ext", "");
+        auth = android.util.Base64.encodeToString((mainActivity.pref.getString("fibaro_server_login", "") + ":" + mainActivity.pref.getString("fibaro_server_password", "")).getBytes(), android.util.Base64.DEFAULT);
         updateRooms();
         updateData();
     }
@@ -77,7 +111,10 @@ public class Fibaro extends Controller {
                     ArrayList<Device> devices = new ArrayList<>();
                     for (int i = 0; i < jA.length(); i++) {
                         try {
-                            devices.add(gson.fromJson(jA.getJSONObject(i).toString(), Device.class));
+                            Device d = gson.fromJson(jA.getJSONObject(i).toString(), Device.class);
+                            findComplexHVAC(d);
+
+                            devices.add(d);
                         } catch (Exception e) {
                             e.printStackTrace();
                             Rollbar.instance().error(e, jA.getJSONObject(i).toString());
@@ -89,6 +126,7 @@ public class Fibaro extends Controller {
                 e.printStackTrace();
                 Rollbar.instance().error(e, jA.toString());
             }
+
             if (loaded_devices != null)
                 for (Device d : loaded_devices) {
                     if (d.getProperties().getUserDescription() != null && !d.getProperties().getUserDescription().isEmpty())
@@ -102,6 +140,8 @@ public class Fibaro extends Controller {
                             d.setRoomName(r.getName());
                     d.ai_name = d.getRoomName() + " " + d.ai_name;
                     d.ai_name = d.ai_name.toLowerCase(Locale.getDefault());
+
+                    ArrayList<Device> hvac = _complexHVAC.get(String.valueOf(d.getParentId()));
 
                     switch (d.getType()) {
                         case "com.fibaro.FGMS001":
@@ -119,6 +159,7 @@ public class Fibaro extends Controller {
                             d.addCapability(Capability.dim, d.getValue());
                             break;
                         case "com.fibaro.FGRGBW441M":
+                        case "com.fibaro.colorController":
                             d.addCapability(Capability.onoff, d.getValue().equals("false") || d.getValue().equals("0") ? "0" : "1");
                             d.addCapability(Capability.dim, d.getValue());
                             d.addCapability(Capability.light_rgbw, d.getProperties().getColor());
@@ -167,9 +208,13 @@ public class Fibaro extends Controller {
                             d.addCapability(Capability.openclose, d.getValue().equals("false") || d.getValue().equals("0") ? "close" : "open");
                             break;
 
-                        case "com.fibaro.colorController":
                         case "com.fibaro.FGRM222":
                         case "com.fibaro.FGR221":
+                        case "com.fibaro.rollerShutter":
+                            d.addCapability(Capability.onoff, d.getValue().equals("false") || d.getValue().equals("0") ? "0" : "1");
+                            d.addCapability(Capability.windowcoverings_state, d.getValue().equals("false") || d.getValue().equals("0") ? "up" : "down");
+                            break;
+
                         case "com.fibaro.binarySwitch":
                         case "com.fibaro.developer.bxs.virtualBinarySwitch":
                         case "com.fibaro.FGWP101":
@@ -177,8 +222,18 @@ public class Fibaro extends Controller {
                         case "virtual_device":
                             d.addCapability(Capability.onoff, d.getValue().equals("false") || d.getValue().equals("0") ? "0" : "1");
                             break;
-                        case "com.fibaro.rollerShutter":
-                            d.addCapability(Capability.windowcoverings_state, d.getValue().equals("false") || d.getValue().equals("0") ? "up" : "down");
+                        case "com.fibaro.thermostatDanfoss":
+                            d.addCapability(Capability.measure_temperature, d.getValue());
+                            d.addCapability(Capability.target_temperature, d.getProperties().getTargetLevel());
+                            break;
+                        case "com.fibaro.thermostatHorstmann":
+                        case "com.fibaro.setPoint":
+                            if(hvac != null)
+                                parseThermostat(hvac, d, d.getProperties());
+                            break;
+                        default:
+                            if(hvac != null)
+                                parseThermostat(hvac, d, d.getProperties());
                             break;
                     }
 
@@ -226,6 +281,73 @@ public class Fibaro extends Controller {
             all_scenes = new Scene[0];
         else if (loaded_scenes != null)
             all_scenes = loaded_scenes;
+    }
+
+    private HashMap<String, ArrayList<Device>> _complexHVAC = new HashMap<String, ArrayList<Device>>();
+
+    private void findComplexHVAC(Device d)
+    {
+        if(d.isVisible() && "com.fibaro.setPoint".equals(d.getType()) && "com.fibaro.hvac".equals(d.getBaseType()))
+        {
+            _complexHVAC.put(String.valueOf(d.getParentId()), new ArrayList<Device>());
+            Log.i(TAG, "Complex: " + String.valueOf(d.getParentId()) + ", " + d);
+        }
+    }
+
+    private void parseThermostat(ArrayList<Device> hvac, Device d, DeviceProperties properties)
+    {
+        d.setVisible(false);
+        hvac.add(d);
+
+        String value = "";
+        if(properties.getMode() != null && !properties.getMode().isEmpty())
+        {
+            ModeType type = ModeType.getById(properties.getMode());
+            if(type != null)
+             value = type.getLabel();
+        }
+        d.addCapability(Capability.thermostat_mode, value);
+        d.addCapability(Capability.measure_temperature, d.getValue());
+        d.addCapability(Capability.target_temperature, d.getProperties().getTargetLevel());
+
+        /*
+        attributes.put("thermostatTemperatureUnit", properties.getUnit() != null && !properties.getUnit().isEmpty() ? properties.getUnit() : "C");
+        String modes = properties.getSupportedModes();
+        if(modes != null && !modes.isEmpty())
+        {
+            String[] m = modes.split(",");
+            ModeType type = null;
+            LinkedList<String> modes_list = new LinkedList<String>();
+            for(int i = 0; i < m.length; i++)
+            {
+                type = ModeType.getById(m[i]);
+                if(type != null && type.getGoogle() != null)
+                    modes_list.add(type.getGoogle());
+            }
+            modes = "";
+            boolean first = true;
+            for(String mode : modes_list)
+            {
+                if(!first)
+                    modes += ",";
+                modes += mode;
+                first = false;
+            }
+        }
+        //attributes.put("availableThermostatModes", modes == null || modes.isEmpty() ? "off" : modes);
+        if(properties.getMode() != null && !properties.getMode().isEmpty())
+        {
+            ModeType type = ModeType.getById(properties.getMode());
+            if(type != null && type.getGoogle() != null)
+                states.put("thermostatMode", type.getGoogle());
+        }
+        if(properties.getTargetLevel() != null)
+            states.put("thermostatTemperatureSetpoint", properties.getTargetLevel());
+        if(d.getValue() != null && !d.getValue().isEmpty() && !d.getValue().equals("0.00"))
+            states.put("thermostatTemperatureAmbient", d.getValue());
+        if(d.getType().equals("com.fibaro.humiditySensor"))
+            states.put("thermostatHumidityAmbient", d.getValue());
+            */
     }
 
     @Override
@@ -290,11 +412,34 @@ public class Fibaro extends Controller {
 
     @Override
     public void setMode(UDevice d, String mode) {
-        sendCommand("/api/callAction?deviceID=" + d.getId() + "&name=setMode&arg1=" + mode);
+        sendCommand("/api/callAction?deviceID=" + d.getId() + "&name=setMode&arg1=" + getThermostatMode(mode).getKey());
+    }
+
+    @Override
+    public void setTargetTemperature(UDevice d, String level)
+    {
+        sendCommand("/api/callAction?deviceID=" + d.getId() + "&name=setTargetLevel&arg1=" + level);
     }
 
     @Override
     public void runScene(UScene s) {
         sendCommand("/api/sceneControl?id=" + s.getId() + "&action=start");
+    }
+
+    public ModeType getThermostatMode(String mode) {
+        switch (mode) {
+            case "Auto":
+                return ModeType.AUTO;
+            case "Heat":
+                return ModeType.HEAT;
+            case "Cool":
+                return ModeType.COOL;
+            case "Off":
+                return ModeType.OFF;
+            case "On":
+                return ModeType.RESUME;
+            default:
+                return ModeType.OFF;
+        }
     }
 }

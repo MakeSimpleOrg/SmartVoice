@@ -155,14 +155,20 @@ public class Device extends UDevice {
     }
 
     public String getHumidity() {
+        if(humidity == null || humidity.isEmpty())
+            return "0";
         return "" + (int) Double.parseDouble(humidity);
     }
 
     public String getLight() {
+        if(light == null || light.isEmpty())
+            return "0";
         return "" + (int) Double.parseDouble(light);
     }
 
     public String getTemperature() {
+        if(temperature == null || temperature.isEmpty())
+            return "0";
         return "" + (int) Double.parseDouble(temperature);
     }
 

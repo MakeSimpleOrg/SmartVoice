@@ -6,6 +6,9 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.net.wifi.SupplicantState;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -18,6 +21,7 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.diamond.SmartVoice.Controllers.Controller;
 import com.diamond.SmartVoice.Controllers.Fibaro.Fibaro;
 import com.diamond.SmartVoice.Controllers.Homey.Homey;
 import com.diamond.SmartVoice.Controllers.Vera.Vera;
@@ -34,9 +38,14 @@ import com.diamond.SmartVoice.Vocalizer.GoogleVocalizer;
 import com.diamond.SmartVoice.Vocalizer.YandexVocalizer;
 import com.rollbar.android.Rollbar;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.UUID;
 
+import ai.api.AIConfiguration;
+import ai.api.AIDataService;
+import ai.api.model.AIRequest;
+import ai.api.model.AIResponse;
 import ru.yandex.speechkit.SpeechKit;
 
 /**
@@ -47,22 +56,21 @@ public class MainActivity extends Activity {
 
     private static final String YANDEX_API_KEY = "6d5c4e48-3c78-434e-96a2-2ecea92d8120";
 
-    private AbstractRecognizer keyPhraseRecognizer;
+    public AbstractRecognizer keyPhraseRecognizer;
     public AbstractRecognizer recognizer;
-
     private AbstractVocalizer vocalizer;
+
+    AIDataService aiService;
+
     private View MicView;
     public SharedPreferences pref;
-    public Homey HomeyController;
-    public Fibaro FibaroController;
-    public Vera VeraController;
-    public Zipato ZipatoController;
+
+    public static ArrayList<Controller> controllers;
+
+    protected SharedPreferences.OnSharedPreferenceChangeListener preferenceChangeListener;
 
     private boolean isLoading = true;
-    private boolean homeyLoading = false;
-    private boolean fibaroLoading = false;
-    private boolean veraLoading = false;
-    private boolean zipatoLoading = false;
+    private int controllersLoading = 0;
     private boolean ttsLoading = false;
     private boolean keyPhraseRecognizerLoading = false;
     private boolean recognizerLoading = false;
@@ -76,9 +84,26 @@ public class MainActivity extends Activity {
 
     private boolean buttonPressed = false;
 
+    public static String currentSSID = null;
+
+    public boolean wifi() {
+        if (currentSSID == null) {
+            WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
+            if (wifiManager != null) {
+                WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+                if (wifiInfo.getSupplicantState() == SupplicantState.COMPLETED)
+                    currentSSID = wifiInfo.getSSID();
+                if (currentSSID != null)
+                    currentSSID = currentSSID.replaceAll("\"", "");
+            }
+        }
+        return pref.getString("homeSSID", "").equalsIgnoreCase(currentSSID);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
 
         Log.i(TAG, "OS.ARCH : " + System.getProperty("os.arch"));
@@ -109,6 +134,14 @@ public class MainActivity extends Activity {
             Rollbar.instance().error(e);
         }
 
+        wifi();
+
+        Log.i(TAG, "currentSSID: " + currentSSID);
+
+        String homeSSID = pref.getString("homeSSID", "");
+        if (homeSSID.isEmpty())
+            pref.edit().putString("homeSSID", currentSSID).apply();
+
         String userKey = pref.getString("yandexUserKey", "");
         String device_uuid = pref.getString("device_uuid", "");
         if (device_uuid.isEmpty()) {
@@ -133,7 +166,7 @@ public class MainActivity extends Activity {
         MicView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                if (isLoading || ttsLoading || homeyLoading || fibaroLoading || veraLoading || zipatoLoading)
+                if (isLoading || ttsLoading || controllersLoading > 0)
                     return false;
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
@@ -162,7 +195,7 @@ public class MainActivity extends Activity {
         Button settingsBtn = findViewById(R.id.settingsButton);
         settingsBtn.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
-                if (isLoading || ttsLoading || homeyLoading || fibaroLoading || veraLoading || zipatoLoading)
+                if (isLoading())
                     return;
                 Intent activity = new Intent(MainActivity.this, SettingsActivity.class);
                 startActivity(activity);
@@ -174,7 +207,7 @@ public class MainActivity extends Activity {
         Button devicesBtn = findViewById(R.id.devicesButton);
         devicesBtn.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
-                if (isLoading || ttsLoading || homeyLoading || fibaroLoading || veraLoading || zipatoLoading)
+                if (isLoading())
                     return;
                 Intent activity = new Intent(MainActivity.this, DevicesActivity.class);
                 startActivity(activity);
@@ -186,7 +219,7 @@ public class MainActivity extends Activity {
         Button scenesBtn = findViewById(R.id.scenesButton);
         scenesBtn.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
-                if (isLoading || ttsLoading || homeyLoading || fibaroLoading || veraLoading || zipatoLoading)
+                if (isLoading())
                     return;
                 Intent activity = new Intent(MainActivity.this, ScenesActivity.class);
                 startActivity(activity);
@@ -254,37 +287,15 @@ public class MainActivity extends Activity {
             }
         }).start();
 
-        if (isHomeyEnabled())
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    setupHomey(MainActivity.this);
-                }
-            }).start();
+        controllers = new ArrayList<Controller>();
+        controllers.add(new Homey(this));
+        controllers.add(new Fibaro(this));
+        controllers.add(new Vera(this));
+        controllers.add(new Zipato(this));
 
-        if (isFibaroEnabled())
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    setupFibaro(MainActivity.this);
-                }
-            }).start();
-
-        if (isVeraEnabled())
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    setupVera(MainActivity.this);
-                }
-            }).start();
-
-        if (isZipatoEnabled())
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    setupZipato(MainActivity.this);
-                }
-            }).start();
+        for (Controller controller : controllers)
+            if (controller.isEnabled())
+                loadController(this, controller);
 
         if (Integer.parseInt(pref.getString("polling", "300")) > 0)
             new Thread(new Runnable() {
@@ -295,27 +306,13 @@ public class MainActivity extends Activity {
                         while (polling > 0) {
                             Thread.sleep(polling * 1000);
                             polling = Integer.parseInt(pref.getString("polling", "300"));
-                            long time = System.currentTimeMillis();
-                            if (HomeyController != null && isHomeyEnabled()) {
-                                HomeyController.updateData();
-                                Log.d(TAG, "Homey poll time: " + (System.currentTimeMillis() - time));
-                            }
-                            time = System.currentTimeMillis();
-                            if (FibaroController != null && isFibaroEnabled()) {
-                                FibaroController.updateData();
-                                Log.d(TAG, "Fibaro poll time: " + (System.currentTimeMillis() - time));
-                                time = System.currentTimeMillis();
-                            }
-                            if (VeraController != null && isVeraEnabled()) {
-                                VeraController.updateData();
-                                Log.d(TAG, "Vera poll time: " + (System.currentTimeMillis() - time));
-                                time = System.currentTimeMillis();
-                            }
-                            if (ZipatoController != null && isZipatoEnabled()) {
-                                ZipatoController.updateData();
-                                Log.d(TAG, "Zipato poll time: " + (System.currentTimeMillis() - time));
-                                time = System.currentTimeMillis();
-                            }
+                            long time;
+                            for (Controller controller : controllers)
+                                if (controller.isLoaded() && controller.isEnabled()) {
+                                    time = System.currentTimeMillis();
+                                    controller.updateData();
+                                    Log.d(TAG, controller.getName() + " poll time: " + (System.currentTimeMillis() - time));
+                                }
                         }
                     } catch (InterruptedException e) {
                         e.printStackTrace();
@@ -323,26 +320,22 @@ public class MainActivity extends Activity {
                     }
                 }
             }).start();
-    }
 
-    private boolean isHomeyEnabled() {
-        return pref.getBoolean("homey_enabled", false) && !pref.getString("homey_server_ip", "").isEmpty() && !pref.getString("homey_bearer", "").isEmpty();
-    }
+        preferenceChangeListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+            @Override
+            public void onSharedPreferenceChanged(SharedPreferences pref, String key) {
+                for (Controller controller : controllers)
+                    controller.onSharedPreferenceChanged(pref, key);
+            }
+        };
+        pref.registerOnSharedPreferenceChangeListener(preferenceChangeListener);
 
-    private boolean isFibaroEnabled() {
-        return pref.getBoolean("fibaro_enabled", false) && !pref.getString("fibaro_server_ip", "").isEmpty() && !pref.getString("fibaro_server_login", "").isEmpty() && !pref.getString("fibaro_server_password", "").isEmpty();
-    }
-
-    private boolean isVeraEnabled() {
-        return pref.getBoolean("vera_enabled", false) && !pref.getString("vera_server_ip", "").isEmpty();
-    }
-
-    private boolean isZipatoEnabled() {
-        return pref.getBoolean("zipato_enabled", false) && !pref.getString("zipato_server_ip", "my.zipato.com:443").isEmpty() && !pref.getString("zipato_server_login", "").isEmpty() && !pref.getString("zipato_server_password", "").isEmpty();
+        AIConfiguration configuration = new AIConfiguration("923bfde517fe45e89f75e05fbcc699f5");
+        aiService = new AIDataService(configuration);
     }
 
     private boolean isLoading() {
-        return ttsLoading || homeyLoading || fibaroLoading || veraLoading || zipatoLoading || recognizerLoading || keyPhraseRecognizerLoading;
+        return ttsLoading || controllersLoading > 0 || recognizerLoading || keyPhraseRecognizerLoading;
     }
 
     public void setupKeyphraseRecognizer() {
@@ -420,124 +413,28 @@ public class MainActivity extends Activity {
             progressBar.setVisibility(View.INVISIBLE);
     }
 
-    public static void setupHomey(final MainActivity activity) {
-        activity.homeyLoading = true;
+    public static void loadController(final MainActivity activity, final Controller controller) {
+        activity.controllersLoading++;
         activity.progressBar.setVisibility(View.VISIBLE);
-        new AsyncTask<Void, Void, Homey>() {
+        new AsyncTask<Void, Void, Void>() {
             @Override
-            protected Homey doInBackground(Void... params) {
-                Homey controller = null;
+            protected Void doInBackground(Void... params) {
                 try {
-                    controller = new Homey(activity);
+                    controller.loadData();
                 } catch (Exception e) {
                     e.printStackTrace();
                     Rollbar.instance().error(e);
-                    return null;
                 }
-                return controller.getVisibleDevicesCount() > 0 || controller.getVisibleScenesCount() > 0 ? controller : null;
+                return null;
             }
 
             @Override
-            protected void onPostExecute(Homey controller) {
-                activity.HomeyController = controller;
-                if (activity.HomeyController == null)
-                    activity.show("Homey: " + activity.getString(R.string.controler_not_found) + " " + activity.pref.getString("homey_server_ip", ""));
+            protected void onPostExecute(Void param) {
+                if (controller.isLoaded())
+                    activity.show(controller.getName() + ": " + controller.getVisibleRoomsCount() + " " + activity.getString(R.string.found_rooms_and) + " " + controller.getVisibleDevicesCount() + " " + activity.getString(R.string.found_devices_and) + " " + controller.getVisibleScenesCount() + " " + activity.getString(R.string.found_scene));
                 else
-                    activity.show("Homey: " + controller.getVisibleRoomsCount() + " " + activity.getString(R.string.found_rooms_and) + " " + controller.getVisibleDevicesCount() + " " + activity.getString(R.string.found_devices_and) + " " + controller.getVisibleScenesCount() + " " + activity.getString(R.string.found_scene));
-                activity.homeyLoading = false;
-                if (!activity.isLoading())
-                    activity.progressBar.setVisibility(View.INVISIBLE);
-            }
-        }.execute();
-    }
-
-    public static void setupFibaro(final MainActivity activity) {
-        activity.fibaroLoading = true;
-        activity.progressBar.setVisibility(View.VISIBLE);
-        new AsyncTask<Void, Void, Fibaro>() {
-            @Override
-            protected Fibaro doInBackground(Void... params) {
-                Fibaro controller = null;
-                try {
-                    controller = new Fibaro(activity);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    Rollbar.instance().error(e);
-                    return null;
-                }
-                return controller.getVisibleDevicesCount() > 0 || controller.getVisibleScenesCount() > 0 ? controller : null;
-            }
-
-            @Override
-            protected void onPostExecute(Fibaro controller) {
-                activity.FibaroController = controller;
-                if (activity.FibaroController == null)
-                    activity.show("Fibaro: " + activity.getString(R.string.controler_not_found) + " " + activity.pref.getString("fibaro_server_ip", ""));
-                else
-                    activity.show("Fibaro: " + controller.getVisibleRoomsCount() + " " + activity.getString(R.string.found_rooms) + " " + controller.getVisibleDevicesCount() + " " + activity.getString(R.string.found_devices_and) + " " + controller.getVisibleScenesCount() + " " + activity.getString(R.string.found_scene));
-                activity.fibaroLoading = false;
-                if (!activity.isLoading())
-                    activity.progressBar.setVisibility(View.INVISIBLE);
-            }
-        }.execute();
-    }
-
-    public static void setupVera(final MainActivity activity) {
-        activity.veraLoading = true;
-        activity.progressBar.setVisibility(View.VISIBLE);
-        new AsyncTask<Void, Void, Vera>() {
-            @Override
-            protected Vera doInBackground(Void... params) {
-                Vera controller = null;
-                try {
-                    controller = new Vera(activity);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    Rollbar.instance().error(e);
-                    return null;
-                }
-                return controller.getVisibleDevicesCount() > 0 || controller.getVisibleScenesCount() > 0 ? controller : null;
-            }
-
-            @Override
-            protected void onPostExecute(Vera controller) {
-                activity.VeraController = controller;
-                if (activity.VeraController == null)
-                    activity.show("Vera: " + activity.getString(R.string.controler_not_found) + " " + activity.pref.getString("vera_server_ip", ""));
-                else
-                    activity.show("Vera: " + controller.getVisibleRoomsCount() + " " + activity.getString(R.string.found_rooms) + " " + controller.getVisibleDevicesCount() + " " + activity.getString(R.string.found_devices_and) + " " + controller.getVisibleScenesCount() + " " + activity.getString(R.string.found_scene));
-                activity.veraLoading = false;
-                if (!activity.isLoading())
-                    activity.progressBar.setVisibility(View.INVISIBLE);
-            }
-        }.execute();
-    }
-
-    public static void setupZipato(final MainActivity activity) {
-        activity.zipatoLoading = true;
-        activity.progressBar.setVisibility(View.VISIBLE);
-        new AsyncTask<Void, Void, Zipato>() {
-            @Override
-            protected Zipato doInBackground(Void... params) {
-                Zipato controller = null;
-                try {
-                    controller = new Zipato(activity);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    Rollbar.instance().error(e);
-                    return null;
-                }
-                return controller.getVisibleDevicesCount() > 0 || controller.getVisibleScenesCount() > 0 ? controller : null;
-            }
-
-            @Override
-            protected void onPostExecute(Zipato controller) {
-                activity.ZipatoController = controller;
-                if (activity.ZipatoController == null)
-                    activity.show("Zipato: " + activity.getString(R.string.controler_not_found) + " " + activity.pref.getString("zipato_server_ip", ""));
-                else
-                    activity.show("Zipato: " + controller.getVisibleRoomsCount() + " " + activity.getString(R.string.found_rooms) + " " + controller.getVisibleDevicesCount() + " " + activity.getString(R.string.found_devices_and) + " " + controller.getVisibleScenesCount() + " " + activity.getString(R.string.found_scene));
-                activity.zipatoLoading = false;
+                    activity.show(controller.getName() + ": " + activity.getString(R.string.controler_not_found) + " " + controller.getHost());
+                activity.controllersLoading--;
                 if (!activity.isLoading())
                     activity.progressBar.setVisibility(View.INVISIBLE);
             }
@@ -577,33 +474,34 @@ public class MainActivity extends Activity {
                     recognizer.startListening();
                 buttonOn();
             }
-        }, keyPhraseRecognizer instanceof GoogleKeyRecognizer ? 500 : 200);
+        }, keyPhraseRecognizer instanceof GoogleKeyRecognizer ? 1000 : 200);
     }
 
     public static void process(final String[] variants, final MainActivity activity) {
         new AsyncTask<String, Void, String>() {
             @Override
             protected String doInBackground(String... params) {
-                String words = Arrays.toString(params);
+                String words = Arrays.toString(params).replace("[", "").replace("]", "");
                 Log.w(TAG, activity.getString(R.string.you_say) + words);
                 activity.showSpeak(words);
-                if (!activity.pref.getBoolean("homey_enabled", false) && !activity.pref.getBoolean("fibaro_enabled", false) && !activity.pref.getBoolean("vera_enabled", false) && !activity.pref.getBoolean("zipato_enabled", false) || activity.HomeyController == null && activity.FibaroController == null && activity.VeraController == null && activity.ZipatoController == null)
+                boolean enabled = false;
+                for (Controller controller : controllers)
+                    if (controller.isEnabled())
+                        enabled = true;
+                if (!enabled)
                     return activity.getString(R.string.nothing_to_manage);
                 String result = null;
                 try {
-                    if (activity.pref.getBoolean("homey_enabled", false) && activity.HomeyController != null)
-                        result = activity.HomeyController.process(params, activity.pref);
-                    if (result == null && activity.pref.getBoolean("fibaro_enabled", false) && activity.FibaroController != null)
-                        result = activity.FibaroController.process(params, activity.pref);
-                    if (result == null && activity.pref.getBoolean("vera_enabled", false) && activity.VeraController != null)
-                        result = activity.VeraController.process(params, activity.pref);
-                    if (result == null && activity.pref.getBoolean("zipato_enabled", false) && activity.ZipatoController != null)
-                        result = activity.ZipatoController.process(params, activity.pref);
+                    for (Controller controller : controllers)
+                        if (result == null && controller.isEnabled())
+                            result = controller.process(params, activity.pref);
                     if (result != null && activity.recognizer instanceof YandexRecognizer) {
                         activity.recognizer.stopListening();
                         if (!activity.pref.getBoolean("tts_enabled", false))
                             Utils.dong.start();
                     }
+                    if (result == null)
+                        result = activity.answer(params[0]);
                 } catch (Exception e) {
                     e.printStackTrace();
                     Rollbar.instance().error(e);
@@ -648,6 +546,27 @@ public class MainActivity extends Activity {
         }
     }
 
+    public String answer(String text) {
+        Log.i(TAG, "question: " + text);
+        try {
+            AIRequest request = new AIRequest(text);
+            AIResponse response = aiService.request(request);
+            if (response.getStatus().getCode() == 200) {
+                {
+                    text = response.getResult().getFulfillment().getSpeech();
+                    Log.i(TAG, "answer: " + text);
+                    return text;
+                }
+            } else {
+                System.err.println(response.getStatus().getErrorDetails());
+
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return null;
+    }
+
     @SuppressLint("SetTextI18n")
     public void showSpeak(final String text) {
         MainActivity.this.runOnUiThread(new Runnable() {
@@ -658,7 +577,7 @@ public class MainActivity extends Activity {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                Log.w(TAG, text);
+                //Log.w(TAG, text);
             }
         });
     }

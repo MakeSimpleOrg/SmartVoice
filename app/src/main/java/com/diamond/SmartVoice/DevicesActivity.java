@@ -38,18 +38,16 @@ public class DevicesActivity extends PreferenceActivity {
 
     private void reload() {
         getPreferenceScreen().removeAll();
-        if (mainActivity.HomeyController != null) list("Homey", mainActivity.HomeyController);
-        if (mainActivity.FibaroController != null) list("Fibaro", mainActivity.FibaroController);
-        if (mainActivity.VeraController != null) list("Vera", mainActivity.VeraController);
-        if (mainActivity.ZipatoController != null) list("Zipato", mainActivity.ZipatoController);
+        for (Controller controller : MainActivity.controllers)
+            list(controller);
     }
 
-    private void list(String controllerName, Controller controller) {
+    private void list(Controller controller) {
         PreferenceScreen deviceList = getPreferenceScreen();
         Context context = deviceList.getContext();
 
         PreferenceCategory controllerCat = new PreferenceCategory(context);
-        controllerCat.setTitle(controllerName);
+        controllerCat.setTitle(controller.getName());
         deviceList.addPreference(controllerCat);
 
         if (controller.getVisibleRoomsCount() > 0 && controller.getVisibleDevicesCount() > 0) {
@@ -74,6 +72,12 @@ public class DevicesActivity extends PreferenceActivity {
                             device.addPreference(pref);
 
                             pref = new Preference(context);
+                            pref.setTitle(getString(R.string.ActivateDevice));
+                            pref.setSummary(d.ai_name);
+                            pref.setOnPreferenceClickListener(activateListener);
+                            device.addPreference(pref);
+
+                            pref = new Preference(context);
                             pref.setTitle(getString(R.string.VoiceCommand));
                             pref.setSummary(d.ai_name);
                             device.addPreference(pref);
@@ -89,7 +93,7 @@ public class DevicesActivity extends PreferenceActivity {
                             device.addPreference(pref);
 
                             pref = new Preference(context);
-                            pref.setTitle(getString(R.string.OriginalName));
+                            pref.setTitle(getString(R.string.DeviceName));
                             pref.setSummary(d.getName());
                             device.addPreference(pref);
 
@@ -109,12 +113,6 @@ public class DevicesActivity extends PreferenceActivity {
                                 pref.setSummary(entry.getValue());
                                 device.addPreference(pref);
                             }
-
-                            pref = new Preference(context);
-                            pref.setTitle(getString(R.string.ActivateDevice));
-                            pref.setSummary(d.ai_name);
-                            pref.setOnPreferenceClickListener(activateListener);
-                            device.addPreference(pref);
                         }
                 }
         }

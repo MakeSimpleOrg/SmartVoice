@@ -51,6 +51,7 @@ public class YandexRecognizer extends AbstractRecognizer implements RecognizerLi
     }
 
     public void startListening() {
+        //if (!(mContext.keyPhraseRecognizer instanceof GoogleKeyRecognizer))
         Utils.ding.start();
         Result = false;
         if (continuousMode)

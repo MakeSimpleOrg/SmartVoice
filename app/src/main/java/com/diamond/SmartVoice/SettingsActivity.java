@@ -1,21 +1,15 @@
 package com.diamond.SmartVoice;
 
 import android.annotation.SuppressLint;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
-import android.preference.PreferenceManager;
 import android.util.Patterns;
 import android.widget.Toast;
-
-import com.diamond.SmartVoice.OAuth.WebViewActivity;
-
-import net.smartam.leeloo.client.request.OAuthClientRequest;
-import net.smartam.leeloo.common.exception.OAuthSystemException;
 
 /**
  * @author Dmitriy Ponomarev
@@ -25,6 +19,7 @@ public class SettingsActivity extends PreferenceActivity {
     @SuppressLint("StaticFieldLeak")
     public static MainActivity mainActivity;
 
+    protected SharedPreferences.OnSharedPreferenceChangeListener listener;
 
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
@@ -32,114 +27,83 @@ public class SettingsActivity extends PreferenceActivity {
 
         addPreferencesFromResource(R.xml.pref_general);
 
-        bindPreferenceSummaryToValue("homey_server_ip");
-        bindPreferenceSummaryToValue("homey_bearer");
-        bindPreferenceSummaryToValue("fibaro_server_ip");
-        bindPreferenceSummaryToValue("fibaro_server_login");
-        bindPreferenceSummaryToValue("vera_server_ip");
-        bindPreferenceSummaryToValue("zipato_server_ip");
-        bindPreferenceSummaryToValue("zipato_server_login");
+        bind("homeSSID");
 
-        bindPreferenceSummaryToValue("vocalizerType");
-        bindPreferenceSummaryToValue("keyRecognizerType");
-        bindPreferenceSummaryToValue("voiceRecognizerType");
+        bind("homey_enabled");
+        bind("homey_server_ip");
+        bind("homey_server_ip_ext");
+        bind("homey_bearer");
 
-        bindPreferenceSummaryToValue("YandexKeyPhrase");
-        bindPreferenceSummaryToValue("YandexVoice");
-        bindPreferenceSummaryToValue("YandexEmotion");
-        bindPreferenceSummaryToValue("YandexSpeechLang");
-        bindPreferenceSummaryToValue("YandexRecognizerLang");
+        bind("fibaro_enabled");
+        bind("fibaro_server_ip");
+        bind("fibaro_server_ip_ext");
+        bind("fibaro_server_login");
+        bind("fibaro_server_password");
 
-        bindPreferenceSummaryToValue("SnowboyKeyPhrase");
-        bindPreferenceSummaryToValue("SnowboySensitivity");
+        bind("vera_enabled");
+        bind("vera_server_ip");
+        bind("vera_server_ip_ext");
 
-        bindPreferenceSummaryToValue("PocketSphinxKeyPhrase");
-        bindPreferenceSummaryToValue("PocketSphinxSensitivity");
+        bind("zipato_server_ip");
+        bind("zipato_server_ip_ext");
+        bind("zipato_server_login");
+        bind("zipato_server_password");
 
-        bindPreferenceSummaryToValue("GoogleKeyPhrase");
+        bind("offline_recognition");
 
-        bindPreferenceSummaryToValue("polling");
+        bind("vocalizerType");
+        bind("keyRecognizerType");
+        bind("voiceRecognizerType");
 
-        findPreference("homey_enabled").setOnPreferenceChangeListener(sBindPreferenceChangeListener);
-        findPreference("fibaro_enabled").setOnPreferenceChangeListener(sBindPreferenceChangeListener);
-        findPreference("vera_enabled").setOnPreferenceChangeListener(sBindPreferenceChangeListener);
-        findPreference("zipato_enabled").setOnPreferenceChangeListener(sBindPreferenceChangeListener);
+        bind("YandexKeyPhrase");
+        bind("YandexVoice");
+        bind("YandexEmotion");
+        bind("YandexSpeechLang");
+        bind("YandexRecognizerLang");
 
-        findPreference("offline_recognition").setOnPreferenceChangeListener(sBindPreferenceChangeListener);
-        findPreference("vocalizerType").setOnPreferenceChangeListener(sBindPreferenceChangeListener);
-        findPreference("keyRecognizerType").setOnPreferenceChangeListener(sBindPreferenceChangeListener);
-        findPreference("voiceRecognizerType").setOnPreferenceChangeListener(sBindPreferenceChangeListener);
+        bind("SnowboyKeyPhrase");
+        bind("SnowboySensitivity");
 
-        findPreference("YandexKeyPhrase").setOnPreferenceChangeListener(sBindPreferenceChangeListener);
-        findPreference("YandexVoice").setOnPreferenceChangeListener(sBindPreferenceChangeListener);
-        findPreference("YandexEmotion").setOnPreferenceChangeListener(sBindPreferenceChangeListener);
-        findPreference("YandexSpeechLang").setOnPreferenceChangeListener(sBindPreferenceChangeListener);
-        findPreference("YandexRecognizerLang").setOnPreferenceChangeListener(sBindPreferenceChangeListener);
+        bind("PocketSphinxKeyPhrase");
+        bind("PocketSphinxSensitivity");
 
-        findPreference("PocketSphinxKeyPhrase").setOnPreferenceChangeListener(sBindPreferenceChangeListener);
-        findPreference("PocketSphinxSensitivity").setOnPreferenceChangeListener(sBindPreferenceChangeListener);
+        bind("GoogleKeyPhrase");
 
-        findPreference("SnowboyKeyPhrase").setOnPreferenceChangeListener(sBindPreferenceChangeListener);
-        findPreference("SnowboySensitivity").setOnPreferenceChangeListener(sBindPreferenceChangeListener);
-
-        findPreference("GoogleKeyPhrase").setOnPreferenceChangeListener(sBindPreferenceChangeListener);
+        bind("polling");
 
         process_vocalizerType(mainActivity.pref.getString("vocalizerType", "None"));
         process_keyRecognizerType(mainActivity.pref.getString("keyRecognizerType", "None"));
         process_voiceRecognizerType(mainActivity.pref.getString("voiceRecognizerType", "Google"));
+
+        listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+            @Override
+            public void onSharedPreferenceChanged(SharedPreferences pref, String key) {
+                if (key.equals("homey_bearer")) {
+                    Toast.makeText(getApplicationContext(), "Token updated", Toast.LENGTH_SHORT).show();
+                    findPreference("homey_bearer").setSummary(pref.getString(key, ""));
+                }
+                else if (key.equals("homey_server_ip_ext"))
+                    findPreference("homey_server_ip_ext").setSummary(pref.getString(key, ""));
+            }
+        };
+        mainActivity.pref.registerOnSharedPreferenceChangeListener(listener);
     }
 
-    private Preference.OnPreferenceChangeListener sBindPreferenceChangeListener = new Preference.OnPreferenceChangeListener() {
+    private Preference.OnPreferenceChangeListener onChangeListener = new Preference.OnPreferenceChangeListener() {
         @Override
         public boolean onPreferenceChange(Preference preference, Object value) {
-            SharedPreferences pref = preference.getSharedPreferences();
-
-            apply(preference, value.toString());
-
             String key = preference.getKey();
 
-            if ((key.equals("fibaro_server_ip") || key.equals("vera_server_ip") || key.equals("zipato_server_ip") || key.equals("homey_server_ip")) && !Patterns.WEB_URL.matcher(value.toString()).matches()) {
+            if (key.contains("server_ip") && !value.toString().isEmpty() && !Patterns.WEB_URL.matcher(value.toString()).matches()) {
                 Toast.makeText(getApplicationContext(), R.string.IncorrectUrl, Toast.LENGTH_SHORT).show();
                 return false;
             }
 
-            if (key.equals("fibaro_enabled") && (Boolean) value && !pref.getString("fibaro_server_ip", "").isEmpty() && !pref.getString("fibaro_server_login", "").isEmpty() && !pref.getString("fibaro_server_password", "").isEmpty())
-                MainActivity.setupFibaro(mainActivity);
-
-            if (key.equals("vera_enabled") && (Boolean) value && !pref.getString("vera_server_ip", "").isEmpty())
-                MainActivity.setupVera(mainActivity);
-
-            if (key.equals("zipato_enabled") && (Boolean) value && !pref.getString("zipato_server_ip", "").isEmpty() && !pref.getString("zipato_server_login", "my.zipato.com:443").isEmpty() && !pref.getString("zipato_server_password", "").isEmpty())
-                MainActivity.setupZipato(mainActivity);
-
-            if ((key.equals("homey_enabled") && (Boolean) value)) {
-                if (!pref.getString("homey_server_ip", "").isEmpty() && !pref.getString("homey_bearer", "").isEmpty())
-                    MainActivity.setupHomey(mainActivity);
-                else if (pref.getString("homey_bearer", "").isEmpty()) {
-                    OAuthClientRequest request = null;
-                    try {
-                        request = OAuthClientRequest
-                                .authorizationLocation("https://accounts.athom.com/login")
-                                .setClientId("5534df95588a5ed82aaef73d").setRedirectURI("https://my.athom.com/auth/callback")
-                                .setResponseType("code")
-                                .setParameter("origin", "https://accounts.athom.com/oauth2/authorise")
-                                .buildQueryMessage();
-                    } catch (OAuthSystemException e) {
-                        e.printStackTrace();
-                    }
-                    if (request != null) {
-                        WebViewActivity.mainActivity = mainActivity;
-                        WebViewActivity.settingsActivity = SettingsActivity.this;
-                        Intent intent = new Intent(SettingsActivity.this, WebViewActivity.class);
-                        intent.putExtra("url", request.getLocationUri());
-                        startActivity(intent);
-                    }
-                }
-            }
+            apply(preference, value);
+            setSummary(preference, value.toString());
 
             if (key.equals("vocalizerType")) {
                 process_vocalizerType(value.toString());
-                setSummary(preference, value.toString());
                 mainActivity.setupVocalizer();
             }
 
@@ -150,36 +114,28 @@ public class SettingsActivity extends PreferenceActivity {
 
             if (key.equals("keyRecognizerType")) {
                 process_keyRecognizerType(value.toString());
-                setSummary(preference, value.toString());
                 mainActivity.setupKeyphraseRecognizer();
             }
 
             if (key.equals("voiceRecognizerType")) {
                 process_voiceRecognizerType(value.toString());
-                setSummary(preference, value.toString());
                 mainActivity.setupRecognizer();
             }
 
             if (key.equals("PocketSphinxKeyPhrase")) {
                 mainActivity.PocketSphinxKeyPhrase = value.toString();
-                setSummary(preference, value.toString());
                 mainActivity.setupKeyphraseRecognizer();
             }
 
-            if (key.equals("YandexKeyPhrase") || key.equals("PocketSphinxSensitivity") || key.equals("SnowboyKeyPhrase") || key.equals("SnowboySensitivity") || key.equals("GoogleKeyPhrase")) {
-                setSummary(preference, value.toString());
+            if (key.equals("YandexKeyPhrase") || key.equals("PocketSphinxSensitivity") || key.equals("SnowboyKeyPhrase") || key.equals("SnowboySensitivity") || key.equals("GoogleKeyPhrase"))
                 mainActivity.setupKeyphraseRecognizer();
-            }
 
-            if (key.equals("YandexVoice") || key.equals("YandexEmotion") || key.equals("YandexSpeechLang")) {
-                setSummary(preference, value.toString());
+
+            if (key.equals("YandexVoice") || key.equals("YandexEmotion") || key.equals("YandexSpeechLang"))
                 mainActivity.setupVocalizer();
-            }
 
-            if (key.equals("YandexRecognizerLang")) {
-                setSummary(preference, value.toString());
+            if (key.equals("YandexRecognizerLang"))
                 mainActivity.setupRecognizer();
-            }
 
             return true;
         }
@@ -193,6 +149,9 @@ public class SettingsActivity extends PreferenceActivity {
                 findPreference("SnowboySensitivity").setEnabled(false);
                 findPreference("PocketSphinxKeyPhrase").setEnabled(false);
                 findPreference("PocketSphinxSensitivity").setEnabled(false);
+                findPreference("GoogleKeyPhrase").setEnabled(false);
+                if(!"Google".equalsIgnoreCase(mainActivity.pref.getString("voiceRecognizerType", "Google")))
+                    findPreference("offline_recognition").setEnabled(false);
                 break;
             case "Yandex":
                 findPreference("YandexKeyPhrase").setEnabled(true);
@@ -200,6 +159,9 @@ public class SettingsActivity extends PreferenceActivity {
                 findPreference("SnowboySensitivity").setEnabled(false);
                 findPreference("PocketSphinxKeyPhrase").setEnabled(false);
                 findPreference("PocketSphinxSensitivity").setEnabled(false);
+                findPreference("GoogleKeyPhrase").setEnabled(false);
+                if(!"Google".equalsIgnoreCase(mainActivity.pref.getString("voiceRecognizerType", "Google")))
+                    findPreference("offline_recognition").setEnabled(false);
                 break;
             case "Snowboy":
                 findPreference("YandexKeyPhrase").setEnabled(false);
@@ -207,6 +169,9 @@ public class SettingsActivity extends PreferenceActivity {
                 findPreference("SnowboySensitivity").setEnabled(true);
                 findPreference("PocketSphinxKeyPhrase").setEnabled(false);
                 findPreference("PocketSphinxSensitivity").setEnabled(false);
+                findPreference("GoogleKeyPhrase").setEnabled(false);
+                if(!"Google".equalsIgnoreCase(mainActivity.pref.getString("voiceRecognizerType", "Google")))
+                    findPreference("offline_recognition").setEnabled(false);
                 break;
             case "PocketSphinx":
                 findPreference("YandexKeyPhrase").setEnabled(false);
@@ -214,6 +179,18 @@ public class SettingsActivity extends PreferenceActivity {
                 findPreference("SnowboySensitivity").setEnabled(false);
                 findPreference("PocketSphinxKeyPhrase").setEnabled(true);
                 findPreference("PocketSphinxSensitivity").setEnabled(true);
+                findPreference("GoogleKeyPhrase").setEnabled(false);
+                if(!"Google".equalsIgnoreCase(mainActivity.pref.getString("voiceRecognizerType", "Google")))
+                    findPreference("offline_recognition").setEnabled(false);
+                break;
+            case "Google":
+                findPreference("YandexKeyPhrase").setEnabled(false);
+                findPreference("SnowboyKeyPhrase").setEnabled(false);
+                findPreference("SnowboySensitivity").setEnabled(false);
+                findPreference("PocketSphinxKeyPhrase").setEnabled(false);
+                findPreference("PocketSphinxSensitivity").setEnabled(false);
+                findPreference("GoogleKeyPhrase").setEnabled(true);
+                findPreference("offline_recognition").setEnabled(true);
                 break;
         }
     }
@@ -225,7 +202,8 @@ public class SettingsActivity extends PreferenceActivity {
                 findPreference("YandexRecognizerLang").setEnabled(false);
                 break;
             case "Yandex":
-                findPreference("offline_recognition").setEnabled(false);
+                if(!"Google".equalsIgnoreCase(mainActivity.pref.getString("keyRecognizerType", "None")))
+                    findPreference("offline_recognition").setEnabled(false);
                 findPreference("YandexRecognizerLang").setEnabled(true);
                 break;
         }
@@ -247,19 +225,11 @@ public class SettingsActivity extends PreferenceActivity {
         }
     }
 
-    private Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
-        @Override
-        public boolean onPreferenceChange(Preference preference, Object value) {
-            System.out.println("setSummary: " + preference.getKey() + " to: " + value.toString());
-            setSummary(preference, value.toString());
-            return true;
-        }
-    };
-
-    private void bindPreferenceSummaryToValue(String str) {
+    private void bind(String str) {
         Preference preference = findPreference(str);
-        preference.setOnPreferenceChangeListener(sBindPreferenceSummaryToValueListener);
-        setSummary(preference, PreferenceManager.getDefaultSharedPreferences(this).getString(preference.getKey(), ""));
+        preference.setOnPreferenceChangeListener(onChangeListener);
+        if (!(preference instanceof CheckBoxPreference))
+            setSummary(preference, mainActivity.pref.getString(preference.getKey(), ""));
     }
 
     private void setSummary(Preference preference, String summary) {
@@ -268,15 +238,16 @@ public class SettingsActivity extends PreferenceActivity {
             int index = listPreference.findIndexOfValue(summary);
             CharSequence value = index >= 0 ? listPreference.getEntries()[index] : "";
             preference.setSummary(value);
-        } else
+        } else if (!(preference instanceof CheckBoxPreference) && !preference.getKey().contains("password"))
             preference.setSummary(summary);
     }
 
-    private void apply(Preference preference, String value) {
+    private void apply(Preference preference, Object value) {
         if (preference instanceof EditTextPreference || preference instanceof ListPreference) {
-            PreferenceManager.getDefaultSharedPreferences(this).edit().putString(preference.getKey(), value).apply();
+            mainActivity.pref.edit().putString(preference.getKey(), value.toString()).apply();
             System.out.println("Changed: " + preference.getKey() + " to: " + value);
-        }
+        } else if (preference instanceof CheckBoxPreference)
+            mainActivity.pref.edit().putBoolean(preference.getKey(), (Boolean) value).apply();
     }
 
     @Override

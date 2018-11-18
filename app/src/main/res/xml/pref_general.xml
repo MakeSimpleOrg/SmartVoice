@@ -8,7 +8,15 @@
         <EditTextPreference
             android:inputType="textUri"
             android:key="homey_server_ip"
-            android:title="@string/ServerAddress" />
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/ServerLocalAddress" />
+        <EditTextPreference
+            android:inputType="textUri"
+            android:key="homey_server_ip_ext"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/ServerRemoteAddress" />
         <EditTextPreference
             android:inputType="textNoSuggestions|textVisiblePassword"
             android:key="homey_bearer"
@@ -25,7 +33,15 @@
         <EditTextPreference
             android:inputType="textUri"
             android:key="fibaro_server_ip"
-            android:title="@string/ServerAddress" />
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/ServerLocalAddress" />
+        <EditTextPreference
+            android:inputType="textUri"
+            android:key="fibaro_server_ip_ext"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/ServerRemoteAddress" />
         <EditTextPreference
             android:inputType="textNoSuggestions|textVisiblePassword"
             android:key="fibaro_server_login"
@@ -48,10 +64,17 @@
             android:key="vera_enabled"
             android:title="Vera" />
         <EditTextPreference
+            android:inputType="textUri"
             android:key="vera_server_ip"
             android:selectAllOnFocus="true"
             android:singleLine="true"
-            android:title="@string/ServerAddress" />
+            android:title="@string/ServerLocalAddress" />
+        <EditTextPreference
+            android:inputType="textUri"
+            android:key="vera_server_ip_ext"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/ServerRemoteAddress" />
     </PreferenceScreen>
     <PreferenceScreen android:title="Zipato">
         <CheckBoxPreference
@@ -59,10 +82,14 @@
             android:key="zipato_enabled"
             android:title="Zipato" />
         <EditTextPreference
-            android:defaultValue="my.zipato.com:443"
             android:inputType="textUri"
             android:key="zipato_server_ip"
-            android:title="@string/ServerAddress" />
+            android:title="@string/ServerLocalAddress" />
+        <EditTextPreference
+            android:defaultValue="https://my.zipato.com:443"
+            android:inputType="textUri"
+            android:key="zipato_server_ip_ext"
+            android:title="@string/ServerRemoteAddress" />
         <EditTextPreference
             android:inputType="textNoSuggestions|textVisiblePassword"
             android:key="zipato_server_login"
@@ -180,11 +207,18 @@
         </PreferenceCategory>
     </PreferenceScreen>
     <EditTextPreference
-        android:defaultValue="300"
+        android:defaultValue="60"
         android:inputType="numberDecimal"
         android:key="polling"
         android:maxLines="1"
         android:singleLine="true"
         android:title="@string/Polling" />
+    <EditTextPreference
+        android:inputType="text"
+        android:key="homeSSID"
+        android:maxLines="1"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="@string/HomeSSID" />
 
 </PreferenceScreen>

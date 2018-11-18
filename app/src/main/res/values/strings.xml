@@ -8,10 +8,11 @@
     <string name="defaultYandexKeyPhrase">Alice</string>
     <string name="empty" />
     <string name="title_activity_get_access_token">GetAccessTokenActivity</string>
-    <string name="ServerAddress">Server Address</string>
+    <string name="ServerLocalAddress">Server Local Address</string>
+    <string name="ServerRemoteAddress">Server Remote Address</string>
     <string name="Login">Login</string>
     <string name="Password">Password</string>
-    <string name="controler_not_found">controller not found! IP:</string>
+    <string name="controler_not_found">controller not found!</string>
     <string name="found">Found</string>
     <string name="found_rooms_and">rooms and</string>
     <string name="found_rooms">rooms,</string>
@@ -44,7 +45,7 @@
     <string name="SceneEnabled">Scene enabled</string>
     <string name="VoiceCommand">Voice command</string>
     <string name="Alias">Alias (separated by commas)</string>
-    <string name="OriginalName">Original name</string>
+    <string name="DeviceName">Device name</string>
     <string name="RoomName">Room name</string>
     <string name="ActivateDevice">Activate device</string>
     <string name="RunScene">Run scene</string>
@@ -52,6 +53,13 @@
     <string name="Polling">Polling interval</string>
     <string name="Recognized">Recognized</string>
     <string name="Vocalizer">Speech engine</string>
+    <string name="HomeSSID">Home Wi-Fi SSID</string>
+
+    <string name="ThermostatModeOff">off</string>
+    <string name="ThermostatModeOn">on</string>
+    <string name="ThermostatModeHeat">heat</string>
+    <string name="ThermostatModeCool">cool</string>
+    <string name="ThermostatModeEnergySaveHeat">energy save heat</string>
 
     <string-array name="VocalizerEntries">
         <item>Disabled</item>

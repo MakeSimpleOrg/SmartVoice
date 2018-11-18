@@ -1,5 +1,6 @@
 package com.diamond.SmartVoice.Controllers.Vera;
 
+import android.content.SharedPreferences;
 import android.util.Log;
 
 import com.diamond.SmartVoice.AI;
@@ -29,12 +30,25 @@ public class Vera extends Controller {
     private Scene[] all_scenes;
 
     public Vera(MainActivity activity) {
+        name = "Vera";
         mainActivity = activity;
-        host = activity.pref.getString("vera_server_ip", "");
-        if (!host.contains(":"))
-            host += ":3480";
         clearNames = true; // TODO config
         gson = new Gson();
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences pref, String key) {
+        if (key.equals("vera_enabled") && pref.getBoolean(key, false) && (!pref.getString("vera_server_ip", "").isEmpty() || !pref.getString("vera_server_ip_ext", "").isEmpty()))
+            loadData();
+    }
+
+    @Override
+    public void loadData()
+    {
+        host = mainActivity.pref.getString("vera_server_ip", "");
+        if (!host.replaceAll("http://", "").replaceAll("https://", "").contains(":"))
+            host += ":3480";
+        host_ext = mainActivity.pref.getString("vera_server_ip_ext", "");
         updateData();
     }
 
@@ -102,6 +116,14 @@ public class Vera extends Controller {
                                 break;
                             case LightSensor:
                                 d.addCapability(Capability.measure_light, d.getLight());
+                                break;
+                            case HVAC:
+                                d.addCapability(Capability.measure_temperature, d.getTemperature());
+                                d.addCapability(Capability.target_temperature, d.getValue());
+                                //Subcategory
+                                //1	HVAC
+                                //2	Heater
+                                //3	Custom HVAC
                                 break;
                         }
                         if (d.getBatterylevel() != null)
@@ -204,13 +226,41 @@ public class Vera extends Controller {
         // TODO
     }
 
+    private String lastMode = "Off"; // TODO запоминать в устройстве режим
+
     @Override
     public void setMode(UDevice d, String mode) {
-        // TODO
+        lastMode = mode;
+        sendCommand("/data_request?id=action&DeviceNum=" + d.getId() + "urn:upnp-org:serviceId:HVAC_UserOperatingMode1&action=SetModeTarget&NewModeTarget=" + getThermostatMode(mode));
+    }
+
+    @Override
+    public void setTargetTemperature(UDevice d, String level)
+    {
+        String service = lastMode.equals("Cool") ? "urn:upnp-org:serviceId:TemperatureSetpoint1_Cool" : "urn:upnp-org:serviceId:TemperatureSetpoint1_Heat";
+        sendCommand("/data_request?id=action&DeviceNum=" + d.getId() + service + "&action=SetCurrentSetpoint&NewCurrentSetpoint=" + level);
     }
 
     @Override
     public void runScene(UScene s) {
         sendCommand("/data_request?id=action&SceneNum=" + s.getId() + "&serviceId=urn:micasaverde-com:serviceId:HomeAutomationGateway1&action=RunScene");
+    }
+
+    public String getThermostatMode(String mode)
+    {
+        switch(mode)
+        {
+            case "Auto":
+                return "AutoChangeOver";
+            case "Heat":
+            case "On":
+                return "HeatOn";
+            case "Cool":
+                return "CoolOn";
+            case "Off":
+                return "Off";
+            default:
+                return "Off";
+        }
     }
 }

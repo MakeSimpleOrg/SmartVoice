@@ -1,11 +1,13 @@
 package com.diamond.SmartVoice.Controllers.Zipato;
 
 import android.annotation.SuppressLint;
+import android.content.SharedPreferences;
 import android.util.Log;
 
 import com.diamond.SmartVoice.AI;
 import com.diamond.SmartVoice.Controllers.Capability;
 import com.diamond.SmartVoice.Controllers.Controller;
+import com.diamond.SmartVoice.Controllers.Fibaro.ModeType;
 import com.diamond.SmartVoice.Controllers.UDevice;
 import com.diamond.SmartVoice.Controllers.URoom;
 import com.diamond.SmartVoice.Controllers.UScene;
@@ -15,12 +17,15 @@ import com.diamond.SmartVoice.Controllers.Zipato.json.Init;
 import com.diamond.SmartVoice.Controllers.Zipato.json.Room;
 import com.diamond.SmartVoice.Controllers.Zipato.json.Scene;
 import com.diamond.SmartVoice.MainActivity;
+import com.diamond.SmartVoice.Utils;
 import com.google.gson.Gson;
 import com.rollbar.android.Rollbar;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -42,14 +47,28 @@ public class Zipato extends Controller {
     private String password;
 
     public Zipato(MainActivity activity) {
+        name = "Zipato";
         mainActivity = activity;
-        host = activity.pref.getString("zipato_server_ip", "my.zipato.com:443");
-        if (host.contains("443"))
-            host_ext = host;
-        username = activity.pref.getString("zipato_server_login", "");
-        password = activity.pref.getString("zipato_server_password", "");
         clearNames = true; // TODO config
         gson = new Gson();
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences pref, String key) {
+        if (!key.equals("zipato_enabled") || !pref.getBoolean(key, false))
+            return;
+        if ((!pref.getString("zipato_server_ip", "").isEmpty() || !pref.getString("zipato_server_ip_ext", "").isEmpty()) //
+                && !pref.getString("zipato_server_login", "").isEmpty() //
+                && !pref.getString("zipato_server_password", "").isEmpty())
+            loadData();
+    }
+
+    @Override
+    public void loadData() {
+        host = mainActivity.pref.getString("zipato_server_ip", "");
+        host_ext = mainActivity.pref.getString("zipato_server_ip_ext", "https://my.zipato.com:443");
+        username = mainActivity.pref.getString("zipato_server_login", "");
+        password = mainActivity.pref.getString("zipato_server_password", "");
         initSession();
         updateScenes();
         updateData();
@@ -118,17 +137,18 @@ public class Zipato extends Controller {
             try {
                 JSONArray result = getJson("/zipato-web/v2/attributes/full?full=true", "JSESSIONID=" + jsessionid, JSONArray.class);
                 if (result != null) {
-                    @SuppressLint("UseSparseArrays") HashMap<Integer, Room> rooms = new HashMap<>();
-                    ArrayList<Device> devices = new ArrayList<>(result.length());
-
                     // Для тестов
                     /*
                     try {
-                        result = Utils.getStringFromFile(new File(Utils.assetDir, "gson.txt"));
+                        result = mapper.readValue(new FileInputStream(new File(Utils.assetDir, "gson.txt")), JSONArray.class);
+                        //result = Utils.getStringFromFile(new File(Utils.assetDir, "gson.txt"));
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                     */
+
+                    @SuppressLint("UseSparseArrays") HashMap<Integer, Room> rooms = new HashMap<>();
+                    ArrayList<Device> devices = new ArrayList<>(result.length());
 
                     AttributesFull[] all = null;
                     try {
@@ -146,7 +166,7 @@ public class Zipato extends Controller {
                             if (a.uiType != null && a.uiType.endpointType != null)
                                 switch (a.uiType.endpointType) {
                                     case "actuator.onoff":
-                                        d.addCapability(Capability.onoff, d.getValue() == null || d.getValue().equals("false") || d.getValue().equals("0") ? "0" : "1");
+                                        d.addCapability(Capability.onoff, d.getValue() == null || d.getValue().isEmpty() || d.getValue().equals("false") || d.getValue().equals("0") ? "0" : "1");
                                         break;
                                     case "meter.temperature":
                                         d.addCapability(Capability.measure_temperature, d.getValue());
@@ -154,30 +174,85 @@ public class Zipato extends Controller {
                                     case "meter.light":
                                         d.addCapability(Capability.measure_light, String.valueOf((int) Float.parseFloat(d.getValue())));
                                         break;
+                                    case "actuator.dimmer":
+                                        d.addCapability(Capability.onoff, d.getValue() == null || d.getValue().isEmpty() || d.getValue().equals("false") || d.getValue().equals("0") ? "0" : "1");
+                                        d.addCapability(Capability.dim, d.getValue() == null || d.getValue().isEmpty() ? "0" : d.getValue());
+                                        break;
+                                    case "actuator.door_lock":
+                                        d.addCapability(Capability.openclose, d.getValue().equals("false") || d.getValue().equals("0") ? "close" : "open");
+                                        break;
                                     default:
                                         continue;
                                 }
                             else if (a.definition != null && a.definition.cluster != null)
                                 switch (a.definition.cluster) {
                                     case "com.zipato.cluster.OnOff":
-                                        d.addCapability(Capability.onoff, d.getValue() == null || d.getValue().equals("false") || d.getValue().equals("0") ? "0" : "1");
+                                        d.addCapability(Capability.onoff, d.getValue() == null || d.getValue().isEmpty() || d.getValue().equals("false") || d.getValue().equals("0") ? "0" : "1");
                                         break;
                                     case "com.zipato.cluster.MultiLvlSensor":
                                         if (a.name != null)
-                                            if (a.name.toLowerCase().contains("temperature"))
+                                            if ("°C".equalsIgnoreCase(a.config.unit) || "°F".equalsIgnoreCase(a.config.unit))
                                                 d.addCapability(Capability.measure_temperature, d.getValue());
-                                            else if (a.name.toLowerCase().contains("luminance"))
-                                                d.addCapability(Capability.measure_temperature, String.valueOf((int) Float.parseFloat(d.getValue())));
+                                            else if ("lux".equalsIgnoreCase(a.config.unit))
+                                                d.addCapability(Capability.measure_light, String.valueOf((int) Float.parseFloat(d.getValue())));
                                         break;
                                     case "com.zipato.cluster.Gauge":
-                                        if (a.name != null && a.name.toLowerCase().contains("temperature"))
+                                        if ("°C".equalsIgnoreCase(a.config.unit) || "°F".equalsIgnoreCase(a.config.unit))
                                             d.addCapability(Capability.measure_temperature, d.getValue());
+                                        break;
+                                    case "com.zipato.cluster.ThermostatMode":
+                                        d.addCapability(Capability.thermostat_mode, d.getValue());
+                                        break;
+                                    case "com.zipato.cluster.ThermostatSetpoint":
+                                        d.addCapability(Capability.measure_temperature, d.getValue());
+                                        d.addCapability(Capability.target_temperature, d.getValue());
+                                        break;
+                                    case "com.zipato.cluster.LevelControl":
+                                        d.addCapability(Capability.onoff, d.getValue() == null || d.getValue().isEmpty() || d.getValue().equals("false") || d.getValue().equals("0") ? "0" : "1");
+                                        d.addCapability(Capability.dim, d.getValue() == null || d.getValue().isEmpty() ? "0" : d.getValue());
+                                        break;
+                                    case "com.zipato.network.virtual.weather.WeatherData":
+                                        //"definition"."attribute" : "icon","winddir16Point","precipMM","tempMinC","tempMaxC","windspeedKmph",
+                                        continue;
+                                    case "com.zipato.network.virtual.alarm.PartitionControl":
+                                        //"attribute" : "armed",
+                                        //"config"."enumValues" : {"true" : "Armed","false" : "Disarmed"},
+                                    case "com.zipato.cluster.SensorBinary":
+                                        //"config"."enumValues" : {"true" : "MOTION","false" : "NO_MOTION"},
+                                        continue;
+                                    case "com.zipato.cluster.AlarmSensor":
+                                        //"config"."enumValues" : {"true" : "SHOCK","false" : "NO_SHOCK"},
+                                        continue;
+                                    case "com.zipato.cluster.Notifications":
+                                        //"config"."enumValues" : {"3" : "TAMPER"},
+                                        continue;
+                                    case "com.zipato.network.virtual.thermostat.ThermostatMasterControl":
+                                        continue;
+                                    case "com.zipato.network.virtual.thermostat.ThermostatOnOff":
+                                        continue;
+                                    case "com.zipato.cluster.MeterMeter":
+                                        continue;
                                     default:
+                                        Log.w(TAG, "Unknown device type: " + a.definition.cluster);
                                         continue;
                                 }
 
                             d.setId(a.uuid);
-                            d.setName(AI.replaceTrash(a.name));
+
+                            switch(a.name.toLowerCase())
+                            {
+                                case "mode":
+                                case "state":
+                                case "temperature":
+                                case "setpoint_heating":
+                                case "valve_position":
+                                case "thermostat_mode":
+                                    d.setName(AI.replaceTrash(a.clusterEndpoint.name));
+                                    break;
+                                default:
+                                    d.setName(AI.replaceTrash(a.name));
+                            }
+
                             if (a.room != null) {
                                 a.room.setName(AI.replaceTrash(a.room.getName()));
                                 rooms.put(a.room.id, a.room);
@@ -309,11 +384,33 @@ public class Zipato extends Controller {
 
     @Override
     public void setMode(UDevice d, String mode) {
-        // TODO
+        sendJSON("/zipato-web/v2/attributes/" + d.getId() + "/value", "{\"value\": " + getThermostatMode(mode) + "}", jsessionid == null ? null : ("JSESSIONID=" + jsessionid));
+    }
+
+    @Override
+    public void setTargetTemperature(UDevice d, String level) {
+        sendJSON("/zipato-web/v2/attributes/" + d.getId() + "/value", "{\"value\": " + level + "}", jsessionid == null ? null : ("JSESSIONID=" + jsessionid));
     }
 
     @Override
     public void runScene(UScene s) {
         sendCommand("/zipato-web/rest/scenes/" + s.getId() + "/run", jsessionid == null ? null : ("JSESSIONID=" + jsessionid));
+    }
+
+    public String getThermostatMode(String mode)
+    {
+        switch(mode)
+        {
+            case "Auto":
+            case "Heat":
+            case "On":
+                return "HEAT";
+            case "Cool":
+                return "COOL";
+            case "Off":
+                return "OFF";
+            default:
+                return "OFF";
+        }
     }
 }

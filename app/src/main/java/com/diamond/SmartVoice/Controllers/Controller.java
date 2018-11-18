@@ -1,6 +1,7 @@
 package com.diamond.SmartVoice.Controllers;
 
 import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.diamond.SmartVoice.AI;
@@ -15,6 +16,7 @@ import com.google.gson.Gson;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 
@@ -28,8 +30,9 @@ public abstract class Controller {
 
     protected MainActivity mainActivity;
 
-    private static ObjectMapper mapper = new ObjectMapper().registerModule(new JsonOrgModule()).disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+    protected static ObjectMapper mapper = new ObjectMapper().registerModule(new JsonOrgModule()).disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 
+    protected String name;
     protected Gson gson;
     protected String host;
     protected String host_ext;
@@ -37,13 +40,33 @@ public abstract class Controller {
     protected String bearer;
     protected boolean clearNames;
 
+    public String getHost() {
+        String address = mainActivity.wifi() ? host : host_ext;
+        if (address == null || address.isEmpty())
+            address = host_ext;
+        if (address == null || address.isEmpty())
+            address = host;
+        if (address == null || address.isEmpty())
+            return "";
+        if (!address.contains("http:") && !address.contains("https:"))
+            address = "http://" + address;
+        return address;
+    }
+
+    private URL getURL(String request) throws MalformedURLException {
+        String address = getHost();
+        if (address.isEmpty())
+            throw new MalformedURLException("no host");
+        return new URL(address + request);
+    }
+
     protected String request(String request, String cookie) {
         String result = null;
         HttpURLConnection conn = null;
         InputStream is = null;
         try {
-            URL url = host_ext != null ? new URL("https://" + host_ext + request) : new URL("http://" + host + request);
-            Log.d(TAG, "Sending request: " + url);
+            URL url = getURL(request);
+            Log.v(TAG, "Sending request: " + url);
             conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
             if (auth != null)
@@ -58,25 +81,26 @@ public abstract class Controller {
             is = conn.getInputStream();
             result = new String(ByteStreams.toByteArray(is));
         } catch (SSLProtocolException e) { /**/ } catch (Exception e) {
-            Log.w(TAG, "Error while send request: " + request);
+            Log.v(TAG, "Error while send request: " + request);
         } finally {
             if (conn != null)
                 try {
                     conn.disconnect();
                 } catch (Exception e) {
-                    Log.w(TAG, "Cannot close connection: " + e);
+                    Log.v(TAG, "Cannot close connection: " + e);
                 }
         }
         return result;
     }
 
     protected <T> T getJson(String request, String cookie, Class<T> c) {
+        long time = System.currentTimeMillis();
         T result = null;
         HttpURLConnection conn = null;
         InputStream is = null;
         try {
-            URL url = host_ext != null ? new URL("https://" + host_ext + request) : new URL("http://" + host + request);
-            Log.d(TAG, "Sending request: " + url);
+            URL url = getURL(request);
+            Log.v(TAG, "Sending request: " + url);
             conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
             if (auth != null)
@@ -91,7 +115,7 @@ public abstract class Controller {
             is = conn.getInputStream();
             result = mapper.readValue(is, c);
         } catch (SSLProtocolException e) { /**/ } catch (Exception e) {
-            Log.w(TAG, "Error while send request: " + request, e);
+            Log.v(TAG, "Error while send request: " + request, e);
         } finally {
             if (is != null)
                 try {
@@ -102,6 +126,7 @@ public abstract class Controller {
                     conn.disconnect();
                 } catch (Exception e) { /**/ }
         }
+        Log.v(TAG, "Request time: " + (System.currentTimeMillis() - time));
         return result;
     }
 
@@ -110,14 +135,14 @@ public abstract class Controller {
     }
 
     protected void sendCommand(final String request, final String cookie) {
-        Log.d(TAG, "Command: " + request);
+        Log.v(TAG, "Command: " + request);
         new Thread(new Runnable() {
             @Override
             public void run() {
                 HttpURLConnection conn = null;
                 InputStream is = null;
                 try {
-                    URL url = host_ext != null ? new URL("https://" + host_ext + request) : new URL("http://" + host + request);
+                    URL url = getURL(request);
                     conn = (HttpURLConnection) url.openConnection();
                     conn.setRequestMethod("GET");
                     if (auth != null)
@@ -149,7 +174,7 @@ public abstract class Controller {
     }
 
     protected void sendJSON(final String request, final String json, final String cookie) {
-        Log.d(TAG, "Json: " + json);
+        Log.v(TAG, "Json: " + json);
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -157,7 +182,7 @@ public abstract class Controller {
                 InputStream is = null;
                 OutputStream os = null;
                 try {
-                    URL url = host_ext != null ? new URL("https://" + host_ext + request) : new URL("http://" + host + request);
+                    URL url = getURL(request);
                     conn = (HttpURLConnection) url.openConnection();
                     conn.setConnectTimeout(10000);
                     conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
@@ -193,11 +218,34 @@ public abstract class Controller {
         }).start();
     }
 
+    public abstract void onSharedPreferenceChanged(SharedPreferences pref, String key);
+
+    public abstract void loadData();
+
+    public abstract void updateData();
+
     public abstract URoom[] getRooms();
 
     public abstract UDevice[] getDevices();
 
     public abstract UScene[] getScenes();
+
+    public String getName() {
+        return name;
+    }
+
+    public boolean isLoaded() {
+        return getVisibleRoomsCount() > 0 || getVisibleDevicesCount() > 0 || getVisibleScenesCount() > 0;
+    }
+
+    public boolean isEnabled() {
+        if (mainActivity == null)
+            return false;
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(mainActivity);
+        if (pref == null)
+            return false;
+        return pref.getBoolean(name.toLowerCase() + "_enabled", false);
+    }
 
     public UDevice getDevice(String deviceId) {
         for (UDevice d : getDevices())
@@ -258,6 +306,8 @@ public abstract class Controller {
     public abstract void setColor(UDevice d, int r, int g, int b, int w);
 
     public abstract void setMode(UDevice d, String mode);
+
+    public abstract void setTargetTemperature(UDevice d, String level);
 
     public abstract void runScene(UScene s);
 

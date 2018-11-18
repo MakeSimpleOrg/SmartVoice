@@ -25,7 +25,7 @@ public class Config {
     private String type;
 
     @SerializedName("unit")
-    private String unit;
+    public String unit;
 
     @SerializedName("enumValues")
     private Object enumValues;

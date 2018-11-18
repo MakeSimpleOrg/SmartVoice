@@ -7,7 +7,7 @@ public class ClusterEndpoint {
     private String link;
 
     @SerializedName("name")
-    private String name;
+    public String name;
 
     @SerializedName("room")
     private int room;

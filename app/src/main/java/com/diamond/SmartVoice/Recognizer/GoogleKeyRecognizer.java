@@ -98,7 +98,8 @@ public class GoogleKeyRecognizer extends AbstractRecognizer implements Recogniti
 
     private void onResult(String finalSpeechResult) {
         Log.d(TAG, "onResult: " + finalSpeechResult);
-        if (!finalSpeechResult.toLowerCase().contains(mContext.pref.getString("GoogleKeyPhrase", mContext.getString(R.string.defaultYandexKeyPhrase)))) {
+        mContext.showSpeak(finalSpeechResult);
+        if (!finalSpeechResult.toLowerCase().contains(mContext.pref.getString("GoogleKeyPhrase", mContext.getString(R.string.defaultYandexKeyPhrase)).toLowerCase())) {
             recognizer.stopListening();
             recognizer.startListening(speechIntent);
             return;

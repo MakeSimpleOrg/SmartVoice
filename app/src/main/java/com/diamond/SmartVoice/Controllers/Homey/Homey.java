@@ -1,5 +1,8 @@
 package com.diamond.SmartVoice.Controllers.Homey;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
+
 import com.diamond.SmartVoice.AI;
 import com.diamond.SmartVoice.Controllers.Capability;
 import com.diamond.SmartVoice.Controllers.Controller;
@@ -10,10 +13,14 @@ import com.diamond.SmartVoice.Controllers.UDevice;
 import com.diamond.SmartVoice.Controllers.URoom;
 import com.diamond.SmartVoice.Controllers.UScene;
 import com.diamond.SmartVoice.MainActivity;
+import com.diamond.SmartVoice.OAuth.WebViewActivity;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.rollbar.android.Rollbar;
+
+import net.smartam.leeloo.client.request.OAuthClientRequest;
+import net.smartam.leeloo.common.exception.OAuthSystemException;
 
 import org.json.JSONObject;
 
@@ -33,16 +40,46 @@ public class Homey extends Controller {
     private UScene[] all_scenes;
 
     public Homey(MainActivity activity) {
+        name = "Homey";
         mainActivity = activity;
-        host = activity.pref.getString("homey_server_ip", "");
-        /* TODO config & home wifi detect
-        String homey_id = pref.getString("homey_id", null);
-        if (homey_id != null)
-            host_ext = homey_id + ".homey.athom.com";
-        */
-        bearer = activity.pref.getString("homey_bearer", "");
         clearNames = true; // TODO config
         gson = new GsonBuilder().serializeNulls().create();
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences pref, String key) {
+        if (!key.equals("homey_enabled") || !pref.getBoolean(key, false))
+            return;
+        if ((!pref.getString("homey_server_ip", "").isEmpty() || !pref.getString("homey_server_ip_ext", "").isEmpty()) && !pref.getString("homey_bearer", "").isEmpty()) {
+            loadData();
+            return;
+        }
+        if (!pref.getString("homey_bearer", "").isEmpty())
+            return;
+        OAuthClientRequest request = null;
+        try {
+            request = OAuthClientRequest
+                    .authorizationLocation("https://accounts.athom.com/login")
+                    .setClientId("5534df95588a5ed82aaef73d").setRedirectURI("https://my.athom.com/auth/callback")
+                    .setResponseType("code")
+                    .setParameter("origin", "https://accounts.athom.com/oauth2/authorise")
+                    .buildQueryMessage();
+        } catch (OAuthSystemException e) {
+            e.printStackTrace();
+        }
+        if (request != null) {
+            //WebViewActivity.mainActivity = mainActivity;
+            Intent intent = new Intent(mainActivity, WebViewActivity.class);
+            intent.putExtra("url", request.getLocationUri());
+            mainActivity.startActivity(intent);
+        }
+    }
+
+    @Override
+    public void loadData() {
+        host = mainActivity.pref.getString("homey_server_ip", "");
+        host_ext = mainActivity.pref.getString("homey_server_ip_ext", "");
+        bearer = mainActivity.pref.getString("homey_bearer", "");
         updateRooms();
         updateData();
     }
@@ -90,7 +127,10 @@ public class Homey extends Controller {
         Scene[] loaded_scenes = null;
 
         try {
-            JSONObject devices = getJson("/api/manager/devices/device", null, JSONObject.class);
+            String request = "/api/manager/devices/device";
+            // for faster processing, loading only known device types
+            request += "?capabilities_any=onoff,windowcoverings_state,dim,measure_battery,measure_power,meter_power,measure_temperature,measure_co2,measure_humidity,measure_light,measure_noise,measure_pressure,button,target_temperature,thermostat_mode";
+            JSONObject devices = getJson(request, null, JSONObject.class);
             if (devices != null)
                 devices = devices.getJSONObject("result");
 
@@ -258,11 +298,32 @@ public class Homey extends Controller {
 
     @Override
     public void setMode(UDevice d, String mode) {
-        // TODO
+        sendJSON("/api/manager/devices/device/" + d.getId() + "/state/", "{\"windowcoverings_state\": \"" + getThermostatMode(mode) + "\"}");
+    }
+
+    @Override
+    public void setTargetTemperature(UDevice d, String level) {
+        sendJSON("/api/manager/devices/device/" + d.getId() + "/state/", "{\"target_temperature\": " + (level.equals("0") ? 0 : (Integer.parseInt(level) / 100)) + "}");
     }
 
     @Override
     public void runScene(UScene s) {
         sendJSON("/api/manager/devices/device/" + s.getId() + "/state/", "{\"button\": true}");
+    }
+
+    private String getThermostatMode(String mode) {
+        switch (mode) {
+            case "Auto":
+                return "auto";
+            case "Heat":
+            case "On":
+                return "heat";
+            case "Cool":
+                return "cool";
+            case "Off":
+                return "off";
+            default:
+                return "off";
+        }
     }
 }

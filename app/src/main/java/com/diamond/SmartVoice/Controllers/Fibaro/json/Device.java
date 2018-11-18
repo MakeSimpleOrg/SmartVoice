@@ -91,12 +91,20 @@ public class Device extends UDevice {
         return type;
     }
 
+    public String getBaseType() {
+        return baseType;
+    }
+
     public DeviceProperties getProperties() {
         return properties;
     }
 
     public boolean isThermostat() {
         return type.equals("com.fibaro.setPoint") || type.equals("com.fibaro.thermostatDanfoss") || type.equals("com.fibaro.thermostatHorstmann");
+    }
+
+    public int getParentId() {
+        return parentId;
     }
 
     public String getValue() {
@@ -107,6 +115,10 @@ public class Device extends UDevice {
 
     public boolean isVisible() {
         return visible && super.isVisible();
+    }
+
+    public void setVisible(boolean visible) {
+        this.visible = visible;
     }
 
     @Override
