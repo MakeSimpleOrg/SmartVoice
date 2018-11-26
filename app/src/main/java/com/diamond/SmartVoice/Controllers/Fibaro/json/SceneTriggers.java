@@ -10,8 +10,8 @@ class SceneTriggers {
     private SceneProperties[] properties;
 
     @SerializedName("globals")
-    private String[] globals;
+    private Object globals;
 
     @SerializedName("events")
-    private String[] events;
+    private Object events;
 }
