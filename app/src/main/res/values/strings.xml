@@ -8,6 +8,7 @@
     <string name="defaultYandexKeyPhrase">Alice</string>
     <string name="empty" />
     <string name="title_activity_get_access_token">GetAccessTokenActivity</string>
+    <string name="Controllers">Controllers</string>
     <string name="ServerLocalAddress">Server Local Address</string>
     <string name="ServerRemoteAddress">Server Remote Address</string>
     <string name="Login">Login</string>
@@ -55,12 +56,6 @@
     <string name="Vocalizer">Speech engine</string>
     <string name="HomeSSID">Home Wi-Fi SSID</string>
 
-    <string name="ThermostatModeOff">off</string>
-    <string name="ThermostatModeOn">on</string>
-    <string name="ThermostatModeHeat">heat</string>
-    <string name="ThermostatModeCool">cool</string>
-    <string name="ThermostatModeEnergySaveHeat">energy save heat</string>
-
     <string-array name="VocalizerEntries">
         <item>Disabled</item>
         <item>Google</item>
@@ -98,9 +93,11 @@
 
     <string-array name="KeyPhraseEntries">
         <item>Alexa</item>
+        <item>Jarvis</item>
     </string-array>
     <string-array name="KeyPhraseValues">
         <item>Alexa</item>
+        <item>Jarvis</item>
     </string-array>
 
     <string-array name="YandexKeyPhraseEntries">

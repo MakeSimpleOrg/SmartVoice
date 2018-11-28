@@ -6,6 +6,7 @@ import android.util.Log;
 import com.diamond.SmartVoice.AI;
 import com.diamond.SmartVoice.Controllers.Capability;
 import com.diamond.SmartVoice.Controllers.Controller;
+import com.diamond.SmartVoice.Controllers.HttpController;
 import com.diamond.SmartVoice.Controllers.UDevice;
 import com.diamond.SmartVoice.Controllers.URoom;
 import com.diamond.SmartVoice.Controllers.UScene;
@@ -22,7 +23,7 @@ import java.util.Locale;
 /**
  * @author Dmitriy Ponomarev
  */
-public class Vera extends Controller {
+public class Vera extends HttpController {
     private static final String TAG = Vera.class.getSimpleName();
 
     private Room[] all_rooms;
@@ -49,6 +50,10 @@ public class Vera extends Controller {
         if (!host.replaceAll("http://", "").replaceAll("https://", "").contains(":"))
             host += ":3480";
         host_ext = mainActivity.pref.getString("vera_server_ip_ext", "");
+        // TODO авторизация и работа через облако, пример: https://github.com/cybermaggedon/pyvera/blob/master/vera3.py
+        // https://home.getvera.com/api/users/action_login
+        //"login_id" : login_id,
+        //"login_pass" : login_pass
         updateData();
     }
 

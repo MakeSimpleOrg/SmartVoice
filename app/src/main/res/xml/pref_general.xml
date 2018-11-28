@@ -1,110 +1,141 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <PreferenceScreen android:title="Homey">
-        <CheckBoxPreference
-            android:defaultValue="false"
-            android:key="homey_enabled"
-            android:title="Homey" />
-        <EditTextPreference
-            android:inputType="textUri"
-            android:key="homey_server_ip"
-            android:selectAllOnFocus="true"
-            android:singleLine="true"
-            android:title="@string/ServerLocalAddress" />
-        <EditTextPreference
-            android:inputType="textUri"
-            android:key="homey_server_ip_ext"
-            android:selectAllOnFocus="true"
-            android:singleLine="true"
-            android:title="@string/ServerRemoteAddress" />
-        <EditTextPreference
-            android:inputType="textNoSuggestions|textVisiblePassword"
-            android:key="homey_bearer"
-            android:maxLines="1"
-            android:selectAllOnFocus="true"
-            android:singleLine="true"
-            android:title="Bearer Token" />
-    </PreferenceScreen>
-    <PreferenceScreen android:title="Fibaro">
-        <CheckBoxPreference
-            android:defaultValue="false"
-            android:key="fibaro_enabled"
-            android:title="Fibaro" />
-        <EditTextPreference
-            android:inputType="textUri"
-            android:key="fibaro_server_ip"
-            android:selectAllOnFocus="true"
-            android:singleLine="true"
-            android:title="@string/ServerLocalAddress" />
-        <EditTextPreference
-            android:inputType="textUri"
-            android:key="fibaro_server_ip_ext"
-            android:selectAllOnFocus="true"
-            android:singleLine="true"
-            android:title="@string/ServerRemoteAddress" />
-        <EditTextPreference
-            android:inputType="textNoSuggestions|textVisiblePassword"
-            android:key="fibaro_server_login"
-            android:maxLines="1"
-            android:selectAllOnFocus="true"
-            android:singleLine="true"
-            android:title="@string/Login" />
-        <EditTextPreference
-            android:inputType="textPassword"
-            android:key="fibaro_server_password"
-            android:maxLines="1"
-            android:password="true"
-            android:selectAllOnFocus="true"
-            android:singleLine="true"
-            android:title="@string/Password" />
-    </PreferenceScreen>
-    <PreferenceScreen android:title="Vera">
-        <CheckBoxPreference
-            android:defaultValue="false"
-            android:key="vera_enabled"
-            android:title="Vera" />
-        <EditTextPreference
-            android:inputType="textUri"
-            android:key="vera_server_ip"
-            android:selectAllOnFocus="true"
-            android:singleLine="true"
-            android:title="@string/ServerLocalAddress" />
-        <EditTextPreference
-            android:inputType="textUri"
-            android:key="vera_server_ip_ext"
-            android:selectAllOnFocus="true"
-            android:singleLine="true"
-            android:title="@string/ServerRemoteAddress" />
-    </PreferenceScreen>
-    <PreferenceScreen android:title="Zipato">
-        <CheckBoxPreference
-            android:defaultValue="false"
-            android:key="zipato_enabled"
-            android:title="Zipato" />
-        <EditTextPreference
-            android:inputType="textUri"
-            android:key="zipato_server_ip"
-            android:title="@string/ServerLocalAddress" />
-        <EditTextPreference
-            android:defaultValue="https://my.zipato.com:443"
-            android:inputType="textUri"
-            android:key="zipato_server_ip_ext"
-            android:title="@string/ServerRemoteAddress" />
-        <EditTextPreference
-            android:inputType="textNoSuggestions|textVisiblePassword"
-            android:key="zipato_server_login"
-            android:maxLines="1"
-            android:selectAllOnFocus="true"
-            android:singleLine="true"
-            android:title="@string/Login" />
-        <EditTextPreference
-            android:inputType="textPassword"
-            android:key="zipato_server_password"
-            android:maxLines="1"
-            android:password="true"
-            android:selectAllOnFocus="true"
-            android:singleLine="true"
-            android:title="@string/Password" />
+    <PreferenceScreen android:title="@string/Controllers">
+        <PreferenceScreen android:title="Homey">
+            <CheckBoxPreference
+                android:defaultValue="false"
+                android:key="homey_enabled"
+                android:title="Homey" />
+            <EditTextPreference
+                android:inputType="textUri"
+                android:key="homey_server_ip"
+                android:selectAllOnFocus="true"
+                android:singleLine="true"
+                android:title="@string/ServerLocalAddress" />
+            <EditTextPreference
+                android:inputType="textUri"
+                android:key="homey_server_ip_ext"
+                android:selectAllOnFocus="true"
+                android:singleLine="true"
+                android:title="@string/ServerRemoteAddress" />
+            <EditTextPreference
+                android:inputType="textNoSuggestions|textVisiblePassword"
+                android:key="homey_bearer"
+                android:maxLines="1"
+                android:selectAllOnFocus="true"
+                android:singleLine="true"
+                android:title="Bearer Token" />
+        </PreferenceScreen>
+        <PreferenceScreen android:title="Fibaro">
+            <CheckBoxPreference
+                android:defaultValue="false"
+                android:key="fibaro_enabled"
+                android:title="Fibaro" />
+            <EditTextPreference
+                android:inputType="textUri"
+                android:key="fibaro_server_ip"
+                android:selectAllOnFocus="true"
+                android:singleLine="true"
+                android:title="@string/ServerLocalAddress" />
+            <EditTextPreference
+                android:inputType="textUri"
+                android:key="fibaro_server_ip_ext"
+                android:selectAllOnFocus="true"
+                android:singleLine="true"
+                android:title="@string/ServerRemoteAddress" />
+            <EditTextPreference
+                android:inputType="textNoSuggestions|textVisiblePassword"
+                android:key="fibaro_server_login"
+                android:maxLines="1"
+                android:selectAllOnFocus="true"
+                android:singleLine="true"
+                android:title="@string/Login" />
+            <EditTextPreference
+                android:inputType="textPassword"
+                android:key="fibaro_server_password"
+                android:maxLines="1"
+                android:password="true"
+                android:selectAllOnFocus="true"
+                android:singleLine="true"
+                android:title="@string/Password" />
+        </PreferenceScreen>
+        <PreferenceScreen android:title="Vera">
+            <CheckBoxPreference
+                android:defaultValue="false"
+                android:key="vera_enabled"
+                android:title="Vera" />
+            <EditTextPreference
+                android:inputType="textUri"
+                android:key="vera_server_ip"
+                android:selectAllOnFocus="true"
+                android:singleLine="true"
+                android:title="@string/ServerLocalAddress" />
+            <EditTextPreference
+                android:inputType="textUri"
+                android:key="vera_server_ip_ext"
+                android:selectAllOnFocus="true"
+                android:singleLine="true"
+                android:title="@string/ServerRemoteAddress" />
+        </PreferenceScreen>
+        <PreferenceScreen android:title="Zipato">
+            <CheckBoxPreference
+                android:defaultValue="false"
+                android:key="zipato_enabled"
+                android:title="Zipato" />
+            <EditTextPreference
+                android:inputType="textUri"
+                android:key="zipato_server_ip"
+                android:title="@string/ServerLocalAddress" />
+            <EditTextPreference
+                android:defaultValue="https://my.zipato.com:443"
+                android:inputType="textUri"
+                android:key="zipato_server_ip_ext"
+                android:title="@string/ServerRemoteAddress" />
+            <EditTextPreference
+                android:inputType="textNoSuggestions|textVisiblePassword"
+                android:key="zipato_server_login"
+                android:maxLines="1"
+                android:selectAllOnFocus="true"
+                android:singleLine="true"
+                android:title="@string/Login" />
+            <EditTextPreference
+                android:inputType="textPassword"
+                android:key="zipato_server_password"
+                android:maxLines="1"
+                android:password="true"
+                android:selectAllOnFocus="true"
+                android:singleLine="true"
+                android:title="@string/Password" />
+        </PreferenceScreen>
+        <PreferenceScreen android:title="Wiren Board">
+            <CheckBoxPreference
+                android:defaultValue="false"
+                android:key="wirenboard_enabled"
+                android:title="Wiren Board" />
+            <EditTextPreference
+                android:inputType="textUri"
+                android:key="wirenboard_server_ip"
+                android:title="@string/ServerLocalAddress" />
+            <EditTextPreference
+                android:inputType="textUri"
+                android:key="wirenboard_server_ip_ext"
+                android:title="@string/ServerRemoteAddress" />
+            <EditTextPreference
+                android:inputType="textNoSuggestions|textVisiblePassword"
+                android:key="wirenboard_server_login"
+                android:maxLines="1"
+                android:selectAllOnFocus="true"
+                android:singleLine="true"
+                android:title="@string/Login" />
+            <EditTextPreference
+                android:inputType="textPassword"
+                android:key="wirenboard_server_password"
+                android:maxLines="1"
+                android:password="true"
+                android:selectAllOnFocus="true"
+                android:singleLine="true"
+                android:title="@string/Password" />
+        </PreferenceScreen>
     </PreferenceScreen>
     <PreferenceScreen android:title="@string/VoiceSettings">
         <ListPreference

@@ -8,6 +8,7 @@
     <string name="defaultYandexKeyPhrase">Алиса</string>
     <string name="empty" />
     <string name="title_activity_get_access_token">GetAccessTokenActivity</string>
+    <string name="Controllers">Контроллеры</string>
     <string name="ServerLocalAddress">Локальный адрес сервера</string>
     <string name="ServerRemoteAddress">Удаленный адрес сервера</string>
     <string name="Login">Логин</string>
@@ -92,9 +93,11 @@
 
     <string-array name="KeyPhraseEntries">
         <item>Alexa</item>
+        <item>Jarvis</item>
     </string-array>
     <string-array name="KeyPhraseValues">
         <item>Alexa</item>
+        <item>Jarvis</item>
     </string-array>
 
     <string-array name="YandexKeyPhraseEntries">

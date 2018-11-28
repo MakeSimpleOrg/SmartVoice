@@ -35,8 +35,9 @@ public class ScenesActivity extends PreferenceActivity {
 
     private void reload() {
         getPreferenceScreen().removeAll();
-        for(Controller controller : MainActivity.controllers)
-            list(controller);
+        for (Controller controller : MainActivity.controllers)
+            if (controller.getVisibleScenesCount() > 0)
+                list(controller);
     }
 
     private void list(Controller controller) {

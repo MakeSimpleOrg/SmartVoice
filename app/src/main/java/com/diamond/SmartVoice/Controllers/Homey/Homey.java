@@ -9,6 +9,7 @@ import com.diamond.SmartVoice.Controllers.Controller;
 import com.diamond.SmartVoice.Controllers.Homey.json.Device;
 import com.diamond.SmartVoice.Controllers.Homey.json.Room;
 import com.diamond.SmartVoice.Controllers.Homey.json.Scene;
+import com.diamond.SmartVoice.Controllers.HttpController;
 import com.diamond.SmartVoice.Controllers.UDevice;
 import com.diamond.SmartVoice.Controllers.URoom;
 import com.diamond.SmartVoice.Controllers.UScene;
@@ -32,7 +33,7 @@ import java.util.Map;
 /**
  * @author Dmitriy Ponomarev
  */
-public class Homey extends Controller {
+public class Homey extends HttpController {
     private static final String TAG = Homey.class.getSimpleName();
 
     private Room[] all_rooms;

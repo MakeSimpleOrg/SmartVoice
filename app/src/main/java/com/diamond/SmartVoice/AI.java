@@ -31,7 +31,7 @@ public class AI {
     }
 
     private static boolean matches_d(UDevice d, String s2, int accuracy, SharedPreferences pref) {
-        if (matches(d.ai_name, s2, accuracy))
+        if (matches(d.getAiName(), s2, accuracy))
             return true;
         String alias = pref.getString("device_alias_" + d.getId(), null);
         if (alias == null || alias.isEmpty())
@@ -62,7 +62,7 @@ public class AI {
     }
 
     private static boolean matchesOnOffDim_d(UDevice d, String strarg, int accuracy, SharedPreferences pref) {
-        if (matchesOnOffDim(d.ai_name, strarg, accuracy))
+        if (matchesOnOffDim(d.getAiName(), strarg, accuracy))
             return true;
         String alias = pref.getString("device_alias_" + d.getId(), null);
         if (alias == null || alias.isEmpty())

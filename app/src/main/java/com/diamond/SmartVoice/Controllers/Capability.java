@@ -25,6 +25,7 @@ public enum Capability {
     measure_light,
     measure_noise,
     measure_pressure,
+    measure_generic,
     button,
     target_temperature,
     thermostat_mode;

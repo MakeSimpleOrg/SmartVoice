@@ -8,9 +8,11 @@ dict/transition_matrices
 dict/variances
 ding.wav
 dong.wav
-gson.txt
+scenes.json
+small-talk-58989-e8d7173db7a0.json
 snowboy/alexa.umdl
 snowboy/common.res
+snowboy/jarvis.umdl
 yandex/HCLG.cfst
 yandex/HCLG.fst
 yandex/acoustic_model.nnet

@@ -10,16 +10,19 @@ import com.diamond.SmartVoice.Controllers.Fibaro.json.Device;
 import com.diamond.SmartVoice.Controllers.Fibaro.json.DeviceProperties;
 import com.diamond.SmartVoice.Controllers.Fibaro.json.Room;
 import com.diamond.SmartVoice.Controllers.Fibaro.json.Scene;
+import com.diamond.SmartVoice.Controllers.HttpController;
 import com.diamond.SmartVoice.Controllers.UDevice;
 import com.diamond.SmartVoice.Controllers.URoom;
 import com.diamond.SmartVoice.Controllers.UScene;
 import com.diamond.SmartVoice.MainActivity;
+import com.diamond.SmartVoice.Utils;
 import com.google.gson.Gson;
 import com.rollbar.android.Rollbar;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -28,7 +31,7 @@ import java.util.Locale;
 /**
  * @author Dmitriy Ponomarev
  */
-public class Fibaro extends Controller {
+public class Fibaro extends HttpController {
     private static final String TAG = Fibaro.class.getSimpleName();
 
     private Room[] all_rooms;
@@ -248,6 +251,9 @@ public class Fibaro extends Controller {
                 }
 
             JSONArray jO = getJson("/api/scenes?enabled=true&visible=true", null, JSONArray.class);
+
+            //jO = new JSONArray(Utils.getStringFromFile(new File(Utils.assetDir, "scenes.json"))); // для тестов
+
             try {
                 loaded_scenes = jO == null ? new Scene[0] : gson.fromJson(jO.toString(), Scene[].class);
             } catch (Exception e) {

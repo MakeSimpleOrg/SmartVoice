@@ -11,6 +11,7 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
@@ -24,7 +25,9 @@ import android.widget.TextView;
 import com.diamond.SmartVoice.Controllers.Controller;
 import com.diamond.SmartVoice.Controllers.Fibaro.Fibaro;
 import com.diamond.SmartVoice.Controllers.Homey.Homey;
+import com.diamond.SmartVoice.Controllers.MQTTController;
 import com.diamond.SmartVoice.Controllers.Vera.Vera;
+import com.diamond.SmartVoice.Controllers.WirenBoard.WirenBoard;
 import com.diamond.SmartVoice.Controllers.Zipato.Zipato;
 import com.diamond.SmartVoice.Recognizer.AbstractRecognizer;
 import com.diamond.SmartVoice.Recognizer.GoogleKeyRecognizer;
@@ -292,6 +295,7 @@ public class MainActivity extends Activity {
         controllers.add(new Fibaro(this));
         controllers.add(new Vera(this));
         controllers.add(new Zipato(this));
+        controllers.add(new WirenBoard(this));
 
         for (Controller controller : controllers)
             if (controller.isEnabled())
@@ -308,7 +312,7 @@ public class MainActivity extends Activity {
                             polling = Integer.parseInt(pref.getString("polling", "300"));
                             long time;
                             for (Controller controller : controllers)
-                                if (controller.isLoaded() && controller.isEnabled()) {
+                                if (controller.isLoaded() && controller.isEnabled() && !(controller instanceof MQTTController)) {
                                     time = System.currentTimeMillis();
                                     controller.updateData();
                                     Log.d(TAG, controller.getName() + " poll time: " + (System.currentTimeMillis() - time));
@@ -332,6 +336,32 @@ public class MainActivity extends Activity {
 
         AIConfiguration configuration = new AIConfiguration("923bfde517fe45e89f75e05fbcc699f5");
         aiService = new AIDataService(configuration);
+
+        /* API V2
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                //Storage storage = StorageOptions.getDefaultInstance().getService();
+
+                GoogleCredentials credentials = null;
+                try {
+                    System.out.println(Utils.assetDir.getAbsolutePath());
+                    credentials = GoogleCredentials.fromStream(new FileInputStream(Utils.assetDir.getAbsolutePath() + "/small-talk-58989-e8d7173db7a0.json"))
+                    .createScoped(Lists.newArrayList("https://www.googleapis.com/auth/cloud-platform"));
+                    Storage storage = StorageOptions.newBuilder().setCredentials(credentials).build().getService();
+                    System.out.println("Buckets:");
+                    Page<Bucket> buckets = storage.list();
+                    for (Bucket bucket : buckets.iterateAll()) {
+                        System.out.println(bucket.toString());
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                answer("Тест");
+            }
+        }).start();
+        */
     }
 
     private boolean isLoading() {
@@ -548,6 +578,7 @@ public class MainActivity extends Activity {
 
     public String answer(String text) {
         Log.i(TAG, "question: " + text);
+
         try {
             AIRequest request = new AIRequest(text);
             AIResponse response = aiService.request(request);
@@ -564,6 +595,29 @@ public class MainActivity extends Activity {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+
+        /* API V2
+        try {
+            SessionsClient sessionsClient = SessionsClient.create();
+            SessionName session = SessionName.of("small-talk-58989", pref.getString("device_uuid", UUID.randomUUID().toString()));
+            String languageCode = "en-US";
+            if ("ru".equalsIgnoreCase(Locale.getDefault().getLanguage()))
+                languageCode = "ru-RU";
+
+            TextInput.Builder textInput = TextInput.newBuilder().setText(text).setLanguageCode(languageCode);
+            QueryInput queryInput = QueryInput.newBuilder().setText(textInput).build();
+            DetectIntentResponse response = sessionsClient.detectIntent(session, queryInput);
+            QueryResult queryResult = response.getQueryResult();
+
+            Log.i(TAG, "Query Text: " + queryResult.getQueryText());
+            Log.i(TAG, "Detected Intent: " + queryResult.getIntent().getDisplayName() + ", confidence: " + queryResult.getIntentDetectionConfidence());
+            Log.i(TAG, "Fulfillment Text: " + queryResult.getFulfillmentText());
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        */
+
         return null;
     }
 

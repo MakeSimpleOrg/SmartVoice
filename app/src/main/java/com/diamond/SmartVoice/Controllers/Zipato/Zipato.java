@@ -8,6 +8,7 @@ import com.diamond.SmartVoice.AI;
 import com.diamond.SmartVoice.Controllers.Capability;
 import com.diamond.SmartVoice.Controllers.Controller;
 import com.diamond.SmartVoice.Controllers.Fibaro.ModeType;
+import com.diamond.SmartVoice.Controllers.HttpController;
 import com.diamond.SmartVoice.Controllers.UDevice;
 import com.diamond.SmartVoice.Controllers.URoom;
 import com.diamond.SmartVoice.Controllers.UScene;
@@ -35,7 +36,7 @@ import java.util.Iterator;
 /**
  * @author Dmitriy Ponomarev
  */
-public class Zipato extends Controller {
+public class Zipato extends HttpController {
     private static final String TAG = Zipato.class.getSimpleName();
 
     private Room[] all_rooms;

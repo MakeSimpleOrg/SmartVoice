@@ -10,6 +10,11 @@ public abstract class UDevice {
     public int ai_flag = 0;
     public String ai_value = null;
 
+    public String getAiName()
+    {
+        return ai_name;
+    }
+
     public abstract String getId();
 
     public abstract String getName();

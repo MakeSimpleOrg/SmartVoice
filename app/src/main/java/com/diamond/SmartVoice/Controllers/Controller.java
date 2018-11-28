@@ -7,20 +7,11 @@ import android.util.Log;
 import com.diamond.SmartVoice.AI;
 import com.diamond.SmartVoice.MainActivity;
 import com.diamond.SmartVoice.R;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsonorg.JsonOrgModule;
-import com.google.common.io.ByteStreams;
-import com.google.gson.Gson;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 
-import javax.net.ssl.SSLProtocolException;
 
 /**
  * @author Dmitriy Ponomarev
@@ -30,14 +21,10 @@ public abstract class Controller {
 
     protected MainActivity mainActivity;
 
-    protected static ObjectMapper mapper = new ObjectMapper().registerModule(new JsonOrgModule()).disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-
     protected String name;
-    protected Gson gson;
     protected String host;
     protected String host_ext;
     protected String auth;
-    protected String bearer;
     protected boolean clearNames;
 
     public String getHost() {
@@ -48,174 +35,24 @@ public abstract class Controller {
             address = host;
         if (address == null || address.isEmpty())
             return "";
-        if (!address.contains("http:") && !address.contains("https:"))
-            address = "http://" + address;
+        if(this instanceof HttpController) {
+            if (!address.contains("http:") && !address.contains("https:"))
+                address = "http://" + address;
+        }
+        else if(this instanceof MQTTController) {
+            address = address.replace("http:", "tcp:");
+            address = address.replace("https:", "ssl:");
+            if (!address.contains("tcp:") && !address.contains("ssl:"))
+                address = "tcp://" + address;
+        }
         return address;
     }
 
-    private URL getURL(String request) throws MalformedURLException {
+    URL getURL(String request) throws MalformedURLException {
         String address = getHost();
         if (address.isEmpty())
             throw new MalformedURLException("no host");
         return new URL(address + request);
-    }
-
-    protected String request(String request, String cookie) {
-        String result = null;
-        HttpURLConnection conn = null;
-        InputStream is = null;
-        try {
-            URL url = getURL(request);
-            Log.v(TAG, "Sending request: " + url);
-            conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-            if (auth != null)
-                conn.setRequestProperty("Authorization", "Basic " + auth);
-            else if (bearer != null)
-                conn.setRequestProperty("Authorization", "Bearer " + bearer);
-            conn.setRequestProperty("Content-Type", "application/json;charset=utf-8");
-            if (cookie != null)
-                conn.setRequestProperty("Cookie", cookie);
-            conn.setConnectTimeout(10000);
-            conn.connect();
-            is = conn.getInputStream();
-            result = new String(ByteStreams.toByteArray(is));
-        } catch (SSLProtocolException e) { /**/ } catch (Exception e) {
-            Log.v(TAG, "Error while send request: " + request);
-        } finally {
-            if (conn != null)
-                try {
-                    conn.disconnect();
-                } catch (Exception e) {
-                    Log.v(TAG, "Cannot close connection: " + e);
-                }
-        }
-        return result;
-    }
-
-    protected <T> T getJson(String request, String cookie, Class<T> c) {
-        long time = System.currentTimeMillis();
-        T result = null;
-        HttpURLConnection conn = null;
-        InputStream is = null;
-        try {
-            URL url = getURL(request);
-            Log.v(TAG, "Sending request: " + url);
-            conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-            if (auth != null)
-                conn.setRequestProperty("Authorization", "Basic " + auth);
-            else if (bearer != null)
-                conn.setRequestProperty("Authorization", "Bearer " + bearer);
-            conn.setRequestProperty("Content-Type", "application/json;charset=utf-8");
-            if (cookie != null)
-                conn.setRequestProperty("Cookie", cookie);
-            conn.setConnectTimeout(10000);
-            conn.connect();
-            is = conn.getInputStream();
-            result = mapper.readValue(is, c);
-        } catch (SSLProtocolException e) { /**/ } catch (Exception e) {
-            Log.v(TAG, "Error while send request: " + request, e);
-        } finally {
-            if (is != null)
-                try {
-                    is.close();
-                } catch (Exception e) { /**/ }
-            if (conn != null)
-                try {
-                    conn.disconnect();
-                } catch (Exception e) { /**/ }
-        }
-        Log.v(TAG, "Request time: " + (System.currentTimeMillis() - time));
-        return result;
-    }
-
-    protected void sendCommand(final String request) {
-        sendCommand(request, null);
-    }
-
-    protected void sendCommand(final String request, final String cookie) {
-        Log.v(TAG, "Command: " + request);
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                HttpURLConnection conn = null;
-                InputStream is = null;
-                try {
-                    URL url = getURL(request);
-                    conn = (HttpURLConnection) url.openConnection();
-                    conn.setRequestMethod("GET");
-                    if (auth != null)
-                        conn.setRequestProperty("Authorization", "Basic " + auth);
-                    else if (bearer != null)
-                        conn.setRequestProperty("Authorization", "Bearer " + bearer);
-                    if (cookie != null)
-                        conn.setRequestProperty("Cookie", cookie);
-                    conn.setConnectTimeout(10000);
-                    is = conn.getInputStream();
-                } catch (SSLProtocolException e) { /**/ } catch (Exception e) {
-                    Log.w(TAG, "Error while get getJson: " + request);
-                } finally {
-                    if (is != null)
-                        try {
-                            is.close();
-                        } catch (Exception e) { /**/ }
-                    if (conn != null)
-                        try {
-                            conn.disconnect();
-                        } catch (Exception e) { /**/ }
-                }
-            }
-        }).start();
-    }
-
-    protected void sendJSON(final String request, final String json) {
-        sendJSON(request, json, null);
-    }
-
-    protected void sendJSON(final String request, final String json, final String cookie) {
-        Log.v(TAG, "Json: " + json);
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                HttpURLConnection conn = null;
-                InputStream is = null;
-                OutputStream os = null;
-                try {
-                    URL url = getURL(request);
-                    conn = (HttpURLConnection) url.openConnection();
-                    conn.setConnectTimeout(10000);
-                    conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-                    if (cookie != null)
-                        conn.setRequestProperty("Cookie", cookie);
-                    conn.setDoOutput(true);
-                    conn.setDoInput(true);
-                    conn.setRequestMethod("PUT");
-                    if (auth != null)
-                        conn.setRequestProperty("Authorization", "Basic " + auth);
-                    else if (bearer != null)
-                        conn.setRequestProperty("Authorization", "Bearer " + bearer);
-                    os = conn.getOutputStream();
-                    os.write(json.getBytes("UTF-8"));
-                    is = conn.getInputStream();
-                } catch (SSLProtocolException e) { /**/ } catch (Exception e) {
-                    Log.w(TAG, "Error while get getJson: " + request);
-                } finally {
-                    if (os != null)
-                        try {
-                            os.close();
-                        } catch (Exception e) { /**/ }
-                    if (is != null)
-                        try {
-                            is.close();
-                        } catch (Exception e) { /**/ }
-                    if (conn != null)
-                        try {
-                            conn.disconnect();
-                        } catch (Exception e) { /**/ }
-                }
-            }
-        }).start();
     }
 
     public abstract void onSharedPreferenceChanged(SharedPreferences pref, String key);
@@ -314,7 +151,7 @@ public abstract class Controller {
     public String process(String[] requests, SharedPreferences pref) {
         UDevice[] devices = AI.getDevices(getDevices(), requests, pref);
         if (devices != null) {
-            mainActivity.show(mainActivity.getString(R.string.Recognized) + ": " + devices[0].ai_name);
+            mainActivity.show(mainActivity.getString(R.string.Recognized) + ": " + devices[0].getAiName());
             return processDevices(devices);
         }
         UScene[] scenes = AI.getScenes(getScenes(), requests, pref);
@@ -331,11 +168,12 @@ public abstract class Controller {
         String text = mainActivity.getString(R.string.error);
         ArrayList<UDevice> list = new ArrayList<>();
         for (UDevice u : devices) {
-            Log.d(TAG, mainActivity.getString(R.string.Recognized) + ": " + u.getId() + " " + u.ai_name);
+            Log.d(TAG, mainActivity.getString(R.string.Recognized) + ": " + u.getId() + " " + u.getAiName());
             if (u.getCapabilities() != null) {
                 String onoff = u.getCapabilities().get(Capability.onoff);
                 String openclose = u.getCapabilities().get(Capability.openclose);
                 String windowcoverings_state = u.getCapabilities().get(Capability.windowcoverings_state);
+                Log.d(TAG, "onoff: " + onoff);
                 if (u.ai_flag == 3) {
                     setDimLevel(u, u.ai_value);
                     u.getCapabilities().put(Capability.dim, u.ai_value);
@@ -344,7 +182,7 @@ public abstract class Controller {
                     list.add(u);
                     if (!finded) {
                         finded = true;
-                        enabled = u.ai_flag == 1 || u.ai_flag == 0 && ("0".equals(onoff) || "open".equals(openclose) || "up".equals(windowcoverings_state));
+                        enabled = u.ai_flag == 1 || u.ai_flag == 0 && (onoff == null || onoff.isEmpty() || "0".equals(onoff) || "open".equals(openclose) || "up".equals(windowcoverings_state));
                     }
                 } else {
                     String measure_temperature = u.getCapabilities().get(Capability.measure_temperature);
@@ -365,9 +203,12 @@ public abstract class Controller {
                     String measure_noise = u.getCapabilities().get(Capability.measure_noise);
                     if (measure_noise != null)
                         return measure_noise;
+                    String measure_generic = u.getCapabilities().get(Capability.measure_generic);
+                    if (measure_generic != null)
+                        return measure_generic;
                 }
             } else
-                Log.w(TAG, "u.getCapabilities() == null: " + u.getId() + u.ai_name);
+                Log.w(TAG, "u.getCapabilities() == null: " + u.getId() + u.getAiName());
         }
 
         for (UDevice u : list) {

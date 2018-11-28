@@ -25,6 +25,8 @@ public class SettingsActivity extends PreferenceActivity {
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
 
+
+
         addPreferencesFromResource(R.xml.pref_general);
 
         bind("homeSSID");
