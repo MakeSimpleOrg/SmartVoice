@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "small-talk-58989",
+  "private_key_id": "e8d7173db7a094e679187993dc9893c9639192bd",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCx7J11q6T8UmNL\nhZJw+3EwyvZ2M/wEJkXEdxllrdNVMhVFNmJvmEhlAoL535ud8cKLvEB8dK353ZJG\nYgUOrpz8ikAuHV00zUBZAK271p+qllxDQa+QyzBnWNtLD9Y4dYjg2qCPCxfZbdsh\nEsi/vkEFtgVkKjIAjIN+76dRCQn1DbjOMlMesw4VodEle975Eh4//+PAUH18mcIs\nyhN7NrzNWufNIV/1PGJezjMk3gx69wF76y9/I7kEavO7AfRG6szBWvndwPnttWwd\nKEjG3Kmd5EY+60tthz2/cQ0M+ZFe/TYqGEpIEt2vNSLdrkjhh47jzClnF000xYpR\nx3AT0KrfAgMBAAECggEASaOxbfTbJbWhtC219P4UlInEZRrR6RPAF3bls5A0ohPG\n+uzt49smx2u5MtsqCL55cyU4mWofYYWjl27VQgTiI6HCu3Na0tJKmiuuPEqxrcRq\nrkl+9RIr1/JOXOxSkO6QduP1xQ5l0g9mPPON09JWDhuOcq0GIfUGLaDZ4q+3h8zy\n5Sk/rI46RWmc+A0M1ESd38UmV5BrXH7aDxJK7RqTgSsVaabxoH96FVicxnP3hBIe\nDRSYvyJfiUAMNAQN2Bw3cngFFh2Y5yjLMTkv+5oPRWoV6yVmiLexEq3lwCvy2AEP\n/dv55pAZd5jcHozHuiSTUATZ0EYTxMmGEUZTW9NOpQKBgQDt7DPmBCBXJz5cKwJp\nzCbE4Ael0XsWrplLe1pRM+DvPkpOu56XQ+fTxwDmgBYi1n5O/mlNCM9ci89OhmXu\ntpH0/1/OBBIhTvkIFv8nvrI0JbrbE5/dRVzCuhDi+9YvnXqqNWzLR1lyHGBI6zOQ\nB5p40T0EzvWFtQhJRNdEDoXzMwKBgQC/cWSUW66LRkt2SLXS9R4uPpUqdd1h0BSz\n7WW3iNWoc4FRx//8Pk8Soblf7MClTnnp4AT4WL/1BAeMzF/KPDsKucek61IgoRkn\nM3H0gqMdbqxblu58/zoFqnb5/nkGyKj7m4nAwISRPRWgc7R0yRErABLHzvjl+uu5\nKPJC3llppQKBgEH/CipcrKfgP+ELISE9uudTiWuKnw0co3MXpWbu8A8NBUmvq38k\nG/NXuT02/GzveJvq4ES5E+QE+B09FJtR00zVZbrc0DajFFsVHfPlZsMmUB2i5O5Y\n5jExsat01eXhVfxO033TrdEEZAT2ERh7s3Kd/8IMsnhDTigcy2WabbeXAoGAQsHC\nxe0Wd2CCzfNa2/43kP6nu0+wa/xIS9m7f32Kq5vje2YXgJklr6SPZMDFCJ/N6V0B\nvqwL+9901ocp2/aWzA2ubXbVg6VJhR7uXMn1IT1HgwSlkxbY38LqjBBNmaz9KAe7\nyGgZkh/P28ydH6BBiVIUOnKU3nVaH44EtIaefTUCgYEAqBjIgih0TWxlY3quX3zB\nIPWK0r825zd8n8dbAtchgxgnRWIhhQymBvWsR/m28K64sG4+dCF/eV5tswPnzSCL\najJD48tQ3QibfPQGFCPPipce1IZk1Dwy1PBtWEMMa4jQA6DMdOTj2Kt/TeDdYXqP\nngUH+A/C2KopfL6p1TDSMbY=\n-----END PRIVATE KEY-----\n",
+  "client_email": "smartvoicetalks@small-talk-58989.iam.gserviceaccount.com",
+  "client_id": "107574014768504819604",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/smartvoicetalks%40small-talk-58989.iam.gserviceaccount.com"
+}

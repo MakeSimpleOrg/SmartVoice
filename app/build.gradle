@@ -23,7 +23,7 @@ android {
         multiDexEnabled true
         versionName 'v1.5.2'
         versionNameSuffix ''
-        versionCode 31
+        versionCode 32
         signingConfig signingConfigs.config
     }
     buildTypes {
